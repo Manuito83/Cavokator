@@ -15,8 +15,6 @@ class _NotamPageState extends State<NotamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: DrawerPage("notam"),
-      appBar: AppBar(title: Text("NOTAM")),
       body: Builder(
         builder: (context) => GestureDetector(
           behavior: HitTestBehavior.opaque,

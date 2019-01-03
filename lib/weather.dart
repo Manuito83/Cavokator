@@ -14,61 +14,57 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: DrawerPage("weather"),
-      appBar: AppBar(title: Text("Weather")),
-      body: Builder(
-        builder: (context) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-              child: Container(
-                padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+    return Builder(
+      builder: (context) => GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Padding(padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
-                          ImageIcon(AssetImage("assets/icons/drawer_wx.png")),
-                          Padding(padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
-                          Expanded(
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              maxLines: null,
-                              controller: _myTextController,
-                              textCapitalization: TextCapitalization.characters,
-                              decoration: InputDecoration(
-                                  hintText: "Enter ICAO/IATA airports"),
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return "Please enter at least one valid airport!";
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(10),
-                      ),
-                      RaisedButton(
-                        child: Text('Fetch WX!'),
-                        onPressed: () {
-                          if (_formKey.currentState.validate()) {
-                            Scaffold.of(context).showSnackBar(
-                                SnackBar(content: Text('Processing Data')));
-                          }
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                        },
+                      Padding(padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
+                      ImageIcon(AssetImage("assets/icons/drawer_wx.png")),
+                      Padding(padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
+                      Expanded(
+                        child: TextFormField(
+                          keyboardType: TextInputType.text,
+                          maxLines: null,
+                          controller: _myTextController,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                              hintText: "Enter ICAO/IATA airports"),
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Please enter at least one valid airport!";
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                  ),
+                  RaisedButton(
+                    child: Text('Fetch WX!'),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        Scaffold.of(context).showSnackBar(
+                            SnackBar(content: Text('Processing Data')));
+                      }
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                    },
+                  ),
+                ],
               ),
             ),
-      ),
+          ),
+        ),
     );
   }
 

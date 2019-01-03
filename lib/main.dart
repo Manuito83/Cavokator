@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'weather.dart';
+import 'drawer.dart';
 
-void main() => runApp(
-      new MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: new ThemeData(primarySwatch: Colors.blueGrey),
-        home: new WeatherPage(),
-      ),
+void main() => runApp(new Cavokator());
+
+class Cavokator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: "Cavokator",
+      theme: ThemeData(primarySwatch: Colors.blueGrey),
+      home: DrawerPage(),
     );
+  }
+}
