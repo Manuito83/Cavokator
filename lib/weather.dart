@@ -15,7 +15,7 @@ class _WeatherPageState extends State<WeatherPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: DrawerPage(),
+      drawer: DrawerPage("weather"),
       appBar: AppBar(title: Text("Weather")),
       body: Builder(
         builder: (context) => GestureDetector(
