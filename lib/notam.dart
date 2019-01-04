@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'drawer.dart';
 
 class NotamPage extends StatefulWidget {
   @override
@@ -88,13 +87,13 @@ class _NotamPageState extends State<NotamPage> {
         String lastFourChars =
         textEntered.substring(textEntered.length - 4, textEntered.length);
         // If there is at least a space, do nothing
-        bool lala = true;
+        bool spaceDetected = true;
         for (String char in lastFourChars.split("")) {
           if (char == " ") {
-            lala = false;
+            spaceDetected = false;
           }
         }
-        if (lala) {
+        if (spaceDetected) {
           _myTextController.text = textEntered + " ";
           _myTextController.selection = TextSelection.fromPosition(
               TextPosition(offset: _myTextController.text.length));
