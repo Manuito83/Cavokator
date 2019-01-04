@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'weather.dart';
-import 'notam.dart';
+import 'package:cavokator_flutter/weather/weather.dart';
+import 'package:cavokator_flutter/notam/notam.dart';
 
 class DrawerItem {
   String title;
