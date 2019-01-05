@@ -12,7 +12,10 @@ class _WeatherPageState extends State<WeatherPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
 
-  String _myCurrentSubmitText;
+  String _userSubmitText;
+  List<String> _myRequestedAirports = new List<String>();
+  List<WxJson> _myWeatherList = new List<WxJson>();
+  bool _apiCall = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +51,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         hintText: "Enter ICAO/IATA airports"),
                                     validator: (value) {
                                       if (value.isEmpty) {
+                                        // TODO: INCLUDE CASE FOR NO AIRPORT DETECTED (in RegEx)!
                                         return "Please enter at least one valid airport!";
                                       }
                                     }),
@@ -56,45 +60,72 @@ class _WeatherPageState extends State<WeatherPage> {
                             Padding(
                               padding: EdgeInsets.all(10),
                             ),
-                            RaisedButton(
-                                child: Text('Fetch WX!'),
-                                onPressed: () {
-                                  if (_formKey.currentState.validate()) {
-                                    Scaffold.of(context).showSnackBar(SnackBar(
-                                        content: Text('Processing Data')));
-                                    _getWeatherInformation();
-                                    setState(() {});
-                                  }
-                                  FocusScope.of(context)
-                                      .requestFocus(new FocusNode());
-                                }),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                  ),
+                                  RaisedButton(
+                                      child: Text('Fetch WX!'),
+                                      onPressed: () {
+                                        _fetchButtonPressed(context);
+                                      }),
+                                  Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                                  RaisedButton(
+                                      child: Text('Clear'),
+                                      onPressed: () {
+                                        setState(() {
+                                          _apiCall = false;
+                                          _myWeatherList.clear();
+                                          _myTextController.text = "";
+                                        });
+                                      }),
+                                ]),
                           ]),
                     ),
-                    Container(
-                      padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
-                      child: FutureBuilder<List<WxJson>>(
-                          future: _getWeatherInformation(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return Text(snapshot.data[0].airportIdIata);
-                            } else if (snapshot.hasError) {
-                              return Text("${snapshot.error}");
-                            }
-                            // By default, show a loading spinner
-                            return CircularProgressIndicator();
-                          }),
-                    ),
+                    _showWeatherWidget(),
                   ]),
             ),
           ),
     );
   }
 
+  void _fetchButtonPressed(BuildContext context) {
+    // TODO: DELETE CURRENT AIRPORT LIST BEFORE SUBMITTING!
+
+    if (_formKey.currentState.validate()) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fetching weather, hold short!'),
+        ),
+      );
+      setState(() {
+        _apiCall = true;
+      });
+
+      // Split the input to suit or needs
+      RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+      Iterable<Match> matches = exp.allMatches(_userSubmitText);
+      matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
+
+      _callWeatherApi().then((weatherJson) {
+        setState(() {
+          _apiCall = false;
+          if (weatherJson != null) _myWeatherList = weatherJson;
+        });
+      }); // TODO: onError???
+    }
+    FocusScope.of(context).requestFocus(new FocusNode());
+  }
+
   @override
   void initState() {
     super.initState();
 
-    _myCurrentSubmitText = _myTextController.text;
+    _userSubmitText = _myTextController.text;
     _myTextController.addListener(onSubmitTextChange);
   }
 
@@ -102,7 +133,7 @@ class _WeatherPageState extends State<WeatherPage> {
   void onSubmitTextChange() {
     String textEntered = _myTextController.text;
     // Don't do anything if we are deleting text!
-    if (textEntered.length > _myCurrentSubmitText.length) {
+    if (textEntered.length > _userSubmitText.length) {
       if (textEntered.length > 3) {
         // Take a look at the last 4 chars entered
         String lastFourChars =
@@ -121,17 +152,54 @@ class _WeatherPageState extends State<WeatherPage> {
         }
       }
     }
-    _myCurrentSubmitText = textEntered;
+    _userSubmitText = textEntered;
   }
 
-  Future<List<WxJson>> _getWeatherInformation() async {
-    String url = 'https://manuito.a2hosted.com/CavokatorApi_V2/Wx/GetWx?source=Cavokator&airports=LEZL';
-    final response = await http.post(url);
-
-    if (response.statusCode == 200) {
-      // TODO: implement
+  Future<List<WxJson>> _callWeatherApi() async {
+    String allAirports = "";
+    if (_myRequestedAirports.isNotEmpty) {
+      for (var a in _myRequestedAirports){
+        allAirports += a;
+      }
     }
 
-    return wxJsonFromJson(response.body);
+    // TODO: make this private in another class!
+    String url =
+        'https://xxx/CavokatorApi_V2/Wx/GetWx?source=Cavokator&airports=$allAirports';
+    List<WxJson> exportedJson;
+    try {
+      final response = await http.post(url).timeout(Duration(seconds: 10));
+      if (response.statusCode != 200) {
+        return null;
+      }
+      exportedJson = wxJsonFromJson(response.body);
+    } catch (Exception) {
+      return null;
+    }
+    return exportedJson;
+  }
+
+  Widget _showWeatherWidget() {
+    if (_apiCall) {
+      return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsetsDirectional.only(top: 50),
+              child: CircularProgressIndicator(),
+            ),
+          ]);
+    } else {
+      if (_myWeatherList.isNotEmpty) {
+        return Container(
+          padding: EdgeInsetsDirectional.only(top: 50),
+          child: Text(_myWeatherList[0].metars[0].metar),
+        );
+      } else {
+        return Container(
+            // Empty
+            );
+      }
+    }
   }
 }
