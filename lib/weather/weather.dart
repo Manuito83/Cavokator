@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
+import 'package:cavokator_flutter/private.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -51,8 +52,16 @@ class _WeatherPageState extends State<WeatherPage> {
                                         hintText: "Enter ICAO/IATA airports"),
                                     validator: (value) {
                                       if (value.isEmpty) {
-                                        // TODO: INCLUDE CASE FOR NO AIRPORT DETECTED (in RegEx)!
                                         return "Please enter at least one valid airport!";
+                                      }
+                                      else { // Try to parse some airports
+                                      // Split the input to suit or needs
+                                      RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                                      Iterable<Match> matches = exp.allMatches(_userSubmitText);
+                                      matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
+                                      }
+                                      if (_myRequestedAirports.isEmpty) {
+                                        return "Could not identify a valid airport!";
                                       }
                                     }),
                               ),
@@ -94,7 +103,7 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   void _fetchButtonPressed(BuildContext context) {
-    // TODO: DELETE CURRENT AIRPORT LIST BEFORE SUBMITTING!
+    _myRequestedAirports.clear();
 
     if (_formKey.currentState.validate()) {
       Scaffold.of(context).showSnackBar(
@@ -106,15 +115,12 @@ class _WeatherPageState extends State<WeatherPage> {
         _apiCall = true;
       });
 
-      // Split the input to suit or needs
-      RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-      Iterable<Match> matches = exp.allMatches(_userSubmitText);
-      matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
-
       _callWeatherApi().then((weatherJson) {
         setState(() {
           _apiCall = false;
-          if (weatherJson != null) _myWeatherList = weatherJson;
+          if (weatherJson != null) {
+            _myWeatherList = weatherJson;
+          }
         });
       }); // TODO: onError???
     }
@@ -158,14 +164,17 @@ class _WeatherPageState extends State<WeatherPage> {
   Future<List<WxJson>> _callWeatherApi() async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
-      for (var a in _myRequestedAirports){
+      for (var a in _myRequestedAirports) {
         allAirports += a;
       }
     }
 
-    // TODO: make this private in another class!
-    String url =
-        'https://xxx/CavokatorApi_V2/Wx/GetWx?source=Cavokator&airports=$allAirports';
+    String server = PrivateVariables.apiURL;
+    String api = "Wx/GetWx?";
+    String source = "source=Cavokator";
+    String airports = "&airports=$allAirports";
+    String url = server + api + source + airports;
+
     List<WxJson> exportedJson;
     try {
       final response = await http.post(url).timeout(Duration(seconds: 10));
