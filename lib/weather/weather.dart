@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';
+import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -27,76 +28,81 @@ class _WeatherPageState extends State<WeatherPage> {
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
                           children: [
-                            Row(children: [
-                              Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
-                              ImageIcon(
-                                  AssetImage("assets/icons/drawer_wx.png")),
-                              Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
-                              Expanded(
-                                child: TextFormField(
-                                    keyboardType: TextInputType.text,
-                                    maxLines: null,
-                                    controller: _myTextController,
-                                    textCapitalization:
-                                        TextCapitalization.characters,
-                                    decoration: InputDecoration(
-                                        hintText: "Enter ICAO/IATA airports"),
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return "Please enter at least one valid airport!";
-                                      }
-                                      else { // Try to parse some airports
-                                      // Split the input to suit or needs
-                                      RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-                                      Iterable<Match> matches = exp.allMatches(_userSubmitText);
-                                      matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
-                                      }
-                                      if (_myRequestedAirports.isEmpty) {
-                                        return "Could not identify a valid airport!";
-                                      }
-                                    }),
+                            Padding(padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
+                            ImageIcon(AssetImage("assets/icons/drawer_wx.png")),
+                            Padding(padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
+                            Expanded(
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                maxLines: null,
+                                controller: _myTextController,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                decoration: InputDecoration(
+                                    hintText: "Enter ICAO/IATA airports"),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Please enter at least one valid airport!";
+                                  } else {
+                                    // Try to parse some airports
+                                    // Split the input to suit or needs
+                                    RegExp exp =
+                                        new RegExp(r"([a-z]|[A-Z]){3,4}");
+                                    Iterable<Match> matches =
+                                        exp.allMatches(_userSubmitText);
+                                    matches.forEach((m) =>
+                                        _myRequestedAirports.add(m.group(0)));
+                                  }
+                                  if (_myRequestedAirports.isEmpty) {
+                                    return "Could not identify a valid airport!";
+                                  }
+                                },
                               ),
-                            ]),
-                            Padding(
-                              padding: EdgeInsets.all(10),
                             ),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                  ),
-                                  RaisedButton(
-                                      child: Text('Fetch WX!'),
-                                      onPressed: () {
-                                        _fetchButtonPressed(context);
-                                      }),
-                                  Padding(
-                                      padding:
-                                          EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                                  RaisedButton(
-                                      child: Text('Clear'),
-                                      onPressed: () {
-                                        setState(() {
-                                          _apiCall = false;
-                                          _myWeatherList.clear();
-                                          _myTextController.text = "";
-                                        });
-                                      }),
-                                ]),
-                          ]),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(10),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            ),
+                            RaisedButton(
+                                child: Text('Fetch WX!'),
+                                onPressed: () {
+                                  _fetchButtonPressed(context);
+                                }),
+                            Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                            RaisedButton(
+                              child: Text('Clear'),
+                              onPressed: () {
+                                setState(() {
+                                  _apiCall = false;
+                                  _myWeatherList.clear();
+                                  _myTextController.text = "";
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    _showWeatherWidget(),
-                  ]),
+                  ),
+                  _showWeatherWidget(),
+                ],
+              ),
             ),
           ),
     );
@@ -132,11 +138,11 @@ class _WeatherPageState extends State<WeatherPage> {
     super.initState();
 
     _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onSubmitTextChange);
+    _myTextController.addListener(onInputTextChange);
   }
 
   // Ensure that submitted airports are split correctly
-  void onSubmitTextChange() {
+  void onInputTextChange() {
     String textEntered = _myTextController.text;
     // Don't do anything if we are deleting text!
     if (textEntered.length > _userSubmitText.length) {
@@ -200,15 +206,50 @@ class _WeatherPageState extends State<WeatherPage> {
           ]);
     } else {
       if (_myWeatherList.isNotEmpty) {
-        return Container(
-          padding: EdgeInsetsDirectional.only(top: 50),
-          child: Text(_myWeatherList[0].metars[0].metar),
-        );
+        var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
+        return WxItemsWidget(wxItems: myItems);
       } else {
         return Container(
             // Empty
             );
       }
     }
+  }
+}
+
+class WxItemsWidget extends StatelessWidget {
+  final List<WxItems> wxItems;
+
+  const WxItemsWidget({Key key, @required this.wxItems}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: EdgeInsetsDirectional.only(top: 50),
+      itemCount: wxItems.length,
+      itemBuilder: (context, index) {
+        final item = wxItems[index];
+
+        if (item is AirportHeading) {
+          return ListTile(
+            title: Text(
+              item.name,
+            ),
+          );
+        } else if (item is AirportBody) {
+          // TODO: testing to fix scrollview
+          String test = "";
+          for (var met in item.metars) {
+            test += "$met\n\n";
+          }
+          return ListTile(
+            title: Text(
+              test,
+            ),
+          );
+        }
+      },
+    );
   }
 }
