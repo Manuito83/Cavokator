@@ -25,9 +25,10 @@ class _WeatherPageState extends State<WeatherPage> {
       builder: (context) => GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-            child: SingleChildScrollView(
+            child: Container(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
               child: Column(
+                //mainAxisSize: MainAxisSize.min,  // TODO: delete
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Form(
@@ -207,7 +208,8 @@ class _WeatherPageState extends State<WeatherPage> {
     } else {
       if (_myWeatherList.isNotEmpty) {
         var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
-        return WxItemsWidget(wxItems: myItems);
+        return Flexible (
+            child: WxItemsWidget(wxItems: myItems));
       } else {
         return Container(
             // Empty
@@ -225,7 +227,7 @@ class WxItemsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      shrinkWrap: true,
+      //shrinkWrap: true, // TODO: delete
       padding: EdgeInsetsDirectional.only(top: 50),
       itemCount: wxItems.length,
       itemBuilder: (context, index) {
