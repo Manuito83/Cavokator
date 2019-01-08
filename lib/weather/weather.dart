@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
@@ -21,91 +22,133 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (context) => GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Column(
-                //mainAxisSize: MainAxisSize.min,  // TODO: delete
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            Padding(padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
-                            ImageIcon(AssetImage("assets/icons/drawer_wx.png")),
-                            Padding(padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
-                            Expanded(
-                              child: TextFormField(
-                                keyboardType: TextInputType.text,
-                                maxLines: null,
-                                controller: _myTextController,
-                                textCapitalization:
-                                    TextCapitalization.characters,
-                                decoration: InputDecoration(
-                                    hintText: "Enter ICAO/IATA airports"),
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return "Please enter at least one valid airport!";
-                                  } else {
-                                    // Try to parse some airports
-                                    // Split the input to suit or needs
-                                    RegExp exp =
-                                        new RegExp(r"([a-z]|[A-Z]){3,4}");
-                                    Iterable<Match> matches =
-                                        exp.allMatches(_userSubmitText);
-                                    matches.forEach((m) =>
-                                        _myRequestedAirports.add(m.group(0)));
-                                  }
-                                  if (_myRequestedAirports.isEmpty) {
-                                    return "Could not identify a valid airport!";
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(10),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                            ),
-                            RaisedButton(
-                                child: Text('Fetch WX!'),
-                                onPressed: () {
-                                  _fetchButtonPressed(context);
-                                }),
-                            Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                            RaisedButton(
-                              child: Text('Clear'),
-                              onPressed: () {
-                                setState(() {
-                                  _apiCall = false;
-                                  _myWeatherList.clear();
-                                  _myTextController.text = "";
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  _showWeatherWidget(),
-                ],
+    return
+
+      Builder(
+      builder: (context) =>
+
+          GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          child:
+
+          CustomScrollView(
+            slivers: <Widget>[
+
+              SliverAppBar(
+                title: Text("Weather"),
+                expandedHeight: 150,
+                //floating: true,
+                //pinned: true,
+                flexibleSpace: Placeholder(),
               ),
-            ),
-          ),
+
+              SliverForm(
+                child: Container(
+                  color: Colors.grey[100],
+                  padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  child: Column(
+                    //mainAxisSize: MainAxisSize.min,  // TODO: delete
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
+                                ImageIcon(
+                                    AssetImage("assets/icons/drawer_wx.png")),
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
+                                Expanded(
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.text,
+                                    maxLines: null,
+                                    controller: _myTextController,
+                                    textCapitalization:
+                                    TextCapitalization.characters,
+                                    decoration: InputDecoration(
+                                        hintText: "Enter ICAO/IATA airports"),
+                                    validator: (value) {
+                                      if (value.isEmpty) {
+                                        return "Please enter at least one valid airport!";
+                                      } else {
+                                        // Try to parse some airports
+                                        // Split the input to suit or needs
+                                        RegExp exp =
+                                        new RegExp(r"([a-z]|[A-Z]){3,4}");
+                                        Iterable<Match> matches =
+                                        exp.allMatches(_userSubmitText);
+                                        matches.forEach((m) =>
+                                            _myRequestedAirports.add(m.group(0)));
+                                      }
+                                      if (_myRequestedAirports.isEmpty) {
+                                        return "Could not identify a valid airport!";
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(10),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                ),
+                                RaisedButton(
+                                    child: Text('Fetch WX!'),
+                                    onPressed: () {
+                                      _fetchButtonPressed(context);
+                                    }),
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                                RaisedButton(
+                                  child: Text('Clear'),
+                                  onPressed: () {
+                                    setState(() {
+                                      _apiCall = false;
+                                      _myWeatherList.clear();
+                                      _myTextController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      //_showWeatherWidget(),
+                    ],
+                  ),
+                ),
+              ),
+
+
+              SliverForm(
+                child: _showWeatherWidget()
+              ),
+
+
+
+//              SliverList(
+//                delegate: SliverChildBuilderDelegate(
+//                  (context, index) => _showWeatherWidget(),
+//                ),
+//              )
+
+
+
+            ],
+          )
+    ),
     );
   }
 
@@ -208,8 +251,7 @@ class _WeatherPageState extends State<WeatherPage> {
     } else {
       if (_myWeatherList.isNotEmpty) {
         var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
-        return Flexible (
-            child: WxItemsWidget(wxItems: myItems));
+        return WxItemsWidget(wxItems: myItems);
       } else {
         return Container(
             // Empty
@@ -227,8 +269,9 @@ class WxItemsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      //shrinkWrap: true, // TODO: delete
-      padding: EdgeInsetsDirectional.only(top: 50),
+      shrinkWrap: true, // TODO: delete
+      padding: EdgeInsetsDirectional.only(top: 20),
+      physics: ClampingScrollPhysics(),
       itemCount: wxItems.length,
       itemBuilder: (context, index) {
         final item = wxItems[index];
@@ -253,5 +296,55 @@ class WxItemsWidget extends StatelessWidget {
         }
       },
     );
+  }
+}
+
+
+class SliverForm extends SingleChildRenderObjectWidget {
+  SliverForm ({ Widget child, Key key}) : super(child: child, key: key);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return RenderSliverForm();
+  }
+}
+
+
+class RenderSliverForm extends RenderSliverToBoxAdapter {
+  RenderSliverForm({
+    RenderBox child,
+  }) : super (child: child);
+
+  @override
+  void performLayout() {
+    if (child == null) {
+      geometry = SliverGeometry.zero;
+      return;
+    }
+    child.layout(constraints.asBoxConstraints(), parentUsesSize: true);
+    double childExtent;
+    switch (constraints.axis) {
+      case Axis.horizontal:
+        childExtent = child.size.width;
+        break;
+      case Axis.vertical:
+        childExtent = child.size.height;
+        break;
+    }
+    assert(childExtent != null);
+    final double paintedChildSize = calculatePaintOffset(constraints, from: 0.0, to: childExtent);
+    final double cacheExtent = calculateCacheOffset(constraints, from: 0.0, to: childExtent);
+
+    assert(paintedChildSize.isFinite);
+    assert(paintedChildSize >= 0.0);
+    geometry = SliverGeometry(
+      scrollExtent: childExtent,
+      paintExtent: paintedChildSize,
+      cacheExtent: cacheExtent,
+      maxPaintExtent: childExtent,
+      hitTestExtent: paintedChildSize,
+      hasVisualOverflow: childExtent > constraints.remainingPaintExtent || constraints.scrollOffset > 0.0,
+    );
+    setChildParentData(child, constraints, geometry);
   }
 }

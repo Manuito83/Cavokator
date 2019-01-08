@@ -64,9 +64,9 @@ class _DrawerPageState extends State<DrawerPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.drawerItems[_selectedDrawerIndex].title),
-      ),
+//      appBar: AppBar(
+//        title: Text(widget.drawerItems[_selectedDrawerIndex].title),
+//      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
