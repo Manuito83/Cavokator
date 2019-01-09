@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';
+import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -22,134 +22,199 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
-    return
-
-      Builder(
-      builder: (context) =>
-
-          GestureDetector(
+    return Builder(
+      builder: (context) {
+        return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-          child:
-
-          CustomScrollView(
+          child: CustomScrollView(
             slivers: <Widget>[
-
               SliverAppBar(
                 title: Text("Weather"),
-                expandedHeight: 150,
-                //floating: true,
-                //pinned: true,
+                expandedHeight: 120,
                 flexibleSpace: Placeholder(),
+                actions: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.access_alarm),
+                    onPressed: () {
+                      // TEST
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.clear),
+                    onPressed: () {
+                      // TEST
+                    },
+                  ),
+                ],
               ),
+              _inputForm(),
+              _weatherSection(),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-              SliverForm(
-                child: Container(
-                  color: Colors.grey[100],
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                  child: Column(
-                    //mainAxisSize: MainAxisSize.min,  // TODO: delete
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              children: [
-                                Padding(
-                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
-                                ImageIcon(
-                                    AssetImage("assets/icons/drawer_wx.png")),
-                                Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 0, 20, 0)),
-                                Expanded(
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.text,
-                                    maxLines: null,
-                                    controller: _myTextController,
-                                    textCapitalization:
-                                    TextCapitalization.characters,
-                                    decoration: InputDecoration(
-                                        hintText: "Enter ICAO/IATA airports"),
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return "Please enter at least one valid airport!";
-                                      } else {
-                                        // Try to parse some airports
-                                        // Split the input to suit or needs
-                                        RegExp exp =
-                                        new RegExp(r"([a-z]|[A-Z]){3,4}");
-                                        Iterable<Match> matches =
-                                        exp.allMatches(_userSubmitText);
-                                        matches.forEach((m) =>
-                                            _myRequestedAirports.add(m.group(0)));
-                                      }
-                                      if (_myRequestedAirports.isEmpty) {
-                                        return "Could not identify a valid airport!";
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(10),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                ),
-                                RaisedButton(
-                                    child: Text('Fetch WX!'),
-                                    onPressed: () {
-                                      _fetchButtonPressed(context);
-                                    }),
-                                Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                                RaisedButton(
-                                  child: Text('Clear'),
-                                  onPressed: () {
-                                    setState(() {
-                                      _apiCall = false;
-                                      _myWeatherList.clear();
-                                      _myTextController.text = "";
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
+  Widget _inputForm() {
+    return CustomSliverSection(
+      child: Container(
+        margin: EdgeInsets.all(10),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+          border: Border.all(color: Colors.grey),
+          color: Colors.grey[200],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      ),
+                      ImageIcon(
+                        AssetImage("assets/icons/drawer_wx.png"),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                          keyboardType: TextInputType.text,
+                          maxLines: null,
+                          controller: _myTextController,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                              hintText: "Enter ICAO/IATA airports"),
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Please enter at least one valid airport!";
+                            } else {
+                              // Try to parse some airports
+                              // Split the input to suit or needs
+                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              Iterable<Match> matches =
+                                  exp.allMatches(_userSubmitText);
+                              matches.forEach(
+                                  (m) => _myRequestedAirports.add(m.group(0)));
+                            }
+                            if (_myRequestedAirports.isEmpty) {
+                              return "Could not identify a valid airport!";
+                            }
+                          },
                         ),
                       ),
-                      //_showWeatherWidget(),
                     ],
                   ),
-                ),
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      ),
+                      RaisedButton(
+                          child: Text('Fetch WX!'),
+                          onPressed: () {
+                            _fetchButtonPressed(context);
+                          }),
+                      Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                      RaisedButton(
+                        child: Text('Clear'),
+                        onPressed: () {
+                          setState(() {
+                            _apiCall = false;
+                            _myWeatherList.clear();
+                            _myTextController.text = "";
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-
-
-              SliverForm(
-                child: _showWeatherWidget()
-              ),
-
-
-
-//              SliverList(
-//                delegate: SliverChildBuilderDelegate(
-//                  (context, index) => _showWeatherWidget(),
-//                ),
-//              )
-
-
-
-            ],
-          )
-    ),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _weatherSection() {
+    if (_apiCall) {
+      return SliverList(
+          delegate: SliverChildBuilderDelegate(
+        (context, index) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsetsDirectional.only(top: 50),
+                  child: CircularProgressIndicator(),
+                ),
+              ],
+            ),
+        childCount: 1,
+      ));
+    } else {
+      if (_myWeatherList.isNotEmpty) {
+        var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+                (context, index) {
+              final item = myItems[index];
+
+              if (item is AirportHeading) {
+                return ListTile(
+                  title: Text(
+                    item.name,
+                  ),
+                );
+              } else if (item is AirportBody) {
+                // TODO: testing to fix scrollview
+                String test = "";
+                for (var met in item.metars) {
+                  test += "$met\n\n";
+                }
+                return ListTile(
+                  title: Text(
+                    test,
+                  ),
+                );
+              }
+            },
+            childCount: myItems.length,
+          ),
+        );
+      } else {
+        return SliverList(
+            delegate: SliverChildBuilderDelegate(
+          (context, index) => Container(),
+          childCount: 1,
+        ));
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
   }
 
   void _fetchButtonPressed(BuildContext context) {
@@ -164,7 +229,6 @@ class _WeatherPageState extends State<WeatherPage> {
       setState(() {
         _apiCall = true;
       });
-
       _callWeatherApi().then((weatherJson) {
         setState(() {
           _apiCall = false;
@@ -172,17 +236,9 @@ class _WeatherPageState extends State<WeatherPage> {
             _myWeatherList = weatherJson;
           }
         });
-      }); // TODO: onError???
+      });
     }
     FocusScope.of(context).requestFocus(new FocusNode());
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onInputTextChange);
   }
 
   // Ensure that submitted airports are split correctly
@@ -214,8 +270,12 @@ class _WeatherPageState extends State<WeatherPage> {
   Future<List<WxJson>> _callWeatherApi() async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
-      for (var a in _myRequestedAirports) {
-        allAirports += a;
+      for (var i = 0; i < _myRequestedAirports.length; i++) {
+        if (i != _myRequestedAirports.length - 1) {
+          allAirports += _myRequestedAirports[i] + ",";
+        } else {
+          allAirports += _myRequestedAirports[i];
+        }
       }
     }
 
@@ -238,113 +298,6 @@ class _WeatherPageState extends State<WeatherPage> {
     return exportedJson;
   }
 
-  Widget _showWeatherWidget() {
-    if (_apiCall) {
-      return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsetsDirectional.only(top: 50),
-              child: CircularProgressIndicator(),
-            ),
-          ]);
-    } else {
-      if (_myWeatherList.isNotEmpty) {
-        var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
-        return WxItemsWidget(wxItems: myItems);
-      } else {
-        return Container(
-            // Empty
-            );
-      }
-    }
-  }
-}
-
-class WxItemsWidget extends StatelessWidget {
-  final List<WxItems> wxItems;
-
-  const WxItemsWidget({Key key, @required this.wxItems}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true, // TODO: delete
-      padding: EdgeInsetsDirectional.only(top: 20),
-      physics: ClampingScrollPhysics(),
-      itemCount: wxItems.length,
-      itemBuilder: (context, index) {
-        final item = wxItems[index];
-
-        if (item is AirportHeading) {
-          return ListTile(
-            title: Text(
-              item.name,
-            ),
-          );
-        } else if (item is AirportBody) {
-          // TODO: testing to fix scrollview
-          String test = "";
-          for (var met in item.metars) {
-            test += "$met\n\n";
-          }
-          return ListTile(
-            title: Text(
-              test,
-            ),
-          );
-        }
-      },
-    );
-  }
 }
 
 
-class SliverForm extends SingleChildRenderObjectWidget {
-  SliverForm ({ Widget child, Key key}) : super(child: child, key: key);
-
-  @override
-  RenderObject createRenderObject(BuildContext context) {
-    return RenderSliverForm();
-  }
-}
-
-
-class RenderSliverForm extends RenderSliverToBoxAdapter {
-  RenderSliverForm({
-    RenderBox child,
-  }) : super (child: child);
-
-  @override
-  void performLayout() {
-    if (child == null) {
-      geometry = SliverGeometry.zero;
-      return;
-    }
-    child.layout(constraints.asBoxConstraints(), parentUsesSize: true);
-    double childExtent;
-    switch (constraints.axis) {
-      case Axis.horizontal:
-        childExtent = child.size.width;
-        break;
-      case Axis.vertical:
-        childExtent = child.size.height;
-        break;
-    }
-    assert(childExtent != null);
-    final double paintedChildSize = calculatePaintOffset(constraints, from: 0.0, to: childExtent);
-    final double cacheExtent = calculateCacheOffset(constraints, from: 0.0, to: childExtent);
-
-    assert(paintedChildSize.isFinite);
-    assert(paintedChildSize >= 0.0);
-    geometry = SliverGeometry(
-      scrollExtent: childExtent,
-      paintExtent: paintedChildSize,
-      cacheExtent: cacheExtent,
-      maxPaintExtent: childExtent,
-      hitTestExtent: paintedChildSize,
-      hasVisualOverflow: childExtent > constraints.remainingPaintExtent || constraints.scrollOffset > 0.0,
-    );
-    setChildParentData(child, constraints, geometry);
-  }
-}

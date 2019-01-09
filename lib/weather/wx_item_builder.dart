@@ -28,7 +28,7 @@ class WxItemBuilder {
       myMets.add(item.metars[0].metar);
 
       // TODO: delete, just for testing scrollview!
-      for (var i = 0; i < 100; i++){
+      for (var i = 0; i < 20; i++){
         myMets.add(item.metars[0].metar);
       }
 
