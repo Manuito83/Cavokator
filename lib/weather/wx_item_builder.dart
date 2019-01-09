@@ -1,42 +1,51 @@
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 
-abstract class WxItems {}
+class WxInfoModel {
+  var airportList = List<AirportHeading>();
+  var weatherList = List <AirportWeather>();
+}
 
-class AirportHeading implements WxItems {
+class AirportHeading {
   final String name;
 
   AirportHeading(this.name);
 }
 
-class AirportBody implements WxItems {
+class AirportWeather {
   var metars = List<String>();
   var tafors = List <String>();
 
-  AirportBody(this.metars, this.tafors);
+  AirportWeather(this.metars, this.tafors);
 }
 
 class WxItemBuilder {
-  var wxItems = List<WxItems>();
+
+  var wxModel = WxInfoModel();
   var jsonWeatherList = List<WxJson>();
+  var _myAirports = List<AirportHeading>();
+  var _myWeathers = List<AirportWeather>();
 
   WxItemBuilder({ this.jsonWeatherList }){
     // Iterate every airport inside of list
     for (var item in jsonWeatherList){
-      wxItems.add(AirportHeading(item.fullAirportDetails.name));
+      _myAirports.add(AirportHeading(item.fullAirportDetails.name));
 
-      var myMets = List<String>();
-      myMets.add(item.metars[0].metar);
+      var mets = List<String>();
+      mets.add(item.metars[0].metar);
 
       // TODO: delete, just for testing scrollview!
       for (var i = 0; i < 20; i++){
-        myMets.add(item.metars[0].metar);
+        mets.add(item.metars[0].metar);
       }
 
-      var myTafs = List<String>();
-      myTafs.add(item.tafors[0].tafor);
+      var tafs = List<String>();
+      tafs.add(item.tafors[0].tafor);
 
-      wxItems.add(AirportBody(myMets, myTafs));
+      _myWeathers.add(AirportWeather(mets, tafs));
     }
+    wxModel = WxInfoModel();
+    wxModel.airportList = _myAirports;
+    wxModel.weatherList = _myWeathers;
   }
 
 }

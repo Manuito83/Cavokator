@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
@@ -28,32 +29,62 @@ class _WeatherPageState extends State<WeatherPage> {
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: CustomScrollView(
-            slivers: <Widget>[
-              SliverAppBar(
-                title: Text("Weather"),
-                expandedHeight: 120,
-                flexibleSpace: Placeholder(),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.access_alarm),
-                    onPressed: () {
-                      // TEST
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.clear),
-                    onPressed: () {
-                      // TEST
-                    },
-                  ),
-                ],
-              ),
-              _inputForm(),
-              _weatherSection(),
-            ],
+            slivers: _buildSlivers(context),
           ),
         );
       },
+    );
+  }
+
+  List<Widget> _buildSlivers(BuildContext context) {
+    List<Widget> slivers = new List<Widget>();
+
+    slivers.add(_myAppBar());
+    slivers.add(_inputForm());
+
+    var wxSect = _weatherSections();
+    for (var section in wxSect) {
+      slivers.add(section);
+    }
+
+    return slivers;
+  }
+
+  Widget _myAppBar() {
+    return SliverAppBar(
+      iconTheme: new IconThemeData(color: Colors.black),
+      title: Text(
+        "Weather",
+        style: TextStyle(color: Colors.black),
+      ),
+      expandedHeight: 120,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: new BoxDecoration(
+            image: new DecorationImage(
+              image: new AssetImage('assets/images/weather_header.jpg'),
+              fit: BoxFit.fitWidth,
+            ),
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.access_alarm),
+          color: Colors.green,
+          onPressed: () {
+            // TEST
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.clear),
+          color: Colors.black,
+          onPressed: () {
+            // TEST
+          },
+        ),
+      ],
     );
   }
 
@@ -97,7 +128,8 @@ class _WeatherPageState extends State<WeatherPage> {
                           controller: _myTextController,
                           textCapitalization: TextCapitalization.characters,
                           decoration: InputDecoration(
-                              hintText: "Enter ICAO/IATA airports"),
+                            labelText: "Enter ICAO/IATA airports",
+                          ),
                           validator: (value) {
                             if (value.isEmpty) {
                               return "Please enter at least one valid airport!";
@@ -154,59 +186,76 @@ class _WeatherPageState extends State<WeatherPage> {
     );
   }
 
-  Widget _weatherSection() {
+  List<Widget> _weatherSections() {
+    List<Widget> mySections = List<Widget>();
+
     if (_apiCall) {
-      return SliverList(
+      mySections.add(
+        SliverList(
           delegate: SliverChildBuilderDelegate(
-        (context, index) => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsetsDirectional.only(top: 50),
-                  child: CircularProgressIndicator(),
+            (context, index) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsetsDirectional.only(top: 50),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-        childCount: 1,
-      ));
+            childCount: 1,
+          ),
+        ),
+      );
     } else {
       if (_myWeatherList.isNotEmpty) {
-        var myItems = WxItemBuilder(jsonWeatherList: _myWeatherList).wxItems;
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-                (context, index) {
-              final item = myItems[index];
+        var wxBuilder = WxItemBuilder(jsonWeatherList: _myWeatherList);
+        var xmModel = wxBuilder.wxModel;
 
-              if (item is AirportHeading) {
-                return ListTile(
-                  title: Text(
-                    item.name,
+        for (var i = 0; i < xmModel.airportList.length; i++) {
+          mySections.add(
+            SliverStickyHeaderBuilder(
+              builder: (context, state) {
+                return Container(
+                  height: 60.0,
+                  color: (state.isPinned ? Colors.pink : Colors.lightBlue)
+                      .withOpacity(1.0 - state.scrollPercentage),
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  alignment: Alignment.centerLeft,
+                  child: new Text(
+                    xmModel.airportList[i].name,
+                    style: const TextStyle(color: Colors.white),
                   ),
                 );
-              } else if (item is AirportBody) {
-                // TODO: testing to fix scrollview
-                String test = "";
-                for (var met in item.metars) {
-                  test += "$met\n\n";
-                }
-                return ListTile(
-                  title: Text(
-                    test,
-                  ),
-                );
-              }
-            },
-            childCount: myItems.length,
+              },
+              sliver: SliverList(
+                delegate: new SliverChildBuilderDelegate(
+                  (context, index) {
+                    var test = "";
+                    for (var met in xmModel.weatherList[i].metars) {
+                      test += "$met\n\n";
+                    }
+                    return ListTile(
+                      title: Text(test),
+                    );
+                  },
+                  childCount: 1,
+                ),
+              ),
+            ),
+          );
+        }
+      } else {
+        mySections.add(
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => Container(),
+              childCount: 1,
+            ),
           ),
         );
-      } else {
-        return SliverList(
-            delegate: SliverChildBuilderDelegate(
-          (context, index) => Container(),
-          childCount: 1,
-        ));
       }
     }
+    return mySections;
   }
 
   @override
@@ -241,8 +290,8 @@ class _WeatherPageState extends State<WeatherPage> {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
 
-  // Ensure that submitted airports are split correctly
   void onInputTextChange() {
+    // Ensure that submitted airports are split correctly
     String textEntered = _myTextController.text;
     // Don't do anything if we are deleting text!
     if (textEntered.length > _userSubmitText.length) {
@@ -297,7 +346,4 @@ class _WeatherPageState extends State<WeatherPage> {
     }
     return exportedJson;
   }
-
 }
-
-
