@@ -210,9 +210,9 @@ class _WeatherPageState extends State<WeatherPage> {
     } else {
       if (_myWeatherList.isNotEmpty) {
         var wxBuilder = WxItemBuilder(jsonWeatherList: _myWeatherList);
-        var xmModel = wxBuilder.result;
+        var wxModel = wxBuilder.result;
 
-        for (var i = 0; i < xmModel.wxInfoList.length; i++) {
+        for (var i = 0; i < wxModel.wxModelList.length; i++) {
           mySections.add(
             SliverStickyHeaderBuilder(
               builder: (context, state) {
@@ -229,11 +229,11 @@ class _WeatherPageState extends State<WeatherPage> {
                       children: <Widget>[
                         Icon(Icons.local_airport, color: Colors.white),
                         Padding(
-                          padding: EdgeInsetsDirectional.only(end: 20),
+                          padding: EdgeInsetsDirectional.only(end: 15),
                         ),
                         Flexible(
                           child: Text(
-                            xmModel.wxInfoList[i].airportHeading,
+                            wxModel.wxModelList[i].airportHeading,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -245,26 +245,81 @@ class _WeatherPageState extends State<WeatherPage> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    String metarTest;
-                    for (var met in xmModel.wxInfoList[i].airportWeatherList) {
-                      if (met is AirportMetar){
-                        metarTest = met.metarList[0];
+                    final item = wxModel.wxModelList[i].airportWeather[index];
+
+                    if (item is AirportMetar || item is AirportTafor){
+                      String tileText;
+                      if (item is AirportMetar){
+                        tileText = item.metars[0];
+                      } else if (item is AirportTafor){
+                        tileText = item.tafors[0];
                       }
-                    }
-                    return ListTile(
-                      title: Card(
-                        elevation: 5,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                          child: Text(metarTest),
+                      return ListTile(
+                        title: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                            child: Text(tileText),
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+
+                    if (item is MetarTimes){
+
+                      // TODO: BLOC??
+                      String metarTimeFinal;
+                      if (!item.error) {
+                        try {
+                          var timeDifference = DateTime.now().toUtc().compareTo(item.metarTimes[0]);
+
+                          // TODO: https://github.com/desktop-dart/duration/blob/master/lib/src/duration_base.dart
+
+                          String days;
+                          String hours;
+                          String minutes;
+                        } catch (Exception) {
+                          // TODO error
+                        }
+                      } else {
+                        // TODO error
+                      }
+
+
+
+
+
+                      return ListTile(
+                        title: Container(
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.access_time),
+                              Padding(padding: EdgeInsets.only(right: 15)),
+                              Flexible(
+                                child: Text("PLACEHOLDER"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (item is TaforTimes){
+                      return ListTile(
+                        title: Text(item.taforTimes[0].toString()),
+                      );
+                    }
+
+
+
                   },
-                  childCount: 1,
+                  childCount: wxModel.wxModelList[i].airportWeather.length,
                 ),
               ),
             ),
+          );
+          mySections.add(
+            SliverPadding(padding: EdgeInsetsDirectional.only(bottom: 80)),
           );
         }
       } else {
@@ -369,4 +424,8 @@ class _WeatherPageState extends State<WeatherPage> {
     }
     return exportedJson;
   }
+
+
+
+
 }
