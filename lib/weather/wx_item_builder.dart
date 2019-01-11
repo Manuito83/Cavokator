@@ -1,51 +1,57 @@
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 
+class WxInfoModelList
+{
+  var wxInfoList = List<WxInfoModel>();
+}
+
 class WxInfoModel {
-  var airportList = List<AirportHeading>();
-  var weatherList = List <AirportWeather>();
+  String airportHeading;
+  var airportWeatherList = List <AirportWeather>();
 }
 
-class AirportHeading {
-  final String name;
+abstract class AirportWeather {}
 
-  AirportHeading(this.name);
+class AirportMetar extends AirportWeather {
+  List<String> metarList = new List<String>();
 }
 
-class AirportWeather {
-  var metars = List<String>();
-  var tafors = List <String>();
-
-  AirportWeather(this.metars, this.tafors);
+class AirportTafor extends AirportWeather {
+  List<String> taforList = new List<String>();
 }
+
+class AirportTime extends AirportWeather {
+  DateTime weatherTime = new DateTime.now().toUtc();
+}
+
+
 
 class WxItemBuilder {
 
-  var wxModel = WxInfoModel();
   var jsonWeatherList = List<WxJson>();
-  var _myAirports = List<AirportHeading>();
-  var _myWeathers = List<AirportWeather>();
+  var result = WxInfoModelList();
 
   WxItemBuilder({ this.jsonWeatherList }){
+
     // Iterate every airport inside of list
-    for (var item in jsonWeatherList){
-      _myAirports.add(AirportHeading(item.fullAirportDetails.name));
+    for (var i = 0; i < jsonWeatherList.length; i++){
+      var wxModel = WxInfoModel();
+      var _myMetars = AirportMetar();
+      var _myTafors = AirportTafor();
 
-      var mets = List<String>();
-      mets.add(item.metars[0].metar);
-
-      // TODO: delete, just for testing scrollview!
-      for (var i = 0; i < 20; i++){
-        mets.add(item.metars[0].metar);
+      for (var mets in jsonWeatherList[i].metars){
+        _myMetars.metarList.add(mets.metar);
       }
 
-      var tafs = List<String>();
-      tafs.add(item.tafors[0].tafor);
+      for (var tafs in jsonWeatherList[i].tafors){
+        _myTafors.taforList.add(tafs.tafor);
+      }
 
-      _myWeathers.add(AirportWeather(mets, tafs));
+      wxModel.airportHeading = jsonWeatherList[i].fullAirportDetails.name;
+      wxModel.airportWeatherList.add(_myMetars);
+      wxModel.airportWeatherList.add(_myTafors);
+
+      result.wxInfoList.add(wxModel);
     }
-    wxModel = WxInfoModel();
-    wxModel.airportList = _myAirports;
-    wxModel.weatherList = _myWeathers;
   }
-
 }

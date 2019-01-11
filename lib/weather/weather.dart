@@ -210,50 +210,55 @@ class _WeatherPageState extends State<WeatherPage> {
     } else {
       if (_myWeatherList.isNotEmpty) {
         var wxBuilder = WxItemBuilder(jsonWeatherList: _myWeatherList);
-        var xmModel = wxBuilder.wxModel;
+        var xmModel = wxBuilder.result;
 
-        mySections.add(
-          SliverPadding(
-            padding: EdgeInsetsDirectional.only(top: 25),
-          ),
-        );
-
-        for (var i = 0; i < xmModel.airportList.length; i++) {
+        for (var i = 0; i < xmModel.wxInfoList.length; i++) {
           mySections.add(
             SliverStickyHeaderBuilder(
               builder: (context, state) {
-                return Container(
-                  margin: EdgeInsetsDirectional.only(bottom: 25),
-                  height: 60.0,
-                  color: (state.isPinned ? Colors.red[300] : Colors.lightBlue)
-                      .withOpacity(1.0 - state.scrollPercentage),
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.local_airport, color: Colors.white),
-                      Padding(
-                        padding: EdgeInsetsDirectional.only(end: 20),
-                      ),
-                      Flexible(
-                        child: Text(
-                          xmModel.airportList[i].name,
-                          style: const TextStyle(color: Colors.white),
+                return Padding(
+                  padding: EdgeInsets.only(top: 50),
+                  child: Container(
+                    margin: EdgeInsetsDirectional.only(bottom: 25),
+                    height: 60.0,
+                    color: (state.isPinned ? Colors.red[300] : Colors.lightBlue)
+                        .withOpacity(1.0 - state.scrollPercentage),
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.local_airport, color: Colors.white),
+                        Padding(
+                          padding: EdgeInsetsDirectional.only(end: 20),
                         ),
-                      ),
-                    ],
+                        Flexible(
+                          child: Text(
+                            xmModel.wxInfoList[i].airportHeading,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    var test = "";
-                    for (var met in xmModel.weatherList[i].metars) {
-                      test += "$met\n\n";
+                    String metarTest;
+                    for (var met in xmModel.wxInfoList[i].airportWeatherList) {
+                      if (met is AirportMetar){
+                        metarTest = met.metarList[0];
+                      }
                     }
                     return ListTile(
-                      title: Text(test),
+                      title: Card(
+                        elevation: 5,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                          child: Text(metarTest),
+                        ),
+                      ),
                     );
                   },
                   childCount: 1,
