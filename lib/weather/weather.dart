@@ -6,6 +6,7 @@ import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/weather/wx_item_builder.dart';
+import 'package:cavokator_flutter/utils/pretty_duration.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -92,7 +93,7 @@ class _WeatherPageState extends State<WeatherPage> {
   Widget _inputForm() {
     return CustomSliverSection(
       child: Container(
-        margin: EdgeInsets.all(10),
+        margin: EdgeInsets.fromLTRB(10, 10, 10, 50),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -217,7 +218,7 @@ class _WeatherPageState extends State<WeatherPage> {
             SliverStickyHeaderBuilder(
               builder: (context, state) {
                 return Padding(
-                  padding: EdgeInsets.only(top: 50),
+                  padding: EdgeInsets.only(top: 0), // TODO: get rid of this
                   child: Container(
                     margin: EdgeInsetsDirectional.only(bottom: 25),
                     height: 60.0,
@@ -266,37 +267,39 @@ class _WeatherPageState extends State<WeatherPage> {
                     }
 
                     if (item is MetarTimes){
-
-                      // TODO: BLOC??
+                      // TODO: BLOC with time ticker...??
                       String metarTimeFinal;
+                      Color delayColor;
                       if (!item.error) {
                         try {
-                          var timeDifference = DateTime.now().toUtc().compareTo(item.metarTimes[0]);
-
-                          // TODO: https://github.com/desktop-dart/duration/blob/master/lib/src/duration_base.dart
-
-                          String days;
-                          String hours;
-                          String minutes;
+                          var cuac = DateTime(2019,1,2,11,30).toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
+                          var timeDifference = item.metarTimes[0].difference(cuac);
+                          var myPrettyDuration = PrettyDuration(duration: timeDifference, header: "METAR");
+                          metarTimeFinal = myPrettyDuration.getDuration;
+                          delayColor = Colors.green[800]; // TODO: minutes, color...?
                         } catch (Exception) {
                           // TODO error
+                          delayColor = Colors.red;
                         }
                       } else {
                         // TODO error
+                        delayColor = Colors.red;
                       }
-
-
-
-
-
                       return ListTile(
                         title: Container(
                           child: Row(
                             children: <Widget>[
-                              Icon(Icons.access_time),
+                              Icon(Icons.access_time,
+                                color: delayColor,
+                              ),
                               Padding(padding: EdgeInsets.only(right: 15)),
                               Flexible(
-                                child: Text("PLACEHOLDER"),
+                                child: Text(metarTimeFinal,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: delayColor,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

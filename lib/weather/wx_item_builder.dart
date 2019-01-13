@@ -22,7 +22,7 @@ class AirportTafor extends AirportWeather {
 
 class MetarTimes extends AirportWeather {
   var metarTimes = List<DateTime>();
-  bool error;
+  bool error = false;
 }
 
 class TaforTimes extends AirportWeather {
