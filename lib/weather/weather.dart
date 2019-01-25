@@ -272,8 +272,8 @@ class _WeatherPageState extends State<WeatherPage> {
                       Color delayColor;
                       if (!item.error) {
                         try {
-                          var cuac = DateTime(2019,1,2,11,30).toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
-                          var timeDifference = item.metarTimes[0].difference(cuac);
+                          var timeNow = DateTime(2019,1,2,11,30).toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
+                          var timeDifference = item.metarTimes[0].difference(timeNow);
                           var myPrettyDuration = PrettyDuration(duration: timeDifference, header: "METAR");
                           metarTimeFinal = myPrettyDuration.getDuration;
                           delayColor = Colors.green[800]; // TODO: minutes, color...?
