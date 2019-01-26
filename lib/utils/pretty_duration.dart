@@ -1,19 +1,31 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+class PrettyTimeCombination {
+  String prettyDuration;
+  MaterialColor prettyColor;
+  DateTime referenceTime;
+}
+
 
 class PrettyDuration {
 
-  List<int> _durationList = [0, 0, 0]; // [days], [hours], [minutes]
-  String _prettyDuration;
+  List<int> _durationList = [0, 0, 0, 0]; // [days],[hours],[minutes],[seconds]
+  PrettyTimeCombination _prettyTime;
   String _header;
+  int _totalHours;
 
-  get getDuration => _prettyDuration;
-  get getDurationInMinutes => _durationList[1];
+  get getDuration => _prettyTime;
+  //get getDurationInMinutes => _durationList[1];  // TODO: delete? useless
 
   /// [header] is expected to be something like "METAR" or "TAFOR".
-  PrettyDuration({ @required Duration duration, @required String header}) {
+  PrettyDuration({ @required DateTime referenceTime, @required String header}) {
     _header = header;
+    var timeNow = DateTime.now().toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
+    var duration = timeNow.difference(referenceTime);
+    _totalHours = duration.inHours;
     _calculateDuration(duration);
-    _prettyDuration = _buildPrettyDuration();
+    _prettyTime = _buildPrettyDuration();
+    _prettyTime.referenceTime = referenceTime;
   }
 
   void _calculateDuration(Duration duration) {
@@ -26,13 +38,20 @@ class PrettyDuration {
       _durationList[1] = hours;
     }
 
+    
     final int minutes = duration.inMinutes % 60;
     if (minutes > 0) {
       _durationList[2] = minutes;
     }
+
+    final int seconds = duration.inSeconds % 60;
+    if (seconds > 0) {
+      _durationList[3] = seconds;
+    }
+
   }
 
-  String _buildPrettyDuration () {
+  PrettyTimeCombination _buildPrettyDuration () {
     String myResult = _header + " @ ";
     String finish = " ago";
 
@@ -77,7 +96,20 @@ class PrettyDuration {
       myResult += "just now";
     }
 
-    return myResult;
+    PrettyTimeCombination myTextAndColor = PrettyTimeCombination();
+    myTextAndColor.prettyDuration = myResult;
+
+    if (_totalHours < 2){
+      myTextAndColor.prettyColor = Colors.green;
+    }
+    else if (_totalHours >= 2 && _totalHours < 6){
+      myTextAndColor.prettyColor = Colors.orange;
+    }
+    else {
+      myTextAndColor.prettyColor = Colors.red;
+    }
+
+    return myTextAndColor;
   }
 
 }

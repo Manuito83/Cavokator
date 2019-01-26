@@ -22,6 +22,7 @@ class AirportTafor extends AirportWeather {
 
 class MetarTimes extends AirportWeather {
   var metarTimes = List<DateTime>();
+  String metarTimesId;
   bool error = false;
 }
 
@@ -51,6 +52,7 @@ class WxItemBuilder {
           final timeString = mets.metarTime;
           final thisTime = DateTime.parse(timeString).toUtc();
           _myMetarsTimes.metarTimes.add(thisTime);
+          _myMetarsTimes.metarTimesId = jsonWeatherList[i].airportIdIcao;
         } else {
           _myMetarsTimes.error = true;
         }

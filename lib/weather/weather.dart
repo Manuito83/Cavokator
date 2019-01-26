@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
+import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -16,6 +18,8 @@ class WeatherPage extends StatefulWidget {
 class _WeatherPageState extends State<WeatherPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
+
+  Timer _ticker;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
@@ -173,6 +177,8 @@ class _WeatherPageState extends State<WeatherPage> {
                           setState(() {
                             _apiCall = false;
                             _myWeatherList.clear();
+                            SharedPreferencesModel().setWeatherUserInput("");
+                            SharedPreferencesModel().setWeatherInformation("");
                             _myTextController.text = "";
                           });
                         },
@@ -218,7 +224,7 @@ class _WeatherPageState extends State<WeatherPage> {
             SliverStickyHeaderBuilder(
               builder: (context, state) {
                 return Padding(
-                  padding: EdgeInsets.only(top: 0), // TODO: get rid of this
+                  padding: EdgeInsets.only(top: 0),
                   child: Container(
                     margin: EdgeInsetsDirectional.only(bottom: 25),
                     height: 60.0,
@@ -267,37 +273,37 @@ class _WeatherPageState extends State<WeatherPage> {
                     }
 
                     if (item is MetarTimes){
-                      // TODO: BLOC with time ticker...??
-                      String metarTimeFinal;
-                      Color delayColor;
+                      PrettyTimeCombination metarTimeFinal;
+                      Color clockIconColor;
                       if (!item.error) {
                         try {
-                          var timeNow = DateTime(2019,1,2,11,30).toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
-                          var timeDifference = item.metarTimes[0].difference(timeNow);
-                          var myPrettyDuration = PrettyDuration(duration: timeDifference, header: "METAR");
+
+                          // TODO: what if time null in API??
+                          var myPrettyDuration = PrettyDuration(referenceTime: item.metarTimes[0], header: "METAR");
                           metarTimeFinal = myPrettyDuration.getDuration;
-                          delayColor = Colors.green[800]; // TODO: minutes, color...?
+                          clockIconColor = metarTimeFinal.prettyColor;
+
                         } catch (Exception) {
                           // TODO error
-                          delayColor = Colors.red;
+                          clockIconColor = Colors.red;
                         }
                       } else {
                         // TODO error
-                        delayColor = Colors.red;
+                        clockIconColor = Colors.red;
                       }
                       return ListTile(
                         title: Container(
                           child: Row(
                             children: <Widget>[
                               Icon(Icons.access_time,
-                                color: delayColor,
+                                color: clockIconColor,
                               ),
                               Padding(padding: EdgeInsets.only(right: 15)),
                               Flexible(
-                                child: Text(metarTimeFinal,
+                                child: Text(metarTimeFinal.prettyDuration, // _testMap[myKey].prettyDuration,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: delayColor,
+                                  color: metarTimeFinal.prettyColor,
                                   ),
                                 ),
                               ),
@@ -312,8 +318,6 @@ class _WeatherPageState extends State<WeatherPage> {
                         title: Text(item.taforTimes[0].toString()),
                       );
                     }
-
-
 
                   },
                   childCount: wxModel.wxModelList[i].airportWeather.length,
@@ -336,15 +340,48 @@ class _WeatherPageState extends State<WeatherPage> {
         );
       }
     }
+
     return mySections;
   }
+
+  void _updateTimes(){
+    print(DateTime.now());
+    if (_myWeatherList.isNotEmpty){
+          setState(() {
+            // This will trigger a refresh of weather times
+          });
+    }
+  }
+
 
   @override
   void initState() {
     super.initState();
 
+    SharedPreferencesModel().getWeatherInformation().then((onValue) {
+      setState(() {
+        _myTextController.text = onValue;
+      });
+    });
+
+    SharedPreferencesModel().getWeatherInformation().then((onValue) {
+      if (onValue.isNotEmpty){
+        setState(() {
+          _myWeatherList = wxJsonFromJson(onValue);
+        });
+      }
+    });
+
+    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
+
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
+  }
+
+  @override
+  void dispose(){
+    _ticker?.cancel();
+    super.dispose();
   }
 
   void _fetchButtonPressed(BuildContext context) {
@@ -422,6 +459,8 @@ class _WeatherPageState extends State<WeatherPage> {
         return null;
       }
       exportedJson = wxJsonFromJson(response.body);
+      SharedPreferencesModel().setWeatherInformation(response.body);
+      SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
     } catch (Exception) {
       return null;
     }
