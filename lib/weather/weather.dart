@@ -9,6 +9,7 @@ import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
+import 'package:cavokator_flutter/weather/wx_colorize.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -257,9 +258,10 @@ class _WeatherPageState extends State<WeatherPage> {
                     if (item is AirportMetar || item is AirportTafor){
                       String tileText;
                       if (item is AirportMetar){
-                        tileText = item.metars[0];
+                        tileText = item.metars[0];  // TODO: implement call to wx_colorize
+                        var test = MetarColorize(metar: item.metars[0]);  // TODO: test, delete
                       } else if (item is AirportTafor){
-                        tileText = item.tafors[0];
+                        tileText = item.tafors[0];  // TODO: implement call to wx_colorize
                       }
                       return ListTile(
                         title: Card(
@@ -358,7 +360,16 @@ class _WeatherPageState extends State<WeatherPage> {
   void initState() {
     super.initState();
 
-    SharedPreferencesModel().getWeatherInformation().then((onValue) {
+    _restoreSharedPreferences();
+
+    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
+
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
+  }
+
+  void _restoreSharedPreferences() {
+    SharedPreferencesModel().getWeatherUserInput().then((onValue) {
       setState(() {
         _myTextController.text = onValue;
       });
@@ -371,11 +382,6 @@ class _WeatherPageState extends State<WeatherPage> {
         });
       }
     });
-
-    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
-
-    _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onInputTextChange);
   }
 
   @override
