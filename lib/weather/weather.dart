@@ -255,20 +255,27 @@ class _WeatherPageState extends State<WeatherPage> {
                   (context, index) {
                     final item = wxModel.wxModelList[i].airportWeather[index];
 
+                    TextSpan testSpan;
                     if (item is AirportMetar || item is AirportTafor){
                       String tileText;
                       if (item is AirportMetar){
-                        tileText = item.metars[0];  // TODO: implement call to wx_colorize
-                        var test = MetarColorize(metar: item.metars[0]);  // TODO: test, delete
+                        //tileText = item.metars[0];  // TODO: implement call to wx_colorize
+
+                        var test = MetarColorize(metar: item.metars[0], context: context);  // TODO: test, delete
+                        testSpan = test.getResult;
+
                       } else if (item is AirportTafor){
-                        tileText = item.tafors[0];  // TODO: implement call to wx_colorize
+                        //tileText = item.tafors[0];  // TODO: implement call to wx_colorize
+
+                        var test = MetarColorize(metar: item.tafors[0], context: context);  // TODO: test, delete
+                        testSpan = test.getResult;
                       }
                       return ListTile(
                         title: Card(
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: Text(tileText),
+                            child: RichText(text: testSpan),
                           ),
                         ),
                       );
