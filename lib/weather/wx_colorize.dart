@@ -110,12 +110,12 @@ class MetarColorize {
     myContext = context;
     List<TextSpan> spanList = List<TextSpan>();
     var splittedMetar = metar.split(" ");
-
-    // RUNWAY CONDITION ASSESSMENT (METAR/SPECI)
-    var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
+    TextSpan thisSpan;
 
     for (var word in splittedMetar){
-      TextSpan thisSpan;
+
+      // CONDITION
+      var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
       if (conditionRegex.hasMatch(word)){
         thisSpan = TextSpan(
           text: word + " ",
@@ -124,13 +124,27 @@ class MetarColorize {
             _conditionDialog();
           }
         );
+        spanList.add(thisSpan);
+        break;
       }
-      else {
-        thisSpan = TextSpan(
-          text: word + " ",  // TODO: what happens if underline? Probably add more spans just for spaces
-          style: TextStyle(color: Colors.black),
-        );
+
+      // GOOD WEATHER
+      for (var goodWx in GoodWeather) {
+        if (word.contains(goodWx)) {
+          thisSpan = TextSpan(
+            text: word + " ",
+            style: TextStyle(color: Colors.green),
+          );
+          spanList.add(thisSpan);
+          break;
+        }
       }
+
+      // STANDARD (NOTHING FOUND)
+      thisSpan = TextSpan(
+        text: word + " ",  // TODO: what happens if underline? Probably add more spans just for spaces
+        style: TextStyle(color: Colors.black),
+      );
       spanList.add(thisSpan);
     }
 
