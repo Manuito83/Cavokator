@@ -40,38 +40,38 @@ class MetarColorize {
   ];
 
   List<String> RegularWeather = [
-    "[-]RA(([A-Z]+)|(\z))",                // -RA, -RA(whatever), including last word in string
-    "\sRA(([A-Z]+)|(\z))",                 // RA, RA(whatever), including last word in string
+    "-RA([A-Z]+|\z)?",                // -RA, -RA(whatever), including last word in string
+    "RA([A-Z]+|\z)?",                 // RA, RA(whatever), including last word in string
 
-    "\sSH(([A-Z]+)|(\z))",                 // SH, SH(whatever), including last word in string
-    "[-]SH(([A-Z]+)|(\z))",                // -SH, -SH(whatever), including last word in string
+    "SH([A-Z]+|\z)?",                 // SH, SH(whatever), including last word in string
+    "-SH([A-Z]+|\z)?",                // -SH, -SH(whatever), including last word in string
 
-    "[-]TS(([A-Z]+)|(\z))",                // -TS, -TS(whatever), including last word in string
-    "\sTS(([A-Z]+)|(\z))",                 // TS, TS(whatever), including last word in string
+    "-TS([A-Z]+|\z)?",                // -TS, -TS(whatever), including last word in string
+    "TS([A-Z]+|\z)?",                 // TS, TS(whatever), including last word in string
 
-    "[-]FZ(([A-Z]+)|(\z))",                // -FZ, -FZ(whatever), including last word in string
+    "-FZ([A-Z]+|\z)?",                // -FZ, -FZ(whatever), including last word in string
 
-    "[-]RA", "\sRA",                      // Rain
-    "[-]DZ", "\sDZ",                      // Drizzle
-    "[-]SG", "\sSG",                      // Snow Grains
-    "\sIC",                                // Ice Crystals
-    "[-]PE", "\sPE",                      // Ice Pellets
+    "-RA", "RA",                      // Rain
+    "-DZ", "DZ",                      // Drizzle
+    "-SG", "SG",                      // Snow Grains
+    "IC",                                // Ice Crystals
+    "-PE", "PE",                      // Ice Pellets
 
     "OVC003", "OVC004",                   // Cloud cover
     "BKN003", "BKN004",
 
-    "[-]SN", "DRSN", "DRSN",               // Snow
+    "-SN", "DRSN", "DRSN",               // Snow
 
-    "[-]GR", "\sGR",                      // Hail
-    "[-]GS", "\sGS",                      // Small Hail
+    "-GR", "GR",                      // Hail
+    "-GS", "GS",                      // Small Hail
 
-    "\sBR+(\s|\b)", "\sFU+(\s|\b)",       // Visibility
-    "\sDU+(\s|\b)", "\sSA+(\s|\b)",       // Visibility
-    "\sHZ+(\s|\b)", "\sPY+(\s|\b)",       // Visibility
+    "BR+", "FU+",       // Visibility
+    "DU+", "SA+",       // Visibility
+    "HZ+", "PY+",       // Visibility
     "VCFG", "MIFG", "PRFG", "BCFG",
     "DRDU", "BLDU", "DRSA", "BLSA", "BLPY",
 
-    "RERA", "VCSH", "VCTS", "\sSHRA"          // Some others
+    "RERA", "VCSH", "VCTS", "SHRA"          // Some others
   ];
 
 
@@ -113,6 +113,7 @@ class MetarColorize {
     TextSpan thisSpan;
 
     for (var word in splittedMetar){
+      bool found = false;
 
       // CONDITION
       var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
@@ -125,7 +126,7 @@ class MetarColorize {
           }
         );
         spanList.add(thisSpan);
-        break;
+        continue;
       }
 
       // GOOD WEATHER
@@ -139,6 +140,33 @@ class MetarColorize {
           break;
         }
       }
+
+      // REGULAR WEATHER  //TODO: CHECK REGULAR REGEX!!!!!
+      String regularString = RegularWeather.join("|");
+      var regularRegex = new RegExp(regularString);
+      if (regularRegex.hasMatch(word)){
+        thisSpan = TextSpan(
+            text: word + " ",
+            style: TextStyle(color: Colors.orange),
+        );
+        spanList.add(thisSpan);
+        continue;
+      }
+
+
+      /*
+      // BAD WEATHER
+      for (var badWx in BadWeather) {
+        if (word.contains(badWx)) {
+          thisSpan = TextSpan(
+            text: word + " ",
+            style: TextStyle(color: Colors.red),
+          );
+          spanList.add(thisSpan);
+          break;
+        }
+      }
+      */
 
       // STANDARD (NOTHING FOUND)
       thisSpan = TextSpan(
