@@ -40,38 +40,48 @@ class MetarColorize {
   ];
 
   List<String> RegularWeather = [
-    "-RA([A-Z]+|\z)?",                // -RA, -RA(whatever), including last word in string
-    "RA([A-Z]+|\z)?",                 // RA, RA(whatever), including last word in string
-
-    "SH([A-Z]+|\z)?",                 // SH, SH(whatever), including last word in string
-    "-SH([A-Z]+|\z)?",                // -SH, -SH(whatever), including last word in string
-
-    "-TS([A-Z]+|\z)?",                // -TS, -TS(whatever), including last word in string
-    "TS([A-Z]+|\z)?",                 // TS, TS(whatever), including last word in string
-
-    "-FZ([A-Z]+|\z)?",                // -FZ, -FZ(whatever), including last word in string
-
-    "-RA", "RA",                      // Rain
-    "-DZ", "DZ",                      // Drizzle
-    "-SG", "SG",                      // Snow Grains
-    "IC",                                // Ice Crystals
-    "-PE", "PE",                      // Ice Pellets
-
-    "OVC003", "OVC004",                   // Cloud cover
-    "BKN003", "BKN004",
-
-    "-SN", "DRSN", "DRSN",               // Snow
-
-    "-GR", "GR",                      // Hail
-    "-GS", "GS",                      // Small Hail
-
-    "BR+", "FU+",       // Visibility
-    "DU+", "SA+",       // Visibility
-    "HZ+", "PY+",       // Visibility
-    "VCFG", "MIFG", "PRFG", "BCFG",
-    "DRDU", "BLDU", "DRSA", "BLSA", "BLPY",
-
-    "RERA", "VCSH", "VCTS", "SHRA"          // Some others
+    r"(VC)([A-Z]+)",
+    r"^(?!\+)(SH|-SH)([A-Z]+)?",
+    r"^(?!\+)(MI|-MI)([A-Z]+)?",
+    r"^(?!\+)(BC|-BC)([A-Z]+)?",
+    r"^(?!\+)(PR|-PR)([A-Z]+)?",
+    r"^(?!\+)(DR|-DR)([A-Z]+)?",
+    r"^(?!\+)(BL|-BL)([A-Z]+)?",
+    r"^(?!\+)(TS|-TS)([A-Z]+)?",
+    r"^(?!\+)(FZ|-FZ)([A-Z]+)?",
+    r"^(?!\+)(DZ|-DZ)([A-Z]+)?",
+    r"^(?!\+)(RA|-RA)([A-Z]+)?",
+    r"^(?!\+)(SN|-SN)([A-Z]+)?",
+    r"^(?!\+)(SG|-SG)([A-Z]+)?",
+    r"^(?!\+)(PL|-PL)([A-Z]+)?",
+    r"^(?!\+)(GR|-GR)([A-Z]+)?",
+    r"^(?!\+)(GS|-GS)([A-Z]+)?",
+    r"^(?!\+)(UP|-UP)([A-Z]+)?",
+    r"^(?!\+)(SG|-SG)([A-Z]+)?",
+    r"^(?!\+)(BR|-BR)([A-Z]+)?",
+    r"^(?!\+)(FG|-FG)([A-Z]+)?",
+    r"^(?!\+)(FU|-FU)([A-Z]+)?",
+    r"^(?!\+)(VA|-VA)([A-Z]+)?",
+    r"^(?!\+)(DU|-DU)([A-Z]+)?",
+    r"^(?!\+)(SA|-SA)([A-Z]+)?",
+    r"^(?!\+)(HZ|-HZ)([A-Z]+)?",
+    r"^(?!\+)(PO|-PO)([A-Z]+)?",
+    r"^(?!\+)(SQ|-SQ)([A-Z]+)?",
+    r"^(?!\+)(FC|-FC)([A-Z]+)?",
+    r"^(?!\+)(SS|-SS)([A-Z]+)?",
+    r"^(?!\+)(DS|-DS)([A-Z]+)?",
+    r"OVC003",
+    r"OVC004",
+    r"OVC005",
+    r"OVC006",
+    r"OVC007",
+    r"OVC008",
+    r"BKN003",
+    r"BKN004",
+    r"BKN005",
+    r"BKN006",
+    r"BKN007",
+    r"BKN008",
   ];
 
 
@@ -113,7 +123,6 @@ class MetarColorize {
     TextSpan thisSpan;
 
     for (var word in splittedMetar){
-      bool found = false;
 
       // CONDITION
       var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
@@ -142,7 +151,6 @@ class MetarColorize {
       }
 
       // REGULAR WEATHER  //TODO: CHECK REGULAR REGEX!!!!!
-      // -RA([A-Z]+|\z)?|RA([A-Z]+|\z)?|SH([A-Z]+|\z)?|-SH([A-Z]+|\z)?|-TS([A-Z]+|\z)?|TS([A-Z]+|\z)?|-FZ([A-Z]+|\z)?|-RA|RA|-DZ|DZ|-SG|SG|IC|-PE|PE|OVC003|OVC004|BKN003|BKN004|-SN|DRSN|DRSN|-GR|GR|-GS|GS|BR|FU+|DU+|SA+|HZ+|PY+|VCFG|MIFG|PRFG|BCFG|DRDU|BLDU|DRSA|BLSA|BLPY|RERA|VCSH|VCTS|SHRA
       String regularString = RegularWeather.join("|");
       var regularRegex = new RegExp(regularString);
       if (regularRegex.hasMatch(word)){
