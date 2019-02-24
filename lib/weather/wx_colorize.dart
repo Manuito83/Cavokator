@@ -142,6 +142,7 @@ class MetarColorize {
       }
 
       // REGULAR WEATHER  //TODO: CHECK REGULAR REGEX!!!!!
+      // -RA([A-Z]+|\z)?|RA([A-Z]+|\z)?|SH([A-Z]+|\z)?|-SH([A-Z]+|\z)?|-TS([A-Z]+|\z)?|TS([A-Z]+|\z)?|-FZ([A-Z]+|\z)?|-RA|RA|-DZ|DZ|-SG|SG|IC|-PE|PE|OVC003|OVC004|BKN003|BKN004|-SN|DRSN|DRSN|-GR|GR|-GS|GS|BR|FU+|DU+|SA+|HZ+|PY+|VCFG|MIFG|PRFG|BCFG|DRDU|BLDU|DRSA|BLSA|BLPY|RERA|VCSH|VCTS|SHRA
       String regularString = RegularWeather.join("|");
       var regularRegex = new RegExp(regularString);
       if (regularRegex.hasMatch(word)){
