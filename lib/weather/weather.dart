@@ -10,6 +10,7 @@ import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/weather/wx_colorize.dart';
+import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -21,6 +22,8 @@ class _WeatherPageState extends State<WeatherPage> {
   final _myTextController = new TextEditingController();
 
   Timer _ticker;
+
+  bool _splitTaffor = true;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
@@ -255,27 +258,26 @@ class _WeatherPageState extends State<WeatherPage> {
                   (context, index) {
                     final item = wxModel.wxModelList[i].airportWeather[index];
 
-                    TextSpan testSpan;
+                    TextSpan wxSpan;
                     if (item is AirportMetar || item is AirportTafor){
-                      String tileText;
                       if (item is AirportMetar){
-                        //tileText = item.metars[0];  // TODO: implement call to wx_colorize
-
-                        var test = MetarColorize(metar: item.metars[0], context: context);  // TODO: test, delete
-                        testSpan = test.getResult;
-
+                        var myColorize = MetarColorize(metar: item.metars[0], context: context);
+                        wxSpan = myColorize.getResult;
                       } else if (item is AirportTafor){
-                        //tileText = item.tafors[0];  // TODO: implement call to wx_colorize
+                        var myTaforString = item.tafors[0];
+                        if (_splitTaffor){
+                          myTaforString = SplitTafor(taforString: myTaforString).getResult;
+                        }
+                        var myColorize = MetarColorize(metar: myTaforString, context: context);
+                        wxSpan = myColorize.getResult;
 
-                        var test = MetarColorize(metar: item.tafors[0], context: context);  // TODO: test, delete
-                        testSpan = test.getResult;
                       }
                       return ListTile(
                         title: Card(
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: RichText(text: testSpan),
+                            child: RichText(text: wxSpan),
                           ),
                         ),
                       );

@@ -119,10 +119,10 @@ class MetarColorize {
 
     myContext = context;
     List<TextSpan> spanList = List<TextSpan>();
-    var splittedMetar = metar.split(" ");
+    var splitMetar = metar.split(" ");
     TextSpan thisSpan;
 
-    for (var word in splittedMetar){
+    for (var word in splitMetar){
 
       // CONDITION
       var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
@@ -150,7 +150,7 @@ class MetarColorize {
         }
       }
 
-      // REGULAR WEATHER  //TODO: CHECK REGULAR REGEX!!!!!
+      // REGULAR WEATHER
       String regularString = RegularWeather.join("|");
       var regularRegex = new RegExp(regularString);
       if (regularRegex.hasMatch(word)){
@@ -164,7 +164,7 @@ class MetarColorize {
 
 
       /*
-      // BAD WEATHER
+      // BAD WEATHER // TODO: Implement this
       for (var badWx in BadWeather) {
         if (word.contains(badWx)) {
           thisSpan = TextSpan(
