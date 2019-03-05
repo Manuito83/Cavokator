@@ -23,7 +23,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
   Timer _ticker;
 
-  bool _splitTaffor = true;
+  bool _splitTafor = true;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
@@ -261,16 +261,35 @@ class _WeatherPageState extends State<WeatherPage> {
                     TextSpan wxSpan;
                     if (item is AirportMetar || item is AirportTafor){
                       if (item is AirportMetar){
-                        var myColorize = MetarColorize(metar: item.metars[0], context: context);
-                        wxSpan = myColorize.getResult;
+                        wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
                       } else if (item is AirportTafor){
                         var myTaforString = item.tafors[0];
-                        if (_splitTaffor){
-                          myTaforString = SplitTafor(taforString: myTaforString).getResult;
+                        if (_splitTafor){
+                          List<TextSpan> spanList = List<TextSpan>();
+                          List<String> splitList = SplitTafor(taforString: myTaforString).getResult;
+                          for (var split in splitList){
+                            if (split.contains("[/trend]")){
+                              var splitAgain = split.split("[/trend]");
+                              var firstSpan = TextSpan(
+                                text: splitAgain[0],
+                                style: TextStyle(color: Colors.blue),
+                              );
+                              var secondSpan = MetarColorize(metar: splitAgain[1], context: context).getResult;
+                              spanList.add(firstSpan);
+                              spanList.add(secondSpan);
+                            }
+                            else {
+                              spanList.add(MetarColorize(metar: split, context: context).getResult);
+                            }
+                          }
+                          wxSpan = TextSpan (
+                            children: spanList,
+                          );
                         }
-                        var myColorize = MetarColorize(metar: myTaforString, context: context);
-                        wxSpan = myColorize.getResult;
-
+                        else {
+                          // TODO: complete here
+                          wxSpan = MetarColorize(metar: myTaforString, context: context).getResult;
+                        }
                       }
                       return ListTile(
                         title: Card(

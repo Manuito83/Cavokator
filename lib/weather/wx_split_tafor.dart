@@ -3,17 +3,22 @@ import 'package:flutter/gestures.dart';
 
 class SplitTafor{
 
-  String _splitResult;
+  List<String> _splitResult = List<String>();
   get getResult => _splitResult;
 
   SplitTafor({@required String taforString}){
 
-    //var splitRegex = new RegExp(r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}");
-    //Iterable<Match> matches = splitRegex.allMatches(taforString);
-
-    _splitResult = taforString.splitMapJoin(RegExp(r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}", multiLine: true),
-      onMatch: (m) => '\n>> ${m.group(0)}',
+    var newString = taforString.splitMapJoin(RegExp(r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}", multiLine: true),
+      onMatch: (m) => '\n>>${m.group(0)}[/trend]',
       onNonMatch: (n) => n);
 
+    var listOfTrends = newString.split("\n>>");
+
+    for (var trend in listOfTrends){
+      if (trend.contains("[/trend]")){
+        trend = "\n >> " + trend;
+      }
+      _splitResult.add(trend);
+    }
   }
 }
