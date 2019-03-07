@@ -15,9 +15,6 @@ class SplitTafor{
     var listOfTrends = newString.split("\n>>");
 
     for (var trend in listOfTrends){
-      if (trend.contains("[/trend]")){
-        trend = "\n >> " + trend;
-      }
       _splitResult.add(trend);
     }
   }

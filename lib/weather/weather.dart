@@ -258,16 +258,19 @@ class _WeatherPageState extends State<WeatherPage> {
                   (context, index) {
                     final item = wxModel.wxModelList[i].airportWeather[index];
 
-                    TextSpan wxSpan;
                     if (item is AirportMetar || item is AirportTafor){
+                      TextSpan wxSpan;
+                      Widget myWeatherLineWidget;
                       if (item is AirportMetar){
                         wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
+                        myWeatherLineWidget = RichText(text: wxSpan);
                       } else if (item is AirportTafor){
                         var myTaforString = item.tafors[0];
+                        List<Widget> myWeatherRows = List<Widget>();
                         if (_splitTafor){
-                          List<TextSpan> spanList = List<TextSpan>();
                           List<String> splitList = SplitTafor(taforString: myTaforString).getResult;
                           for (var split in splitList){
+                            List<TextSpan> thisSpan = List<TextSpan>();
                             if (split.contains("[/trend]")){
                               var splitAgain = split.split("[/trend]");
                               var firstSpan = TextSpan(
@@ -275,20 +278,52 @@ class _WeatherPageState extends State<WeatherPage> {
                                 style: TextStyle(color: Colors.blue),
                               );
                               var secondSpan = MetarColorize(metar: splitAgain[1], context: context).getResult;
-                              spanList.add(firstSpan);
-                              spanList.add(secondSpan);
+                              thisSpan.add(firstSpan);
+                              thisSpan.add(secondSpan);
+                              myWeatherRows.add(
+                                Row(
+                                  children: [
+                                    Padding(padding: EdgeInsets.only(left: 8)),
+                                    Icon(Icons.play_arrow, color: Colors.blue),
+                                    Padding(padding: EdgeInsets.only(left: 2)),
+                                    Flexible(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: thisSpan
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              );
                             }
                             else {
-                              spanList.add(MetarColorize(metar: split, context: context).getResult);
+                              List<TextSpan> thisSpan = List<TextSpan>();
+                              thisSpan.add(MetarColorize(metar: split, context: context).getResult);
+                              myWeatherRows.add(
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: thisSpan,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
                             }
+                            myWeatherLineWidget = Column(
+                              children: myWeatherRows,
+                            );
+
                           }
-                          wxSpan = TextSpan (
-                            children: spanList,
-                          );
                         }
                         else {
-                          // TODO: complete here
+                          // TODO: is this OK?
                           wxSpan = MetarColorize(metar: myTaforString, context: context).getResult;
+                          myWeatherLineWidget = RichText(text: wxSpan);
                         }
                       }
                       return ListTile(
@@ -296,7 +331,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: RichText(text: wxSpan),
+                            child: myWeatherLineWidget,
                           ),
                         ),
                       );
