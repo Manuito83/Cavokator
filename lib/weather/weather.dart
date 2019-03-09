@@ -523,14 +523,37 @@ class _WeatherPageState extends State<WeatherPage> {
 
     List<WxJson> exportedJson;
     try {
-      final response = await http.post(url).timeout(Duration(seconds: 10));
+      final response = await http.post(url).timeout(Duration(seconds: 15));
       if (response.statusCode != 200) {
+        // TODO: this error is OK, but what about checking Internet connectivity as well??
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Oops! There was connection error!',
+                style: TextStyle(
+                  color: Colors.black,
+                )
+            ),
+            backgroundColor: Colors.red[100],
+          ),
+        );
         return null;
       }
       exportedJson = wxJsonFromJson(response.body);
       SharedPreferencesModel().setWeatherInformation(response.body);
       SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
     } catch (Exception) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Oops! There was connection error!',
+            style: TextStyle(
+              color: Colors.black,
+            )
+          ),
+          backgroundColor: Colors.red[100],
+        ),
+      );
       return null;
     }
     return exportedJson;

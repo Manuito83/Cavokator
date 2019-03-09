@@ -33,10 +33,10 @@ class MetarColorize {
   int _badRvr = 1500;
 
   List<String> GoodWeather = [
-    "CAVOK",
-    "NOSIG",
-    "NSC",
-    "00000KT"
+    r"CAVOK",
+    r"NOSIG",
+    r"NSC",
+    r"00000KT"
   ];
 
   List<String> RegularWeather = [
@@ -139,16 +139,17 @@ class MetarColorize {
       }
 
       // GOOD WEATHER
-      for (var goodWx in GoodWeather) {
-        if (word.contains(goodWx)) {
-          thisSpan = TextSpan(
-            text: word + " ",
-            style: TextStyle(color: Colors.green),
-          );
-          spanList.add(thisSpan);
-          break;
-        }
+      String goodString = GoodWeather.join("|");
+      var goodRegex = new RegExp(goodString);
+      if (goodRegex.hasMatch(word)){
+        thisSpan = TextSpan(
+          text: word + " ",
+          style: TextStyle(color: Colors.green),
+        );
+        spanList.add(thisSpan);
+        continue;
       }
+
 
       // REGULAR WEATHER
       String regularString = RegularWeather.join("|");

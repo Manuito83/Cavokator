@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/weather/weather.dart';
 import 'package:cavokator_flutter/notam/notam.dart';
@@ -21,6 +22,9 @@ class DrawerPage extends StatefulWidget {
 
 class _DrawerPageState extends State<DrawerPage> {
   int _selectedDrawerIndex = 0;
+
+  bool _themeLight = false;
+  String _themeString = "Light";
 
   _getDrawerItemWidget(int pos) {
     switch (pos) {
@@ -72,9 +76,38 @@ class _DrawerPageState extends State<DrawerPage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('CAVOKATOR'),
               decoration: BoxDecoration(
                 color: Colors.blue,
+              ),
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text('CAVOKATOR'),
+                    Text('CAVOKATOR 2'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Flexible(
+                          child: Text(_themeString),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 20),
+                        ),
+                        Flexible(
+                          child: Switch(
+                            value: _themeLight,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _themeLight = value;
+                                value == false ? _themeString = "LIGHT" : _themeString = "DARK";
+                              }); },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Column(children: drawerOptions)
