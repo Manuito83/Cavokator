@@ -100,7 +100,7 @@ class _DrawerPageState extends State<DrawerPage> {
                             onChanged: (bool value) {
                               setState(() {
                                 _themeLight = value;
-                                value == false ? _themeString = "LIGHT" : _themeString = "DARK";
+                                _themeString = (value == false) ? "LIGHT" : "DARK";
                               }); },
                           ),
                         ),
