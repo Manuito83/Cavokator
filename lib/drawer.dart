@@ -23,13 +23,15 @@ class DrawerPage extends StatefulWidget {
 class _DrawerPageState extends State<DrawerPage> {
   int _selectedDrawerIndex = 0;
 
-  bool _themeLight = false;
-  String _themeString = "Light";
+  bool _isThemeDark = false;
+  String _switchThemeString = "Dark";
 
   _getDrawerItemWidget(int pos) {
     switch (pos) {
       case 0:
-        return WeatherPage();
+        return WeatherPage(
+          isThemeDark: _isThemeDark,
+        );
       case 1:
         return NotamPage();
       default:
@@ -40,6 +42,13 @@ class _DrawerPageState extends State<DrawerPage> {
   _onSelectItem(int index) {
     setState(() => _selectedDrawerIndex = index);
     Navigator.of(context).pop();
+  }
+
+  _handleThemeChanged(bool newValue) {
+    setState(() {
+      _isThemeDark = newValue;
+      _switchThemeString = (newValue == false) ? "LIGHT" : "DARK";
+    });
   }
 
   @override
@@ -89,19 +98,17 @@ class _DrawerPageState extends State<DrawerPage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         Flexible(
-                          child: Text(_themeString),
+                          child: Text(_switchThemeString),
                         ),
                         Padding(
                           padding: EdgeInsets.only(left: 20),
                         ),
                         Flexible(
                           child: Switch(
-                            value: _themeLight,
+                            value: _isThemeDark,
                             onChanged: (bool value) {
-                              setState(() {
-                                _themeLight = value;
-                                _themeString = (value == false) ? "LIGHT" : "DARK";
-                              }); },
+                                _handleThemeChanged(value);
+                              },
                           ),
                         ),
                       ],

@@ -11,8 +11,14 @@ import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/weather/wx_colorize.dart';
 import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
+import 'package:cavokator_flutter/utils/theme_me.dart';
 
 class WeatherPage extends StatefulWidget {
+
+  WeatherPage({@required this.isThemeDark});
+
+  final bool isThemeDark;
+
   @override
   _WeatherPageState createState() => _WeatherPageState();
 }
@@ -63,7 +69,7 @@ class _WeatherPageState extends State<WeatherPage> {
     return SliverAppBar(
       iconTheme: new IconThemeData(color: Colors.black),
       title: Text(
-        "Weather",
+          "Weather",
         style: TextStyle(color: Colors.black),
       ),
       expandedHeight: 150,
@@ -106,7 +112,8 @@ class _WeatherPageState extends State<WeatherPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           border: Border.all(color: Colors.grey),
-          color: Colors.grey[200],
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
+          //color: Colors.grey[200],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
