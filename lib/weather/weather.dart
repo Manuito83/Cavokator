@@ -291,7 +291,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                 Row(
                                   children: [
                                     Padding(padding: EdgeInsets.only(left: 8)),
-                                    Icon(Icons.play_arrow, color: Colors.blue),
+                                    Icon(Icons.play_arrow, color: Colors.blue, size: 16,),
                                     Padding(padding: EdgeInsets.only(left: 2)),
                                     Flexible(
                                       child: RichText(
