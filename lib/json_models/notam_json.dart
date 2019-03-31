@@ -4,17 +4,17 @@
 
 import 'dart:convert';
 
-List<Welcome> welcomeFromJson(String str) {
+List<NotamJson> notamJsonFromJson(String str) {
   final jsonData = json.decode(str);
-  return new List<Welcome>.from(jsonData.map((x) => Welcome.fromJson(x)));
+  return new List<NotamJson>.from(jsonData.map((x) => NotamJson.fromJson(x)));
 }
 
-String welcomeToJson(List<Welcome> data) {
+String welcomeToJson(List<NotamJson> data) {
   final dyn = new List<dynamic>.from(data.map((x) => x.toJson()));
   return json.encode(dyn);
 }
 
-class Welcome {
+class NotamJson {
   String airportIdIcao;
   String airportIdIata;
   List<AirportNotam> airportNotam;
@@ -23,7 +23,7 @@ class Welcome {
   bool airportWithNoNotam;
   bool airportNotFound;
 
-  Welcome({
+  NotamJson({
     this.airportIdIcao,
     this.airportIdIata,
     this.airportNotam,
@@ -33,7 +33,7 @@ class Welcome {
     this.airportNotFound,
   });
 
-  factory Welcome.fromJson(Map<String, dynamic> json) => new Welcome(
+  factory NotamJson.fromJson(Map<String, dynamic> json) => new NotamJson(
     airportIdIcao: json["AirportIdIcao"],
     airportIdIata: json["AirportIdIata"],
     airportNotam: new List<AirportNotam>.from(json["AirportNotam"].map((x) => AirportNotam.fromJson(x))),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 import 'package:cavokator_flutter/private.dart';

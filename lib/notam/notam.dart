@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
-import 'package:cavokator_flutter/json_models/wx_json.dart'; // TODO: cambiar por NOTAMJson
+import 'package:cavokator_flutter/json_models/notam_json.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
+import 'package:cavokator_flutter/utils/shared_prefs.dart';
+import 'package:cavokator_flutter/private.dart';
 
 class NotamPage extends StatefulWidget {
 
@@ -19,7 +23,7 @@ class _NotamPageState extends State<NotamPage> {
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
-  List<WxJson> _myWeatherList = new List<WxJson>();
+  List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
 
   @override
@@ -43,12 +47,10 @@ class _NotamPageState extends State<NotamPage> {
     slivers.add(_myAppBar());
     slivers.add(_inputForm());
 
-    /*
-    var wxSect = _weatherSections();
-    for (var section in wxSect) {
+    var notamSect = _notamSections();
+    for (var section in notamSect) {
       slivers.add(section);
     }
-    */
 
     return slivers;
   }
@@ -57,7 +59,7 @@ class _NotamPageState extends State<NotamPage> {
     return SliverAppBar(
       iconTheme: new IconThemeData(color: Colors.black),
       title: Text(
-        "Weather",
+        "NOTAM",
         style: TextStyle(color: Colors.black),
       ),
       expandedHeight: 150,
@@ -67,7 +69,7 @@ class _NotamPageState extends State<NotamPage> {
         background: Container(
           decoration: new BoxDecoration(
             image: new DecorationImage(
-              image: new AssetImage('assets/images/weather_header.jpg'),
+              image: new AssetImage('assets/images/notam_header.jpg'),
               fit: BoxFit.fitWidth,
             ),
           ),
@@ -174,9 +176,9 @@ class _NotamPageState extends State<NotamPage> {
                         onPressed: () {
                           setState(() {
                             _apiCall = false;
-                            _myWeatherList.clear();
-                            //SharedPreferencesModel().setWeatherUserInput("");
-                            //SharedPreferencesModel().setWeatherInformation("");
+                            _myNotamList.clear();
+                            SharedPreferencesModel().setWeatherUserInput("");
+                            SharedPreferencesModel().setWeatherInformation("");
                             _myTextController.text = "";
                           });
                         },
@@ -192,13 +194,74 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
+  List<Widget> _notamSections() {
+    List<Widget> mySections = List<Widget>();
+
+    if (_apiCall) {
+      mySections.add(
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+                (context, index) =>
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsetsDirectional.only(top: 50),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ],
+                ),
+            childCount: 1,
+          ),
+        ),
+      );
+    } else {
+      if (_myNotamList.isNotEmpty) {
+
+      }
+      else {
+        mySections.add(
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (context, index) => Container(),
+              childCount: 1,
+            ),
+          ),
+        );
+      }
+    }
+
+    return mySections;
+  }
+
   @override
   void initState() {
-    //super.initState();
+    super.initState();
 
-    //_myCurrentSubmitText = _myTextController.text;
-    //_myTextController.addListener(onSubmitTextChange);
+    _restoreSharedPreferences();
+
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
   }
+
+
+  void _restoreSharedPreferences() {
+    SharedPreferencesModel().getNotamUserInput().then((onValue) {
+
+      setState(() {
+        _myTextController.text = onValue;
+      });
+    });
+
+    SharedPreferencesModel().getNotamInformation().then((onValue) {
+      if (onValue.isNotEmpty){
+        setState(() {
+          _myNotamList = notamJsonFromJson(onValue);
+        });
+      }
+    });
+  }
+
 
   void _fetchButtonPressed(BuildContext context) {
     _myRequestedAirports.clear();
@@ -206,22 +269,22 @@ class _NotamPageState extends State<NotamPage> {
     if (_formKey.currentState.validate()) {
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fetching weather, hold short!'),
+          content: Text('Fetching NOTAMS, hold position!'),
         ),
       );
       setState(() {
         _apiCall = true;
       });
-      /*
-      _callWeatherApi().then((weatherJson) {
+
+      _callNotamApi().then((weatherJson) {
         setState(() {
           _apiCall = false;
           if (weatherJson != null) {
-            _myWeatherList = weatherJson;
+            _myNotamList = weatherJson;
           }
         });
       });
-      */
+
     }
     FocusScope.of(context).requestFocus(new FocusNode());
   }
@@ -252,5 +315,65 @@ class _NotamPageState extends State<NotamPage> {
     }
     _userSubmitText = textEntered;
   }
+
+  Future<List<NotamJson>> _callNotamApi() async {
+    String allAirports = "";
+    if (_myRequestedAirports.isNotEmpty) {
+      for (var i = 0; i < _myRequestedAirports.length; i++) {
+        if (i != _myRequestedAirports.length - 1) {
+          allAirports += _myRequestedAirports[i] + ",";
+        } else {
+          allAirports += _myRequestedAirports[i];
+        }
+      }
+    }
+
+    String server = PrivateVariables.apiURL;
+    String api = "Notam/GetNotam?";
+    String source = "source=Cavokator";
+    String airports = "&airports=$allAirports";
+    String url = server + api + source + airports;
+
+    List<NotamJson> exportedJson;
+    try {
+      final response = await http.post(url).timeout(Duration(seconds: 15));
+      if (response.statusCode != 200) {
+        // TODO: this error is OK, but what about checking Internet connectivity as well??
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Oops! There was connection error!',
+                style: TextStyle(
+                  color: Colors.black,
+                )
+            ),
+            backgroundColor: Colors.red[100],
+          ),
+        );
+        return null;
+      }
+      exportedJson = notamJsonFromJson(response.body);
+      SharedPreferencesModel().setNotamInformation(response.body);
+      SharedPreferencesModel().setNotamInformation(_userSubmitText);
+    } catch (Exception) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Oops! There was connection error!',
+              style: TextStyle(
+                color: Colors.black,
+              )
+          ),
+          backgroundColor: Colors.red[100],
+        ),
+      );
+      return null;
+    }
+    return exportedJson;
+  }
+
+
+
+
 
 }
