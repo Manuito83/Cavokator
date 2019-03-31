@@ -33,7 +33,9 @@ class _DrawerPageState extends State<DrawerPage> {
           isThemeDark: _isThemeDark,
         );
       case 1:
-        return NotamPage();
+        return NotamPage(
+          isThemeDark: _isThemeDark,
+        );
       default:
         return new Text("Error");
     }
