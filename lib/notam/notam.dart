@@ -6,6 +6,7 @@ import 'package:cavokator_flutter/json_models/notam_json.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/private.dart';
+import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 
 class NotamPage extends StatefulWidget {
 
@@ -217,6 +218,12 @@ class _NotamPageState extends State<NotamPage> {
       );
     } else {
       if (_myNotamList.isNotEmpty) {
+        var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList);
+        var notamModel = notamBuilder.result;
+
+
+
+
 
       }
       else {
