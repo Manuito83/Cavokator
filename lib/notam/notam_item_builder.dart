@@ -7,11 +7,15 @@ class NotamModelList {
 class NotamModel {
   String airportHeading;
   var airportNotams = List<AirportNotam>();
+
+  bool airportWithNoNotam = false;
+  bool airportNotFound = false;
 }
 
 class AirportNotam {
-  String Id;
+  String id;
   String freeText;
+  String raw;
 }
 
 class NotamItemBuilder {
@@ -23,14 +27,26 @@ class NotamItemBuilder {
     for (var i = 0; i < jsonNotamList.length; i++) {
       var notamModel = NotamModel();
 
-      for (var j = 0; j < jsonNotamList[i].airportNotam.length; j++) {
-        var _thisNotam = AirportNotam();
-        _thisNotam.Id = jsonNotamList[i].airportNotam[j].notamId;
-        _thisNotam.freeText = jsonNotamList[i].airportNotam[j].notamFreeText;
-
-        notamModel.airportNotams.add(_thisNotam);
+      if (jsonNotamList[i].airportNotFound) {
+        notamModel.airportNotFound = true;
       }
-      
+      else if (jsonNotamList[i].airportWithNoNotam) {
+        notamModel.airportWithNoNotam = true;
+      }
+      else if (jsonNotamList[i].notamCount > 0) {
+        for (var j = 0; j < jsonNotamList[i].airportNotam.length; j++) {
+          var _thisNotam = AirportNotam();
+          _thisNotam.id = jsonNotamList[i].airportNotam[j].notamId;
+          _thisNotam.freeText = jsonNotamList[i].airportNotam[j].notamFreeText;
+          _thisNotam.raw = jsonNotamList[i].airportNotam[j].notamRaw;
+
+          notamModel.airportNotams.add(_thisNotam);
+        }
+      }
+      else {
+        // TODO: no notams!
+      }
+
       notamModel.airportHeading = jsonNotamList[i].fullAirportDetails.name;
       result.notamModelList.add(notamModel);
     }

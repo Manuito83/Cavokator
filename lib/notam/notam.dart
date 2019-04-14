@@ -7,6 +7,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/notam/notam_item_builder.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 class NotamPage extends StatefulWidget {
 
@@ -220,6 +221,73 @@ class _NotamPageState extends State<NotamPage> {
       if (_myNotamList.isNotEmpty) {
         var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList);
         var notamModel = notamBuilder.result;
+
+        for (var i = 0; i < notamModel.notamModelList.length; i++) {
+          // TODO: include airportNotFound and airportWithNoNotam including other cards
+
+
+          var airportName =
+              notamModel.notamModelList[i].airportHeading == null ?
+              _myRequestedAirports[i].toUpperCase() :
+              notamModel.notamModelList[i].airportHeading;
+
+          mySections.add(
+            SliverStickyHeaderBuilder(
+              builder: (context, state) {
+                return Padding(
+                  padding: EdgeInsets.only(top: 0),
+                  child: Container(
+                    margin: EdgeInsetsDirectional.only(bottom: 25),
+                    height: 60.0,
+                    color: (state.isPinned ? Colors.red[300] : Colors.lightBlue)
+                        .withOpacity(1.0 - state.scrollPercentage),
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.local_airport, color: Colors.white),
+                        Padding(
+                          padding: EdgeInsetsDirectional.only(end: 15),
+                        ),
+                        Flexible(
+                          child: Text(
+                            airportName,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                    final item = notamModel.notamModelList[i].airportNotams[index];
+                    final notamText = item.freeText;
+
+                    return ListTile(
+                      title: Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                          child: Text(notamText),
+                        ),
+                      ),
+                    );
+
+
+
+                  },
+                  childCount: notamModel.notamModelList[i].airportNotams.length,
+                ),
+              ),
+            ),
+          );
+          mySections.add(
+            SliverPadding(padding: EdgeInsetsDirectional.only(bottom: 80)),
+          );
+        }
 
 
 
