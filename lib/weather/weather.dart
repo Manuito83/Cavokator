@@ -262,6 +262,9 @@ class _WeatherPageState extends State<WeatherPage> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
+
+                    // TODO: errors need to be implemented! (ej: LECS/CUAC)
+
                     final item = wxModel.wxModelList[i].airportWeather[index];
 
                     if (item is AirportMetar || item is AirportTafor){
@@ -396,8 +399,19 @@ class _WeatherPageState extends State<WeatherPage> {
               ),
             ),
           );
+          // We need to add another sliver to give extra space
+          // SliverPadding results in weird header behaviour, so we
+          // use a Container with margin here
           mySections.add(
-            SliverPadding(padding: EdgeInsetsDirectional.only(bottom: 80)),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) => Container(
+                  margin: EdgeInsets.only(bottom: 80),
+                ),
+                childCount: 1,
+              ),
+            ),
+            //SliverPadding(padding: EdgeInsetsDirectional.only(top: 80)),
           );
         }
       } else {

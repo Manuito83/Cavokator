@@ -223,13 +223,19 @@ class _NotamPageState extends State<NotamPage> {
         var notamModel = notamBuilder.result;
 
         for (var i = 0; i < notamModel.notamModelList.length; i++) {
-          // TODO: include airportNotFound and airportWithNoNotam including other cards
-
 
           var airportName =
               notamModel.notamModelList[i].airportHeading == null ?
               _myRequestedAirports[i].toUpperCase() :
               notamModel.notamModelList[i].airportHeading;
+
+          int thisChildCount;
+          if (notamModel.notamModelList[i].airportNotams.length == 0) {
+            thisChildCount = 1;
+          }
+          else {
+            thisChildCount = notamModel.notamModelList[i].airportNotams.length;
+          }
 
           mySections.add(
             SliverStickyHeaderBuilder(
@@ -261,40 +267,74 @@ class _NotamPageState extends State<NotamPage> {
                 );
               },
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final item = notamModel.notamModelList[i].airportNotams[index];
-                    final notamText = item.freeText;
-
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  if (notamModel.notamModelList[i].airportNotFound) {
                     return ListTile(
                       title: Card(
                         elevation: 2,
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                          child: Text(notamText),
+                          child: RichText(
+                            text: TextSpan(
+                              text: "Airport not found!",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
                         ),
                       ),
                     );
-
-
-
-                  },
-                  childCount: notamModel.notamModelList[i].airportNotams.length,
+                  }
+                  else if (notamModel.notamModelList[i].airportWithNoNotam) {
+                    return ListTile(
+                      title: Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                          child: RichText(
+                            text: TextSpan(
+                              text: "No NOTAM published here!",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  else {
+                    final item = notamModel.notamModelList[i].airportNotams[index];
+                    final notamFreeText = item.freeText;
+                    return ListTile(
+                      title: Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                          child: Text(notamFreeText),
+                        ),
+                      ),
+                    );
+                  }
+                },
+                childCount: thisChildCount,
                 ),
               ),
             ),
           );
+          // We need to add another sliver to give extra space
+          // SliverPadding results in weird header behaviour, so we
+          // use a Container with margin here
           mySections.add(
-            SliverPadding(padding: EdgeInsetsDirectional.only(bottom: 80)),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) => Container(
+                      margin: EdgeInsets.only(bottom: 80),
+                    ),
+                childCount: 1,
+              ),
+            ),
+            //SliverPadding(padding: EdgeInsetsDirectional.only(top: 80)),
           );
         }
-
-
-
-
-
-      }
-      else {
+      } else {
         mySections.add(
           SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -319,14 +359,13 @@ class _NotamPageState extends State<NotamPage> {
     _myTextController.addListener(onInputTextChange);
   }
 
-
   void _restoreSharedPreferences() {
     SharedPreferencesModel().getNotamUserInput().then((onValue) {
-
       setState(() {
         _myTextController.text = onValue;
       });
     });
+
 
     SharedPreferencesModel().getNotamInformation().then((onValue) {
       if (onValue.isNotEmpty){
@@ -335,6 +374,7 @@ class _NotamPageState extends State<NotamPage> {
         });
       }
     });
+
   }
 
 
@@ -356,6 +396,19 @@ class _NotamPageState extends State<NotamPage> {
           _apiCall = false;
           if (weatherJson != null) {
             _myNotamList = weatherJson;
+
+            // Sorting list, because it might not be sorted from the API
+            var newList = List<NotamJson>();
+            for (var i = 0; i < _myRequestedAirports.length; i++) {
+              for (var n in _myNotamList) {
+                if (_myRequestedAirports[i].toUpperCase() == n.airportIdIata ||
+                    _myRequestedAirports[i].toUpperCase() == n.airportIdIcao) {
+                  newList.add(n);
+                  break;
+                }
+              }
+            }
+            _myNotamList = newList;
           }
         });
       });
@@ -429,7 +482,7 @@ class _NotamPageState extends State<NotamPage> {
       }
       exportedJson = notamJsonFromJson(response.body);
       SharedPreferencesModel().setNotamInformation(response.body);
-      SharedPreferencesModel().setNotamInformation(_userSubmitText);
+      SharedPreferencesModel().setNotamUserInput(_userSubmitText);
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(
         SnackBar(
@@ -446,9 +499,5 @@ class _NotamPageState extends State<NotamPage> {
     }
     return exportedJson;
   }
-
-
-
-
 
 }

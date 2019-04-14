@@ -9,7 +9,7 @@ List<NotamJson> notamJsonFromJson(String str) {
   return new List<NotamJson>.from(jsonData.map((x) => NotamJson.fromJson(x)));
 }
 
-String welcomeToJson(List<NotamJson> data) {
+String notamJsonToJson(List<NotamJson> data) {
   final dyn = new List<dynamic>.from(data.map((x) => x.toJson()));
   return json.encode(dyn);
 }
@@ -34,8 +34,8 @@ class NotamJson {
   });
 
   factory NotamJson.fromJson(Map<String, dynamic> json) => new NotamJson(
-    airportIdIcao: json["AirportIdIcao"] == null ? null : json["AirportIcao"],
-    airportIdIata: json["AirportIdIata"] == null ? null : json["AirportIata"],
+    airportIdIcao: json["AirportIdIcao"] == null ? null : json["AirportIdIcao"],
+    airportIdIata: json["AirportIdIata"] == null ? null : json["AirportIdIata"],
     airportNotam: json["AirportNotam"] == null ? null : new List<AirportNotam>.from(json["AirportNotam"].map((x) => AirportNotam.fromJson(x))),
     fullAirportDetails: json["FullAirportDetails"] == null ? null: FullAirportDetails.fromJson(json["FullAirportDetails"]),
     notamCount: json["NotamCount"]  == null ? null : json["NotamCount"],
