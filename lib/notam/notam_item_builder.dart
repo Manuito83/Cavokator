@@ -62,7 +62,7 @@ class NotamItemBuilder {
           var currentNotamCategory = jsonNotamList[i].airportNotam[n].categoryPrimary;
           if (currentNotamCategory == "Warnings") {
             categoryW.add(n);
-          } else if (currentNotamCategory == "Lightning facilities") {
+          } else if (currentNotamCategory == "Lighting facilities") {
             categoryL.add(n);
           } else if (currentNotamCategory == "Movement and landing area") {
             categoryM.add(n);
@@ -136,18 +136,23 @@ class NotamItemBuilder {
         }
 
         // TODO: add conditional here for sorting NOTAMS
-        // TODO: try JFK, categories not properly sorted (no category)
+        // TODO: careful if NotamQ = false! here and elsewhere
         var finalNotamItemList = List<AirportNotam>();
         finalNotamItemList = sortedNotamList;
         // ELSE --> finalNotamItemList = jsonNotamList[i].airportNotam;
 
+        // We will compare against this variable
         var currentCategory = "";
+
         for (var j = 0; j < finalNotamItemList.length; j++) {
 
           var categoryToBeAdded = NotamCategory();
+
+          // We are adding a name in case there is no category
           if (finalNotamItemList[j].categoryPrimary == "") {
             finalNotamItemList[j].categoryPrimary = "(no category)";
           }
+
           if (finalNotamItemList[j].categoryPrimary != currentCategory) {
             currentCategory = finalNotamItemList[j].categoryPrimary;
             categoryToBeAdded.mainCategory = finalNotamItemList[j].categoryPrimary;

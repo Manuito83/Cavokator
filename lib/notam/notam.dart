@@ -315,37 +315,7 @@ class _NotamPageState extends State<NotamPage> {
                     }
                     else if (item is NotamCategory) {
                       return ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Card(
-                              margin: EdgeInsets.only(top: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                side: BorderSide(
-                                  color: Colors.deepPurple,
-                                  width: 2,
-                                ),
-                              ),
-                              elevation: 2,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget> [
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
-                                  ),
-                                  Flexible(
-                                    child: Text(item.mainCategory),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 20, 20, 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                        title: notamCategoryCard(item),
                       );
                     }
                   }
@@ -418,6 +388,45 @@ class _NotamPageState extends State<NotamPage> {
       ],
     );
   }
+
+  Widget notamCategoryCard (NotamCategory thisCategory) {
+
+    final category = thisCategory.mainCategory;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Card(
+          margin: EdgeInsets.only(top: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(
+              color: Colors.deepPurple,
+              width: 2,
+            ),
+          ),
+          elevation: 2,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget> [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
+              ),
+              Flexible(
+                child: Text(category),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 20, 20, 20),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
 
   @override
   void initState() {
