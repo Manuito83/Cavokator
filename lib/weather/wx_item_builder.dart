@@ -1,7 +1,6 @@
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 
-class WxModelList
-{
+class WxModelList {
   var wxModelList = List<WxModel>();
 }
 

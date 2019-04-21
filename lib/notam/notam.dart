@@ -302,16 +302,52 @@ class _NotamPageState extends State<NotamPage> {
                   }
                   else {
                     final item = notamModel.notamModelList[i].airportNotams[index];
-                    final notamFreeText = item.freeText;
-                    return ListTile(
-                      title: Card(
-                        elevation: 2,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                          child: Text(notamFreeText),
+                    if (item is NotamSingle){
+                      return ListTile(
+                        title: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                            child: notamSingleCard(item),
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    else if (item is NotamCategory) {
+                      return ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Card(
+                              margin: EdgeInsets.only(top: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                side: BorderSide(
+                                  color: Colors.deepPurple,
+                                  width: 2,
+                                ),
+                              ),
+                              elevation: 2,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget> [
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
+                                  ),
+                                  Flexible(
+                                    child: Text(item.mainCategory),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 20, 20, 20),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   }
                 },
                 childCount: thisChildCount,
@@ -347,6 +383,40 @@ class _NotamPageState extends State<NotamPage> {
     }
 
     return mySections;
+  }
+
+  Widget notamSingleCard (NotamSingle thisNotam) {
+
+    final notamId = thisNotam.id;
+    final notamFreeText = thisNotam.freeText;
+
+    return Column(
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              notamId,
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+                fontSize: 16,
+              ),
+            ),
+            Text("lala"),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+        ),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(notamFreeText),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
