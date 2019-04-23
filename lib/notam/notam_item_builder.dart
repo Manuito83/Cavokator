@@ -23,6 +23,9 @@ class NotamSingle extends NotamGeneric {
   String id;
   String freeText;
   String raw;
+  double latitude;
+  double longitude;
+  int radius;
 }
 
 class NotamItemBuilder {
@@ -164,6 +167,9 @@ class NotamItemBuilder {
           _thisNotam.id = finalNotamItemList[j].notamId;
           _thisNotam.freeText = finalNotamItemList[j].notamFreeText;
           _thisNotam.raw = finalNotamItemList[j].notamRaw;
+          _thisNotam.latitude = finalNotamItemList[j].latitude;
+          _thisNotam.longitude = finalNotamItemList[j].longitude;
+          _thisNotam.radius = finalNotamItemList[j].radius;
 
           notamModel.airportNotams.add(_thisNotam);
         }

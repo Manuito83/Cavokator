@@ -360,6 +360,19 @@ class _NotamPageState extends State<NotamPage> {
     final notamId = thisNotam.id;
     final notamFreeText = thisNotam.freeText;
 
+    Widget myMap;
+    if (thisNotam.latitude != null) {
+      myMap = IconButton(
+        icon: Icon(Icons.map),
+        color: Colors.black,
+        onPressed: () {
+          // TODO: https://pub.dartlang.org/packages/url_launcher
+        },
+      );
+    } else {
+      myMap = Text("");
+    }
+
     return Column(
       children: <Widget>[
         Row(
@@ -372,7 +385,7 @@ class _NotamPageState extends State<NotamPage> {
                 fontSize: 16,
               ),
             ),
-            Text("lala"),
+            myMap,
           ],
         ),
         Padding(
