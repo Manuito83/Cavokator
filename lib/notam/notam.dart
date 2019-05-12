@@ -366,7 +366,7 @@ class _NotamPageState extends State<NotamPage> {
         icon: Icon(Icons.map),
         color: Colors.black,
         onPressed: () {
-          // TODO: https://pub.dartlang.org/packages/url_launcher
+          // TODO: https://medium.com/flutter-io/google-maps-and-flutter-cfb330f9a245
         },
       );
     } else {
