@@ -8,6 +8,7 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class NotamPage extends StatefulWidget {
 
@@ -27,6 +28,12 @@ class _NotamPageState extends State<NotamPage> {
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
+
+  // Google Maps API
+  Completer<GoogleMapController> _controller = Completer();
+  void _onMapCreated(GoogleMapController controller) {
+    _controller.complete(controller);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -366,6 +373,7 @@ class _NotamPageState extends State<NotamPage> {
         icon: Icon(Icons.map),
         color: Colors.black,
         onPressed: () {
+          _showMap();
           // TODO: https://pub.dartlang.org/packages/url_launcher
         },
       );
@@ -591,5 +599,36 @@ class _NotamPageState extends State<NotamPage> {
     }
     return exportedJson;
   }
+
+
+  Future<void> _showMap() async {
+    const LatLng _center = const LatLng(45.521563, -122.677433);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(5),
+          title: Text('Rewind and remember'),
+          content: GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _center,
+              zoom: 11.0,
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Nice!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
 }

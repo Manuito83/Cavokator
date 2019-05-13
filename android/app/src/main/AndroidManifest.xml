@@ -16,6 +16,8 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="cavokator_flutter"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+                   android:value="AIzaSyC2r0K_S7hTT1jQw2PQNxPpSnXMKy88hDA"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
