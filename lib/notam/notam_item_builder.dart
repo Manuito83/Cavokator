@@ -21,6 +21,8 @@ class NotamCategory extends NotamGeneric {
 class NotamSingle extends NotamGeneric {
   String mainCategory;
   String id;
+  String categorySubMain;
+  String categorySubSecondary;
   String freeText;
   String raw;
   double latitude;
@@ -165,6 +167,8 @@ class NotamItemBuilder {
           var _thisNotam = NotamSingle();
           _thisNotam.mainCategory = finalNotamItemList[j].categoryPrimary;
           _thisNotam.id = finalNotamItemList[j].notamId;
+          _thisNotam.categorySubMain = finalNotamItemList[j].categorySubMain;
+          _thisNotam.categorySubSecondary = finalNotamItemList[j].categorySubSecondary;
           _thisNotam.freeText = finalNotamItemList[j].notamFreeText;
           _thisNotam.raw = finalNotamItemList[j].notamRaw;
           _thisNotam.latitude = finalNotamItemList[j].latitude;

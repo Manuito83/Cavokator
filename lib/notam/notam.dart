@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -362,58 +363,8 @@ class _NotamPageState extends State<NotamPage> {
     return mySections;
   }
 
-  Widget notamSingleCard (NotamSingle thisNotam) {
-
-    final notamId = thisNotam.id;
-    final notamFreeText = thisNotam.freeText;
-
-    Widget myMap;
-    if (thisNotam.latitude != null) {
-      myMap = IconButton(
-        icon: Icon(Icons.map),
-        color: Colors.black,
-        onPressed: () {
-          _showMap();
-          // TODO: https://pub.dartlang.org/packages/url_launcher
-        },
-      );
-    } else {
-      myMap = Text("");
-    }
-
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(
-              notamId,
-              style: TextStyle(
-                decoration: TextDecoration.underline,
-                fontSize: 16,
-              ),
-            ),
-            myMap,
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-        ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Text(notamFreeText),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget notamCategoryCard (NotamCategory thisCategory) {
-
     final category = thisCategory.mainCategory;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
@@ -447,7 +398,112 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
+  Widget notamSingleCard (NotamSingle thisNotam) {
 
+    final notamId = thisNotam.id;
+    final notamCategorySubMain = thisNotam.categorySubMain;
+    final notamCategorySubSecondary = thisNotam.categorySubSecondary;
+    final notamFreeText = thisNotam.freeText;
+    final notamMainCategory = thisNotam.mainCategory;
+
+    Widget myMapWidget;
+    if (thisNotam.latitude != null) {
+      myMapWidget = IconButton(
+        icon: Icon(Icons.map),
+        color: Colors.black,
+        onPressed: () {
+          _showMap();
+        },
+      );
+    } else {
+      myMapWidget = SizedBox.shrink();
+    }
+
+    Widget subCategoriesWidget;
+    if (thisNotam.categorySubMain != "" && thisNotam.categorySubSecondary != "") {
+      subCategoriesWidget = Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(notamCategorySubMain,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(Icons.play_arrow,
+                      color: Colors.black,
+                      size: 12,
+                    ),
+                  ),
+                  Text(notamCategorySubSecondary,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else if (thisNotam.categorySubMain != "") {
+      subCategoriesWidget = Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: <Widget>[
+            Text(notamCategorySubMain,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      subCategoriesWidget = SizedBox.shrink();
+    }
+
+    return Column(
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              notamId,
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+                fontSize: 16,
+              ),
+            ),
+            myMapWidget,
+          ],
+        ),
+        subCategoriesWidget,
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(notamFreeText),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   void initState() {
@@ -476,7 +532,6 @@ class _NotamPageState extends State<NotamPage> {
     });
 
   }
-
 
   void _fetchButtonPressed(BuildContext context) {
     _myRequestedAirports.clear();
@@ -599,7 +654,6 @@ class _NotamPageState extends State<NotamPage> {
     }
     return exportedJson;
   }
-
 
   Future<void> _showMap() async {
     const LatLng _center = const LatLng(45.521563, -122.677433);
