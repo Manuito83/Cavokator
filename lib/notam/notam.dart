@@ -10,12 +10,13 @@ import 'package:cavokator_flutter/private.dart';
 import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 
 class NotamPage extends StatefulWidget {
+  // TODO: BUG: try SVQ+JFK. Switch to WX page. Back to NOTAM. Order is opposite.
+  final bool isThemeDark;
 
   NotamPage({@required this.isThemeDark});
-
-  final bool isThemeDark;
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -25,17 +26,34 @@ class _NotamPageState extends State<NotamPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
 
-  ScrollController _scrollController;
-
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
 
   // Google Maps API
-  Completer<GoogleMapController> _controller = Completer();
+  Completer<GoogleMapController> _mapsController = Completer();
   void _onMapCreated(GoogleMapController controller) {
-    _controller.complete(controller);
+    _mapsController.complete(controller);
+  }
+
+  AutoScrollController _scrollController;
+  final _scrollDirection = Axis.vertical;
+  int _scrollCounter = -1;
+  int _scrollTotal = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreSharedPreferences();
+
+    _scrollController = AutoScrollController(
+      viewportBoundaryGetter: () => Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
+      axis: _scrollDirection,
+    );
+
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
   }
 
   @override
@@ -90,24 +108,22 @@ class _NotamPageState extends State<NotamPage> {
       ),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.access_alarm),
+          icon: Icon(Icons.keyboard_arrow_up),
           color: Colors.black,
-          onPressed: () {
-            _scrollController.animateTo(0,
-                curve: Curves.linear, duration: Duration (milliseconds: 500));
-            // TEST
-          },
+          onPressed: _scrollToIndex
         ),
         IconButton(
-          icon: Icon(Icons.clear),
+          icon: Icon(Icons.settings),
           color: Colors.black,
           onPressed: () {
-            // TEST
           },
         ),
       ],
     );
   }
+
+
+
 
   Widget _inputForm() {
     return CustomSliverSection(
@@ -192,6 +208,7 @@ class _NotamPageState extends State<NotamPage> {
                           setState(() {
                             _apiCall = false;
                             _myNotamList.clear();
+                            _scrollTotal = 0;
                             SharedPreferencesModel().setWeatherUserInput("");
                             SharedPreferencesModel().setWeatherInformation("");
                             _myTextController.text = "";
@@ -215,17 +232,16 @@ class _NotamPageState extends State<NotamPage> {
     if (_apiCall) {
       mySections.add(
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-                (context, index) =>
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsetsDirectional.only(top: 50),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ],
+          delegate: SliverChildBuilderDelegate((context, index) =>
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsetsDirectional.only(top: 50),
+                  child: CircularProgressIndicator(),
                 ),
+              ],
+            ),
             childCount: 1,
           ),
         ),
@@ -250,8 +266,11 @@ class _NotamPageState extends State<NotamPage> {
             thisChildCount = notamModel.notamModelList[i].airportNotams.length;
           }
 
-          mySections.add(
-            SliverStickyHeaderBuilder(
+          // This is where the scroll will end up for every airport
+          _scrollTotal = notamModel.notamModelList.length;
+          mySections.add(_scrollToBar(i));
+
+          mySections.add(SliverStickyHeaderBuilder(
               builder: (context, state) {
                 return Padding(
                   padding: EdgeInsets.only(top: 0),
@@ -510,13 +529,24 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _restoreSharedPreferences();
-    _scrollController = ScrollController();
-    _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onInputTextChange);
+  Widget _scrollToBar (int j) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => Container(
+          child: Padding (
+            padding: EdgeInsets.all(0),
+            child: AutoScrollTag(
+              key: ValueKey(j),
+              controller: _scrollController,
+              index: j,
+              highlightColor: Colors.green.withOpacity(1),
+              child: Text(""),
+            ),
+          ),
+        ),
+        childCount: 1,
+      ),
+    );
   }
 
   void _restoreSharedPreferences() {
@@ -539,6 +569,7 @@ class _NotamPageState extends State<NotamPage> {
 
   void _fetchButtonPressed(BuildContext context) {
     _myRequestedAirports.clear();
+    _scrollTotal = 0;
 
     if (_formKey.currentState.validate()) {
       Scaffold.of(context).showSnackBar(
@@ -623,9 +654,11 @@ class _NotamPageState extends State<NotamPage> {
 
     List<NotamJson> exportedJson;
     try {
-      final response = await http.post(url).timeout(Duration(seconds: 15));
+      // TODO: different durations depending on number of airports?
+      final response = await http.post(url).timeout(Duration(seconds: 30));
       if (response.statusCode != 200) {
         // TODO: this error is OK, but what about checking Internet connectivity as well??
+        // TODO: message for > 3 airports?
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -686,6 +719,37 @@ class _NotamPageState extends State<NotamPage> {
         );
       },
     );
+  }
+
+  Future _scrollToIndex() async {
+    _scrollCounter++;
+    if (_scrollCounter >= _scrollTotal) {
+      _scrollCounter = 0;
+    }
+
+    print("scrollCounter: $_scrollCounter");
+    print("scrollTotal: $_scrollTotal");
+
+    // We need to scroll first quickly to the next item so that the one we
+    // want is shown on the screen (very quick). Otherwise, scrolling
+    // directly to "_scrollCounter" will not be precise.
+    int maxCorrection = 0;
+    if (_scrollTotal - 1 - _scrollCounter > 1){
+      maxCorrection = 2;
+    }
+    else if (_scrollTotal - 1 - _scrollCounter > 0){
+      maxCorrection = 1;
+    }
+    await _scrollController.scrollToIndex(maxCorrection,
+        duration: Duration(milliseconds: 100),
+        preferPosition: AutoScrollPosition.end);
+
+    // This is the actual item we want
+    await _scrollController.scrollToIndex(_scrollCounter,
+        duration: Duration(seconds: 2),
+        preferPosition: AutoScrollPosition.begin);
+
+    _scrollController.highlight(_scrollCounter);
   }
 
 
