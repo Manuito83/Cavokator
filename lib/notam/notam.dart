@@ -25,6 +25,8 @@ class _NotamPageState extends State<NotamPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
 
+  ScrollController _scrollController;
+
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
@@ -45,6 +47,7 @@ class _NotamPageState extends State<NotamPage> {
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
+            controller: _scrollController,
           ),
         );
       },
@@ -90,6 +93,8 @@ class _NotamPageState extends State<NotamPage> {
           icon: Icon(Icons.access_alarm),
           color: Colors.black,
           onPressed: () {
+            _scrollController.animateTo(0,
+                curve: Curves.linear, duration: Duration (milliseconds: 500));
             // TEST
           },
         ),
@@ -508,9 +513,8 @@ class _NotamPageState extends State<NotamPage> {
   @override
   void initState() {
     super.initState();
-
     _restoreSharedPreferences();
-
+    _scrollController = ScrollController();
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
   }
