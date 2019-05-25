@@ -655,7 +655,7 @@ class _NotamPageState extends State<NotamPage> {
     List<NotamJson> exportedJson;
     try {
       // TODO: different durations depending on number of airports?
-      final response = await http.post(url).timeout(Duration(seconds: 30));
+      final response = await http.post(url).timeout(Duration(seconds: 60));
       if (response.statusCode != 200) {
         // TODO: this error is OK, but what about checking Internet connectivity as well??
         // TODO: message for > 3 airports?
@@ -727,23 +727,14 @@ class _NotamPageState extends State<NotamPage> {
       _scrollCounter = 0;
     }
 
-    print("scrollCounter: $_scrollCounter");
-    print("scrollTotal: $_scrollTotal");
-
-    // We need to scroll first quickly to the next item so that the one we
-    // want is shown on the screen (very quick). Otherwise, scrolling
-    // directly to "_scrollCounter" will not be precise.
-    int maxCorrection = 0;
-    if (_scrollTotal - 1 - _scrollCounter > 1){
-      maxCorrection = 2;
+    // We need to scroll first quickly to the "end" of the item so that
+    // the header is shown on the screen (very quick). Otherwise, scrolling
+    // directly to "begin" will not be precise.
+    if (_scrollCounter != 0) {
+      await _scrollController.scrollToIndex(_scrollCounter,
+          duration: Duration(milliseconds: 200),
+          preferPosition: AutoScrollPosition.end);
     }
-    else if (_scrollTotal - 1 - _scrollCounter > 0){
-      maxCorrection = 1;
-    }
-    await _scrollController.scrollToIndex(maxCorrection,
-        duration: Duration(milliseconds: 100),
-        preferPosition: AutoScrollPosition.end);
-
     // This is the actual item we want
     await _scrollController.scrollToIndex(_scrollCounter,
         duration: Duration(seconds: 2),
