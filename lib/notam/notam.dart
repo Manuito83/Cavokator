@@ -50,7 +50,8 @@ class _NotamPageState extends State<NotamPage> {
     super.initState();
     _restoreSharedPreferences();
 
-
+    // Delayed callback for FAB
+    Future.delayed(Duration.zero, () => fabCallback());
 
     _scrollController = AutoScrollController(
       viewportBoundaryGetter: () => Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
@@ -62,7 +63,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   @override
-  void dispose() {
+  Future dispose() async {
     _scrollCounter = 0;
     super.dispose();
   }
@@ -98,8 +99,7 @@ class _NotamPageState extends State<NotamPage> {
     return slivers;
   }
 
-  // TODO: where to put this????
-  callback(){
+  Future<void> fabCallback() async{
     if (_myNotamList.length > 0){
       widget.callback(SpeedDial(
         overlayColor: Colors.black,
@@ -108,6 +108,7 @@ class _NotamPageState extends State<NotamPage> {
         foregroundColor: Colors.black,
         elevation: 8.0,
         shape: CircleBorder(),
+        visible: true,
         children: [
           SpeedDialChild(
             child: Icon(Icons.accessibility),
@@ -118,8 +119,7 @@ class _NotamPageState extends State<NotamPage> {
         ],
       ));
     }
-    else
-    {
+    else {
       widget.callback(SpeedDial(
         overlayColor: Colors.black,
         overlayOpacity: 0.5,
@@ -251,6 +251,7 @@ class _NotamPageState extends State<NotamPage> {
                           setState(() {
                             _apiCall = false;
                             _myNotamList.clear();
+                            fabCallback();
                             _scrollTotal = 0;
                             SharedPreferencesModel().setNotamUserInput("");
                             SharedPreferencesModel().setNotamInformation("");
@@ -415,7 +416,8 @@ class _NotamPageState extends State<NotamPage> {
             //SliverPadding(padding: EdgeInsetsDirectional.only(top: 80)),
           );
         }
-      } else {
+      }
+      else {
         mySections.add(
           SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -426,7 +428,6 @@ class _NotamPageState extends State<NotamPage> {
         );
       }
     }
-
     return mySections;
   }
 
@@ -654,6 +655,7 @@ class _NotamPageState extends State<NotamPage> {
             }
             _myNotamList = newList;
           }
+          fabCallback();
         });
       });
 

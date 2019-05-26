@@ -32,6 +32,7 @@ class _DrawerPageState extends State<DrawerPage> {
     overlayOpacity: 0.5,
     elevation: 8.0,
     shape: CircleBorder(),
+    visible: false,
   );
 
   void callbackFab(Widget fab) {
@@ -93,9 +94,6 @@ class _DrawerPageState extends State<DrawerPage> {
         ),
       );
     }
-
-
-
 
     return Scaffold(
 //      appBar: AppBar(
