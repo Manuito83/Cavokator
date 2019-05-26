@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/weather/weather.dart';
 import 'package:cavokator_flutter/notam/notam.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class DrawerItem {
   String title;
@@ -26,6 +27,19 @@ class _DrawerPageState extends State<DrawerPage> {
   bool _isThemeDark = false;
   String _switchThemeString = "Dark";
 
+  Widget myFloat = SpeedDial(
+    overlayColor: Colors.black,
+    overlayOpacity: 0.5,
+    elevation: 8.0,
+    shape: CircleBorder(),
+  );
+
+  void callbackFab(Widget fab) {
+    setState(() {
+      this.myFloat = fab;
+    });
+  }
+
   _getDrawerItemWidget(int pos) {
     switch (pos) {
       case 0:
@@ -35,6 +49,8 @@ class _DrawerPageState extends State<DrawerPage> {
       case 1:
         return NotamPage(
           isThemeDark: _isThemeDark,
+          myFloat: myFloat,
+          callback: callbackFab,
         );
       default:
         return new Text("Error");
@@ -78,10 +94,14 @@ class _DrawerPageState extends State<DrawerPage> {
       );
     }
 
+
+
+
     return Scaffold(
 //      appBar: AppBar(
 //        title: Text(widget.drawerItems[_selectedDrawerIndex].title),
 //      ),
+      floatingActionButton: myFloat,
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -127,4 +147,8 @@ class _DrawerPageState extends State<DrawerPage> {
     );
 
   }
+
+
+
+
 }

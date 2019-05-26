@@ -11,12 +11,15 @@ import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter/scheduler.dart';
 
 class NotamPage extends StatefulWidget {
-  // TODO: BUG: try SVQ+JFK. Switch to WX page. Back to NOTAM. Order is opposite.
   final bool isThemeDark;
+  Widget myFloat;
+  Function callback;
 
-  NotamPage({@required this.isThemeDark});
+  NotamPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -39,13 +42,15 @@ class _NotamPageState extends State<NotamPage> {
 
   AutoScrollController _scrollController;
   final _scrollDirection = Axis.vertical;
-  int _scrollCounter = -1;
+  int _scrollCounter = 0;
   int _scrollTotal = 0;
 
   @override
   void initState() {
     super.initState();
     _restoreSharedPreferences();
+
+
 
     _scrollController = AutoScrollController(
       viewportBoundaryGetter: () => Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
@@ -57,7 +62,14 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   @override
+  void dispose() {
+    _scrollCounter = 0;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Builder(
       builder: (context) {
         return GestureDetector(
@@ -84,6 +96,40 @@ class _NotamPageState extends State<NotamPage> {
     }
 
     return slivers;
+  }
+
+  // TODO: where to put this????
+  callback(){
+    if (_myNotamList.length > 0){
+      widget.callback(SpeedDial(
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 8.0,
+        shape: CircleBorder(),
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.accessibility),
+            backgroundColor: Colors.red,
+            label: 'First',
+            onTap: () => print(_userSubmitText),
+          ),
+        ],
+      ));
+    }
+    else
+    {
+      widget.callback(SpeedDial(
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 8.0,
+        shape: CircleBorder(),
+        visible: false,
+      ));
+    }
   }
 
   Widget _myAppBar() {
@@ -121,9 +167,6 @@ class _NotamPageState extends State<NotamPage> {
       ],
     );
   }
-
-
-
 
   Widget _inputForm() {
     return CustomSliverSection(
@@ -209,8 +252,8 @@ class _NotamPageState extends State<NotamPage> {
                             _apiCall = false;
                             _myNotamList.clear();
                             _scrollTotal = 0;
-                            SharedPreferencesModel().setWeatherUserInput("");
-                            SharedPreferencesModel().setWeatherInformation("");
+                            SharedPreferencesModel().setNotamUserInput("");
+                            SharedPreferencesModel().setNotamInformation("");
                             _myTextController.text = "";
                           });
                         },
@@ -550,21 +593,32 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   void _restoreSharedPreferences() {
+    List<String> req = List<String>(); // Save correct order for later
     SharedPreferencesModel().getNotamUserInput().then((onValue) {
+      req = onValue.split(" ");
       setState(() {
         _myTextController.text = onValue;
       });
     });
 
-
     SharedPreferencesModel().getNotamInformation().then((onValue) {
       if (onValue.isNotEmpty){
-        setState(() {
-          _myNotamList = notamJsonFromJson(onValue);
-        });
+        // We need to sort based on user request, as most probably the
+        // order or airports in the NOTAM string is not correct
+        var newList = List<NotamJson>();
+        var savedJson = notamJsonFromJson(onValue);
+        for (var i = 0; i < req.length; i++) {
+          for (var n in savedJson) {
+            if (req[i].toUpperCase() == n.airportIdIata ||
+                req[i].toUpperCase() == n.airportIdIcao) {
+              newList.add(n);
+              break;
+            }
+          }
+        }
+        _myNotamList = newList;
       }
     });
-
   }
 
   void _fetchButtonPressed(BuildContext context) {
@@ -727,12 +781,12 @@ class _NotamPageState extends State<NotamPage> {
       _scrollCounter = 0;
     }
 
-    // We need to scroll first quickly to the "end" of the item so that
+    // We need to scroll first quickly pass the target so that
     // the header is shown on the screen (very quick). Otherwise, scrolling
     // directly to "begin" will not be precise.
     if (_scrollCounter != 0) {
-      await _scrollController.scrollToIndex(_scrollCounter,
-          duration: Duration(milliseconds: 200),
+      await _scrollController.scrollToIndex(_scrollCounter + 1,
+          duration: Duration(milliseconds: 500),
           preferPosition: AutoScrollPosition.end);
     }
     // This is the actual item we want
