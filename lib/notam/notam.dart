@@ -1,3 +1,4 @@
+import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -102,19 +103,23 @@ class _NotamPageState extends State<NotamPage> {
   Future<void> fabCallback() async{
     if (_myNotamList.length > 0){
       widget.callback(SpeedDial(
+        animatedIcon: AnimatedIcons.menu_arrow,
+        animatedIconTheme: IconThemeData(size: 22.0),
         overlayColor: Colors.black,
         overlayOpacity: 0.5,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.orange,
         foregroundColor: Colors.black,
         elevation: 8.0,
         shape: CircleBorder(),
         visible: true,
         children: [
           SpeedDialChild(
-            child: Icon(Icons.accessibility),
+            child: Icon(Icons.arrow_upward),
             backgroundColor: Colors.red,
-            label: 'First',
-            onTap: () => print(_userSubmitText),
+            label: 'Top',
+            onTap: () => _scrollController.animateTo(0,
+                          duration: Duration(seconds: 2),
+                          curve: Curves.ease),
           ),
         ],
       ));
@@ -152,19 +157,15 @@ class _NotamPageState extends State<NotamPage> {
           ),
         ),
       ),
+      /*
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.keyboard_arrow_up),
           color: Colors.black,
           onPressed: _scrollToIndex
         ),
-        IconButton(
-          icon: Icon(Icons.settings),
-          color: Colors.black,
-          onPressed: () {
-          },
-        ),
       ],
+      */
     );
   }
 
@@ -472,7 +473,7 @@ class _NotamPageState extends State<NotamPage> {
     final notamCategorySubMain = thisNotam.categorySubMain;
     final notamCategorySubSecondary = thisNotam.categorySubSecondary;
     final notamFreeText = thisNotam.freeText;
-    final notamMainCategory = thisNotam.mainCategory;
+    final notamRaw = thisNotam.raw;
 
     Widget myMapWidget;
     if (thisNotam.latitude != null) {
@@ -511,7 +512,8 @@ class _NotamPageState extends State<NotamPage> {
                       size: 12,
                     ),
                   ),
-                  Text(notamCategorySubSecondary,
+                  Text(
+                    notamCategorySubSecondary,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue,
@@ -548,12 +550,17 @@ class _NotamPageState extends State<NotamPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(
-              notamId,
-              style: TextStyle(
-                decoration: TextDecoration.underline,
-                fontSize: 16,
+            InkWell(
+              child: Text(
+                notamId,
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  fontSize: 16,
+                ),
               ),
+              onTap: () {
+                _showFullNotam(notamId, notamRaw);
+              },
             ),
             myMapWidget,
           ],
@@ -766,7 +773,37 @@ class _NotamPageState extends State<NotamPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Nice!'),
+              child: Text('Roger!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showFullNotam(String notamId, String notamText) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(5),
+          title: Text(notamId),
+          content: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Text(
+              notamText,
+              style: TextStyle(
+                fontSize: 12,
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Roger!'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
