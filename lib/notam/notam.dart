@@ -13,12 +13,11 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter/scheduler.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
-  Widget myFloat;
-  Function callback;
+  final Widget myFloat;
+  final Function callback;
 
   NotamPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
 
@@ -45,6 +44,8 @@ class _NotamPageState extends State<NotamPage> {
   final _scrollDirection = Axis.vertical;
   int _scrollCounter = 0;
   int _scrollTotal = 0;
+  List<String> _scrollList = List<String>();
+  String _previousScrollText = "Previous";
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _NotamPageState extends State<NotamPage> {
     _restoreSharedPreferences();
 
     // Delayed callback for FAB
+    // TODO: Error here: _previousScrollText = _scrollList[_scrollTotal - 1];
     Future.delayed(Duration.zero, () => fabCallback());
 
     _scrollController = AutoScrollController(
@@ -66,6 +68,7 @@ class _NotamPageState extends State<NotamPage> {
   @override
   Future dispose() async {
     _scrollCounter = 0;
+    _scrollList.clear();
     super.dispose();
   }
 
@@ -101,7 +104,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   Future<void> fabCallback() async{
-    if (_myNotamList.length > 0){
+    if (_myNotamList.length > 1){
       widget.callback(SpeedDial(
         animatedIcon: AnimatedIcons.menu_arrow,
         animatedIconTheme: IconThemeData(size: 22.0),
@@ -113,6 +116,18 @@ class _NotamPageState extends State<NotamPage> {
         shape: CircleBorder(),
         visible: true,
         children: [
+          SpeedDialChild(
+            child: Icon(Icons.keyboard_arrow_down),
+            backgroundColor: Colors.red,
+            label: 'Next',
+            onTap: () => _scrollToNextNotam(),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.keyboard_arrow_up),
+            backgroundColor: Colors.red,
+            label: _previousScrollText,
+            onTap: () => _scrollToPreviousNotam(),
+          ),
           SpeedDialChild(
             child: Icon(Icons.arrow_upward),
             backgroundColor: Colors.red,
@@ -254,6 +269,8 @@ class _NotamPageState extends State<NotamPage> {
                             _myNotamList.clear();
                             fabCallback();
                             _scrollTotal = 0;
+                            _scrollCounter = 0;
+                            _scrollList.clear();
                             SharedPreferencesModel().setNotamUserInput("");
                             SharedPreferencesModel().setNotamInformation("");
                             _myTextController.text = "";
@@ -313,6 +330,7 @@ class _NotamPageState extends State<NotamPage> {
 
           // This is where the scroll will end up for every airport
           _scrollTotal = notamModel.notamModelList.length;
+          _scrollList.add(notamModel.notamModelList[i].airportCode);
           mySections.add(_scrollToBar(i));
 
           mySections.add(SliverStickyHeaderBuilder(
@@ -334,6 +352,7 @@ class _NotamPageState extends State<NotamPage> {
                         ),
                         Flexible(
                           child: Text(
+                            "(${notamModel.notamModelList[i].airportCode}) " +
                             airportName,
                             style: const TextStyle(color: Colors.white),
                           ),
@@ -632,6 +651,8 @@ class _NotamPageState extends State<NotamPage> {
   void _fetchButtonPressed(BuildContext context) {
     _myRequestedAirports.clear();
     _scrollTotal = 0;
+    _scrollCounter = 0;
+    _scrollList.clear();
 
     if (_formKey.currentState.validate()) {
       Scaffold.of(context).showSnackBar(
@@ -814,7 +835,7 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Future _scrollToIndex() async {
+  Future _scrollToNextNotam() async {
     _scrollCounter++;
     if (_scrollCounter >= _scrollTotal) {
       _scrollCounter = 0;
@@ -836,5 +857,34 @@ class _NotamPageState extends State<NotamPage> {
     _scrollController.highlight(_scrollCounter);
   }
 
+  Future _scrollToPreviousNotam() async {
+    _scrollCounter--;
+    if (_scrollCounter < 0){
+      _scrollCounter = _scrollTotal - 1;
+    }
+
+    if (_scrollCounter == 0){
+      _previousScrollText = _scrollList[_scrollTotal - 1];
+    } else {
+      _previousScrollText = _scrollList[_scrollCounter - 1];
+    }
+
+    fabCallback();
+
+    // We need to scroll first quickly pass the target so that
+    // the header is shown on the screen (very quick). Otherwise, scrolling
+    // directly to "begin" will not be precise.
+    if (_scrollCounter != 0) {
+      await _scrollController.scrollToIndex(_scrollCounter + 1,
+          duration: Duration(milliseconds: 500),
+          preferPosition: AutoScrollPosition.middle);
+    }
+    // This is the actual item we want
+    await _scrollController.scrollToIndex(_scrollCounter,
+        duration: Duration(seconds: 2),
+        preferPosition: AutoScrollPosition.begin);
+
+    _scrollController.highlight(_scrollCounter);
+  }
 
 }

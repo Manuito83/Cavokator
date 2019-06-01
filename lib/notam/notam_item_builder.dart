@@ -6,6 +6,7 @@ class NotamModelList {
 
 class NotamModel {
   String airportHeading;
+  String airportCode;
   var airportNotams = List<NotamGeneric>();
 
   bool airportWithNoNotam = false;
@@ -183,6 +184,9 @@ class NotamItemBuilder {
       }
 
       notamModel.airportHeading = jsonNotamList[i].fullAirportDetails.name;
+      jsonNotamList[i].airportIdIata == "" ?
+        notamModel.airportCode = jsonNotamList[i].airportIdIcao :
+        notamModel.airportCode = jsonNotamList[i].airportIdIata;
       result.notamModelList.add(notamModel);
     }
   }
