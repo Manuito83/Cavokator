@@ -35,10 +35,7 @@ class _NotamPageState extends State<NotamPage> {
   bool _apiCall = false;
 
   // Google Maps API
-  Completer<GoogleMapController> _mapsController = Completer();
-  void _onMapCreated(GoogleMapController controller) {
-    _mapsController.complete(controller);
-  }
+  GoogleMapController _mapController;
 
   AutoScrollController _scrollController;
   final _scrollDirection = Axis.vertical;
@@ -110,7 +107,7 @@ class _NotamPageState extends State<NotamPage> {
 
     if (_myNotamList.length > 0){
       widget.callback(SpeedDial(
-        animatedIcon: AnimatedIcons.menu_arrow,
+        animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: IconThemeData(size: 22.0),
         overlayColor: Colors.black,
         overlayOpacity: 0.5,
@@ -474,7 +471,12 @@ class _NotamPageState extends State<NotamPage> {
         icon: Icon(Icons.map),
         color: Colors.black,
         onPressed: () {
-          _showMap();
+          _showMap(
+              notamId: thisNotam.id,
+              latitude: thisNotam.latitude,
+              longitude: thisNotam.longitude,
+              radius: thisNotam.radius
+          );
         },
       );
     } else {
@@ -538,6 +540,14 @@ class _NotamPageState extends State<NotamPage> {
       subCategoriesWidget = SizedBox.shrink();
     }
 
+    Widget datesAndTimesWidget(){
+      return Row(
+        children: <Widget>[
+          Text("LALA"),
+        ],
+      );
+    }
+
     return Column(
       children: <Widget>[
         Row(
@@ -565,6 +575,16 @@ class _NotamPageState extends State<NotamPage> {
             children: <Widget>[
               Expanded(
                 child: Text(notamFreeText),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: datesAndTimesWidget(),
               ),
             ],
           ),
@@ -768,21 +788,38 @@ class _NotamPageState extends State<NotamPage> {
     return exportedJson;
   }
 
-  Future<void> _showMap() async {
-    const LatLng _center = const LatLng(45.521563, -122.677433);
+  Future<void> _showMap({notamId, latitude, longitude, radius}) async {
+    LatLng _center = LatLng(latitude, longitude);
+
+    // creating a new MARKER
+    var markerIdVal = notamId;
+    final MarkerId markerId = MarkerId(markerIdVal);
+    final Marker marker = Marker(
+      markerId: markerId,
+      position: LatLng(latitude, longitude),
+      infoWindow: InfoWindow(title: notamId, snippet: 'Radius: ${radius.toString()} NM'),
+      visible: true,
+    );
+    List<Marker> markersList = new List<Marker>();
+    markersList.add(marker);
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
           contentPadding: EdgeInsets.all(5),
-          title: Text('Rewind and remember'),
+          title: Text('NOTAM $notamId'),
           content: GoogleMap(
-            onMapCreated: _onMapCreated,
+            mapType: MapType.hybrid,
+            onMapCreated: (GoogleMapController controller) {
+              _mapController = controller;
+            },
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 11.0,
             ),
+            markers: Set<Marker>.of(markersList),
           ),
           actions: <Widget>[
             FlatButton(

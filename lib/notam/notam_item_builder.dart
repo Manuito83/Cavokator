@@ -20,15 +20,26 @@ class NotamCategory extends NotamGeneric {
 }
 
 class NotamSingle extends NotamGeneric {
+  // Top categories
   String mainCategory;
+  // Notam ID
   String id;
+  // NOTAM categories (per NOTAM)
   String categorySubMain;
   String categorySubSecondary;
+  // NOTAM text
   String freeText;
+  // Whole NOTAM (shown when clicked on the ID)
   String raw;
+  // Position for map
   double latitude;
   double longitude;
   int radius;
+  // Times and dates
+  String startTime;
+  String endTime;
+  bool estimated;
+  bool permanent;
 }
 
 class NotamItemBuilder {
@@ -175,6 +186,10 @@ class NotamItemBuilder {
           _thisNotam.latitude = finalNotamItemList[j].latitude;
           _thisNotam.longitude = finalNotamItemList[j].longitude;
           _thisNotam.radius = finalNotamItemList[j].radius;
+          _thisNotam.startTime = finalNotamItemList[j].startTime;
+          _thisNotam.endTime = finalNotamItemList[j].endTime;
+          _thisNotam.estimated = finalNotamItemList[j].endTimeEstimated;
+          _thisNotam.permanent = finalNotamItemList[j].endTimePermanent;
 
           notamModel.airportNotams.add(_thisNotam);
         }
