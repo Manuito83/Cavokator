@@ -42,10 +42,7 @@ class _NotamPageState extends State<NotamPage> {
 
   AutoScrollController _scrollController;
   final _scrollDirection = Axis.vertical;
-  int _scrollCounter = 0;
-  int _scrollTotal = 0;
   List<String> _scrollList = List<String>();
-  String _previousScrollText = "Previous";
 
   @override
   void initState() {
@@ -53,8 +50,7 @@ class _NotamPageState extends State<NotamPage> {
     _restoreSharedPreferences();
 
     // Delayed callback for FAB
-    // TODO: Error here: _previousScrollText = _scrollList[_scrollTotal - 1];
-    Future.delayed(Duration.zero, () => fabCallback());
+    Future.delayed(Duration.zero, () => fabCallback(init: true));
 
     _scrollController = AutoScrollController(
       viewportBoundaryGetter: () => Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
@@ -67,14 +63,11 @@ class _NotamPageState extends State<NotamPage> {
 
   @override
   Future dispose() async {
-    _scrollCounter = 0;
-    _scrollList.clear();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Builder(
       builder: (context) {
         return GestureDetector(
@@ -103,8 +96,19 @@ class _NotamPageState extends State<NotamPage> {
     return slivers;
   }
 
-  Future<void> fabCallback() async{
-    if (_myNotamList.length > 1){
+
+  Future<void> fabCallback({bool init = false}) async {
+    // This shared preference recall is here because otherwise
+    // it would execute after the FAB loads
+    if (init) {
+      await SharedPreferencesModel().getNotamScrollList().then((onValue) {
+        setState(() {
+          _scrollList = onValue;
+        });
+      });
+    }
+
+    if (_myNotamList.length > 0){
       widget.callback(SpeedDial(
         animatedIcon: AnimatedIcons.menu_arrow,
         animatedIconTheme: IconThemeData(size: 22.0),
@@ -115,28 +119,8 @@ class _NotamPageState extends State<NotamPage> {
         elevation: 8.0,
         shape: CircleBorder(),
         visible: true,
-        children: [
-          SpeedDialChild(
-            child: Icon(Icons.keyboard_arrow_down),
-            backgroundColor: Colors.red,
-            label: 'Next',
-            onTap: () => _scrollToNextNotam(),
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.keyboard_arrow_up),
-            backgroundColor: Colors.red,
-            label: _previousScrollText,
-            onTap: () => _scrollToPreviousNotam(),
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.arrow_upward),
-            backgroundColor: Colors.red,
-            label: 'Top',
-            onTap: () => _scrollController.animateTo(0,
-                          duration: Duration(seconds: 2),
-                          curve: Curves.ease),
-          ),
-        ],
+        children:
+          _mySpeedDials(),
       ));
     }
     else {
@@ -172,15 +156,6 @@ class _NotamPageState extends State<NotamPage> {
           ),
         ),
       ),
-      /*
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.keyboard_arrow_up),
-          color: Colors.black,
-          onPressed: _scrollToIndex
-        ),
-      ],
-      */
     );
   }
 
@@ -234,12 +209,15 @@ class _NotamPageState extends State<NotamPage> {
                               // Split the input to suit or needs
                               RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches =
-                              exp.allMatches(_userSubmitText);
+                                exp.allMatches(_userSubmitText);
                               matches.forEach(
-                                      (m) => _myRequestedAirports.add(m.group(0)));
+                                (m) => _myRequestedAirports.add(m.group(0)));
                             }
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
+                            }
+                            if (_myRequestedAirports.length > 6) {
+                              return "Too many airports (max is 6)!";
                             }
                           },
                         ),
@@ -267,10 +245,8 @@ class _NotamPageState extends State<NotamPage> {
                           setState(() {
                             _apiCall = false;
                             _myNotamList.clear();
-                            fabCallback();
-                            _scrollTotal = 0;
-                            _scrollCounter = 0;
                             _scrollList.clear();
+                            fabCallback();
                             SharedPreferencesModel().setNotamUserInput("");
                             SharedPreferencesModel().setNotamInformation("");
                             _myTextController.text = "";
@@ -314,11 +290,10 @@ class _NotamPageState extends State<NotamPage> {
         var notamModel = notamBuilder.result;
 
         for (var i = 0; i < notamModel.notamModelList.length; i++) {
-
           var airportName =
-          notamModel.notamModelList[i].airportHeading == null ?
-          _myRequestedAirports[i].toUpperCase() :
-          notamModel.notamModelList[i].airportHeading;
+            notamModel.notamModelList[i].airportHeading == null ?
+            _myRequestedAirports[i].toUpperCase() :
+            notamModel.notamModelList[i].airportHeading;
 
           int thisChildCount;
           if (notamModel.notamModelList[i].airportNotams.length == 0) {
@@ -329,8 +304,6 @@ class _NotamPageState extends State<NotamPage> {
           }
 
           // This is where the scroll will end up for every airport
-          _scrollTotal = notamModel.notamModelList.length;
-          _scrollList.add(notamModel.notamModelList[i].airportCode);
           mySections.add(_scrollToBar(i));
 
           mySections.add(SliverStickyHeaderBuilder(
@@ -352,7 +325,7 @@ class _NotamPageState extends State<NotamPage> {
                         ),
                         Flexible(
                           child: Text(
-                            "(${notamModel.notamModelList[i].airportCode}) " +
+                            "(${_myRequestedAirports[i].toUpperCase()}) " +
                             airportName,
                             style: const TextStyle(color: Colors.white),
                           ),
@@ -436,6 +409,7 @@ class _NotamPageState extends State<NotamPage> {
             //SliverPadding(padding: EdgeInsetsDirectional.only(top: 80)),
           );
         }
+        SharedPreferencesModel().setNotamScrollList(_scrollList);
       }
       else {
         mySections.add(
@@ -620,46 +594,50 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   void _restoreSharedPreferences() {
-    List<String> req = List<String>(); // Save correct order for later
-    SharedPreferencesModel().getNotamUserInput().then((onValue) {
-      req = onValue.split(" ");
-      setState(() {
-        _myTextController.text = onValue;
+    try {
+      List<String> req = List<String>(); // Save correct order for later
+      SharedPreferencesModel().getNotamUserInput().then((onValue) {
+        req = onValue.split(" ");
+        setState(() {
+          _myTextController.text = onValue;
+        });
       });
-    });
 
-    SharedPreferencesModel().getNotamInformation().then((onValue) {
-      if (onValue.isNotEmpty){
-        // We need to sort based on user request, as most probably the
-        // order or airports in the NOTAM string is not correct
-        var newList = List<NotamJson>();
-        var savedJson = notamJsonFromJson(onValue);
-        for (var i = 0; i < req.length; i++) {
-          for (var n in savedJson) {
-            if (req[i].toUpperCase() == n.airportIdIata ||
-                req[i].toUpperCase() == n.airportIdIcao) {
-              newList.add(n);
-              break;
+      SharedPreferencesModel().getNotamInformation().then((onValue) {
+        if (onValue.isNotEmpty){
+          // We need to sort based on user request, as most probably the
+          // order or airports in the NOTAM string is not correct
+          var newList = List<NotamJson>();
+          var savedJson = notamJsonFromJson(onValue);
+          for (var i = 0; i < req.length; i++) {
+            for (var n in savedJson) {
+              if (req[i].toUpperCase() == n.airportIdIata ||
+                  req[i].toUpperCase() == n.airportIdIcao) {
+                newList.add(n);
+                break;
+              }
             }
           }
+          _myNotamList = newList;
         }
-        _myNotamList = newList;
-      }
-    });
+      });
+
+      SharedPreferencesModel().getNotamRequestedAirports().then((onValue) {
+        _myRequestedAirports = onValue;
+      });
+
+    } catch (except) {
+      // pass
+    }
   }
 
   void _fetchButtonPressed(BuildContext context) {
+    // We clear _myRequestedAirports will be dealt with from here
+    // through the form validator. We clear it here so that we don't get
+    // any repetitions later
     _myRequestedAirports.clear();
-    _scrollTotal = 0;
-    _scrollCounter = 0;
-    _scrollList.clear();
 
     if (_formKey.currentState.validate()) {
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fetching NOTAMS, hold position!'),
-        ),
-      );
       setState(() {
         _apiCall = true;
       });
@@ -671,22 +649,21 @@ class _NotamPageState extends State<NotamPage> {
             _myNotamList = weatherJson;
 
             // Sorting list, because it might not be sorted from the API
-            var newList = List<NotamJson>();
+            var sortedList = List<NotamJson>();
             for (var i = 0; i < _myRequestedAirports.length; i++) {
               for (var n in _myNotamList) {
                 if (_myRequestedAirports[i].toUpperCase() == n.airportIdIata ||
                     _myRequestedAirports[i].toUpperCase() == n.airportIdIcao) {
-                  newList.add(n);
+                  sortedList.add(n);
                   break;
                 }
               }
             }
-            _myNotamList = newList;
+            _myNotamList = sortedList;
           }
           fabCallback();
         });
       });
-
     }
     FocusScope.of(context).requestFocus(new FocusNode());
   }
@@ -720,6 +697,19 @@ class _NotamPageState extends State<NotamPage> {
 
   Future<List<NotamJson>> _callNotamApi() async {
     String allAirports = "";
+
+    _scrollList.clear();
+
+    String myFetchText = 'Fetching NOTAMS, hold position!';
+    if (_myRequestedAirports.length > 3){
+      myFetchText += "\n\nMany airports chosen, this might take a while!";
+    }
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        content: Text(myFetchText),
+      ),
+    );
+
     if (_myRequestedAirports.isNotEmpty) {
       for (var i = 0; i < _myRequestedAirports.length; i++) {
         if (i != _myRequestedAirports.length - 1) {
@@ -727,6 +717,7 @@ class _NotamPageState extends State<NotamPage> {
         } else {
           allAirports += _myRequestedAirports[i];
         }
+        _scrollList.add(_myRequestedAirports[i]);
       }
     }
 
@@ -738,8 +729,8 @@ class _NotamPageState extends State<NotamPage> {
 
     List<NotamJson> exportedJson;
     try {
-      // TODO: different durations depending on number of airports?
-      final response = await http.post(url).timeout(Duration(seconds: 60));
+      int timeOut = 20 * _myRequestedAirports.length;
+      final response = await http.post(url).timeout(Duration(seconds: timeOut));
       if (response.statusCode != 200) {
         // TODO: this error is OK, but what about checking Internet connectivity as well??
         // TODO: message for > 3 airports?
@@ -759,6 +750,7 @@ class _NotamPageState extends State<NotamPage> {
       exportedJson = notamJsonFromJson(response.body);
       SharedPreferencesModel().setNotamInformation(response.body);
       SharedPreferencesModel().setNotamUserInput(_userSubmitText);
+      SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(
         SnackBar(
@@ -835,56 +827,50 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Future _scrollToNextNotam() async {
-    _scrollCounter++;
-    if (_scrollCounter >= _scrollTotal) {
-      _scrollCounter = 0;
-    }
 
+  Future _scrollToNotam({@required int position}) async {
     // We need to scroll first quickly pass the target so that
     // the header is shown on the screen (very quick). Otherwise, scrolling
     // directly to "begin" will not be precise.
-    if (_scrollCounter != 0) {
-      await _scrollController.scrollToIndex(_scrollCounter + 1,
-          duration: Duration(milliseconds: 500),
-          preferPosition: AutoScrollPosition.end);
-    }
+    await _scrollController.scrollToIndex(position + 2,
+        duration: Duration(milliseconds: 500),
+        preferPosition: AutoScrollPosition.begin);
+
     // This is the actual item we want
-    await _scrollController.scrollToIndex(_scrollCounter,
+    await _scrollController.scrollToIndex(position,
         duration: Duration(seconds: 2),
         preferPosition: AutoScrollPosition.begin);
 
-    _scrollController.highlight(_scrollCounter);
+    _scrollController.highlight(position);
   }
 
-  Future _scrollToPreviousNotam() async {
-    _scrollCounter--;
-    if (_scrollCounter < 0){
-      _scrollCounter = _scrollTotal - 1;
+  List<SpeedDialChild> _mySpeedDials() {
+    List<SpeedDialChild> _myDialsList = List<SpeedDialChild>();
+
+    if (_scrollList.length > 1){
+      for (var i = _scrollList.length - 1; i >= 0; i--) {
+        SpeedDialChild singleDial = SpeedDialChild(
+          child: Icon(Icons.local_airport),
+          backgroundColor: Colors.red,
+          label: _scrollList[i].toUpperCase(),
+          onTap: () => _scrollToNotam(position: i),
+        );
+        _myDialsList.add(singleDial);
+      }
     }
 
-    if (_scrollCounter == 0){
-      _previousScrollText = _scrollList[_scrollTotal - 1];
-    } else {
-      _previousScrollText = _scrollList[_scrollCounter - 1];
-    }
 
-    fabCallback();
+    SpeedDialChild firstDial = SpeedDialChild(
+      child: Icon(Icons.arrow_upward),
+      backgroundColor: Colors.green,
+      label: 'Top',
+      onTap: () => _scrollController.animateTo(0,
+          duration: Duration(seconds: 2),
+          curve: Curves.ease),
+    );
+    _myDialsList.add(firstDial);
 
-    // We need to scroll first quickly pass the target so that
-    // the header is shown on the screen (very quick). Otherwise, scrolling
-    // directly to "begin" will not be precise.
-    if (_scrollCounter != 0) {
-      await _scrollController.scrollToIndex(_scrollCounter + 1,
-          duration: Duration(milliseconds: 500),
-          preferPosition: AutoScrollPosition.middle);
-    }
-    // This is the actual item we want
-    await _scrollController.scrollToIndex(_scrollCounter,
-        duration: Duration(seconds: 2),
-        preferPosition: AutoScrollPosition.begin);
-
-    _scrollController.highlight(_scrollCounter);
+    return _myDialsList;
   }
 
 }
