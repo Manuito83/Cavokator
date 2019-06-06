@@ -430,7 +430,7 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   void _updateTimes(){
-    print(DateTime.now());
+    print("UPDATING WX TICKER: ${DateTime.now().toUtc()}");
     if (_myWeatherList.isNotEmpty){
           setState(() {
             // This will trigger a refresh of weather times

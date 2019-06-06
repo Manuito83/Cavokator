@@ -13,6 +13,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -28,6 +29,8 @@ class NotamPage extends StatefulWidget {
 class _NotamPageState extends State<NotamPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
+
+  Timer _ticker;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
@@ -46,6 +49,8 @@ class _NotamPageState extends State<NotamPage> {
     super.initState();
     _restoreSharedPreferences();
 
+    _ticker = new Timer.periodic(Duration(minutes:1), (Timer t) => _updateTimes());
+
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback(init: true));
 
@@ -60,6 +65,7 @@ class _NotamPageState extends State<NotamPage> {
 
   @override
   Future dispose() async {
+    _ticker?.cancel();
     super.dispose();
   }
 
@@ -541,9 +547,61 @@ class _NotamPageState extends State<NotamPage> {
     }
 
     Widget datesAndTimesWidget(){
+      bool notamValid = false;
+      DateTime now = DateTime.now().toUtc();
+      if (!thisNotam.permanent){
+        if (thisNotam.startTime.isBefore(now) && thisNotam.endTime.isAfter(now)){
+          notamValid = true;
+        }
+      } else {
+          if (thisNotam.startTime.isBefore(now)){
+            notamValid = true;
+          }
+      }
+
+      // Time formatting
+      var formatter = new DateFormat('yyyy-MMM-dd HH:mm');
+      String startTime = formatter.format(thisNotam.startTime);
+
+      String notamEnd;
+      if (thisNotam.permanent){
+        notamEnd = "PERMANENT";
+      } else if (thisNotam.estimated){
+        notamEnd = formatter.format(thisNotam.endTime) + " (EST)";
+      } else {
+        notamEnd = formatter.format(thisNotam.endTime);
+      }
+
       return Row(
         children: <Widget>[
-          Text("LALA"),
+          Icon(Icons.today,
+            color: notamValid ? Colors.red[300] : Colors.black,
+            size: 18,
+          ),
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Text(startTime,
+                style: TextStyle(
+                fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+          Icon(Icons.play_arrow,
+            color: Colors.black,
+            size: 12,
+          ),
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+              child: Text(notamEnd,
+                style: TextStyle(
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
         ],
       );
     }
@@ -908,6 +966,15 @@ class _NotamPageState extends State<NotamPage> {
     _myDialsList.add(firstDial);
 
     return _myDialsList;
+  }
+
+  void _updateTimes(){
+    print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
+    if (_myNotamList.isNotEmpty){
+      setState(() {
+        // This will trigger a refresh of weather times
+      });
+    }
   }
 
 }

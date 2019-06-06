@@ -1,5 +1,6 @@
 import 'package:cavokator_flutter/json_models/notam_json.dart';
 
+
 class NotamModelList {
   var notamModelList = List<NotamModel>();
 }
@@ -36,8 +37,8 @@ class NotamSingle extends NotamGeneric {
   double longitude;
   int radius;
   // Times and dates
-  String startTime;
-  String endTime;
+  DateTime startTime;
+  DateTime endTime;
   bool estimated;
   bool permanent;
 }
@@ -186,10 +187,19 @@ class NotamItemBuilder {
           _thisNotam.latitude = finalNotamItemList[j].latitude;
           _thisNotam.longitude = finalNotamItemList[j].longitude;
           _thisNotam.radius = finalNotamItemList[j].radius;
-          _thisNotam.startTime = finalNotamItemList[j].startTime;
-          _thisNotam.endTime = finalNotamItemList[j].endTime;
+
+          String myStartString = finalNotamItemList[j].startTime;
+          _thisNotam.startTime = DateTime.parse(myStartString);
+
+          // Be careful, a the API passes DateTime.maxValue if Permanent
           _thisNotam.estimated = finalNotamItemList[j].endTimeEstimated;
           _thisNotam.permanent = finalNotamItemList[j].endTimePermanent;
+          if (!_thisNotam.permanent) {
+            String myEndString = finalNotamItemList[j].endTime;
+            _thisNotam.endTime = DateTime.parse(myEndString);
+          } else {
+            _thisNotam.endTime = null;
+          }
 
           notamModel.airportNotams.add(_thisNotam);
         }
