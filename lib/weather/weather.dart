@@ -353,7 +353,11 @@ class _WeatherPageState extends State<WeatherPage> {
                         try {
 
                           // TODO: what if time null in API??
-                          var myPrettyDuration = PrettyDuration(referenceTime: item.metarTimes[0], header: "METAR");
+                          var myPrettyDuration = PrettyDuration(
+                            referenceTime: item.metarTimes[0],
+                            header: "METAR",
+                            type: "WEATHER"
+                          );
                           metarTimeFinal = myPrettyDuration.getDuration;
                           clockIconColor = metarTimeFinal.prettyColor;
 

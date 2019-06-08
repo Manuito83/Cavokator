@@ -11,6 +11,7 @@ class SharedPreferencesModel {
   final String _kNotamUserInputPrefs = "notam_userInput";
   final String _kNotamRequestedairportsPrefs = "notam_requestedAirports";
   final String _kNotamScrollListPrefs = "notam_scrollList";
+  final String _kNotamRequestedTimePrefs = "notam_requestTime";
 
   /// ----------------------------
   /// Methods for weather requests
@@ -76,6 +77,16 @@ class SharedPreferencesModel {
   Future<bool> setNotamScrollList(List<String> value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setStringList(_kNotamScrollListPrefs, value);
+  }
+
+  Future<String> getNotamRequestedTime() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kNotamRequestedTimePrefs) ?? "";
+  }
+
+  Future<bool> setNotamRequestedTime(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kNotamRequestedTimePrefs, value);
   }
 
 }

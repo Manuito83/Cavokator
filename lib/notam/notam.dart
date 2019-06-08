@@ -14,6 +14,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
+import 'package:cavokator_flutter/utils/pretty_duration.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -29,6 +30,8 @@ class NotamPage extends StatefulWidget {
 class _NotamPageState extends State<NotamPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
+
+  String _requestedTime;
 
   Timer _ticker;
 
@@ -165,7 +168,7 @@ class _NotamPageState extends State<NotamPage> {
   Widget _inputForm() {
     return CustomSliverSection(
       child: Container(
-        margin: EdgeInsets.fromLTRB(10, 10, 10, 50),
+        margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -291,6 +294,34 @@ class _NotamPageState extends State<NotamPage> {
       if (_myNotamList.isNotEmpty) {
         var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList);
         var notamModel = notamBuilder.result;
+
+        DateTime myRequestedTime = DateTime.parse(_requestedTime);
+        PrettyDuration myPrettyDuration = PrettyDuration(
+          referenceTime: myRequestedTime,
+          header: "Requested",
+          type: "NOTAM"
+        );
+        PrettyTimeCombination myFinalDuration = myPrettyDuration.getDuration;
+
+        mySections.add(
+          CustomSliverSection(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Flexible(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+                    child: Text(myFinalDuration.prettyDuration,
+                      style: TextStyle(
+                        color: myFinalDuration.prettyColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
 
         for (var i = 0; i < notamModel.notamModelList.length; i++) {
           var airportName =
@@ -851,6 +882,10 @@ class _NotamPageState extends State<NotamPage> {
         _myRequestedAirports = onValue;
       });
 
+      SharedPreferencesModel().getNotamRequestedTime().then((onValue) {
+        _requestedTime = onValue;
+      });
+
     } catch (except) {
       // pass
     }
@@ -973,9 +1008,15 @@ class _NotamPageState extends State<NotamPage> {
         return null;
       }
       exportedJson = notamJsonFromJson(response.body);
+
+      var timeNow = DateTime.now().toUtc();
+      _requestedTime = timeNow.toIso8601String();
+
       SharedPreferencesModel().setNotamInformation(response.body);
       SharedPreferencesModel().setNotamUserInput(_userSubmitText);
       SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
+      SharedPreferencesModel().setNotamRequestedTime(_requestedTime);
+
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(
         SnackBar(
