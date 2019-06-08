@@ -375,8 +375,51 @@ class _NotamPageState extends State<NotamPage> {
                   else {
                     final item = notamModel.notamModelList[i].airportNotams[index];
                     if (item is NotamSingle){
+                      bool colorBorderActive = false;
+                      Color colorBorderValue = Colors.white;
+
+                      // WARNING IN ORANGE
+                      if (item.categorySubMain == "Air display" ||
+                          item.categorySubMain == "Aerobatics" ||
+                          item.categorySubMain == "Captive balloon or kite" ||
+                          item.categorySubMain == "Demolition of explosives" ||
+                          item.categorySubMain == "Exercises" ||
+                          item.categorySubMain == "Air refueling" ||
+                          item.categorySubMain == "Glider flying" ||
+                          item.categorySubMain == "Blasting" ||
+                          item.categorySubMain == "Banner/target towing" ||
+                          item.categorySubMain == "Ascent of free balloon" ||
+                          item.categorySubMain == "Missile, gun or rocket firing" ||
+                          item.categorySubMain == "Parachute jumping exercise" ||
+                          item.categorySubMain == "Radioactive/toxic materials" ||
+                          item.categorySubMain == "Burning or blowing gas" ||
+                          item.categorySubMain == "Mass movement of aircraft" ||
+                          item.categorySubMain == "Unmanned aircraft" ||
+                          item.categorySubMain == "Formation flight" ||
+                          item.categorySubMain == "Significant volcanic activity" ||
+                          item.categorySubMain == "Aerial survey" ||
+                          item.categorySubMain == "Model flying") {
+
+                        colorBorderActive = true;
+                        colorBorderValue = Colors.orange;
+                      }
+
+                      // THIS EARNING IN RED
+                      if (item.categorySubMain == "Runway"
+                          && item.categorySubSecondary == "Closed") {
+                        colorBorderActive = true;
+                        colorBorderValue = Colors.red;
+                      }
+
                       return ListTile(
                         title: Card(
+                          shape: colorBorderActive
+                              ? new RoundedRectangleBorder(
+                              side: new BorderSide(color: colorBorderValue, width: 2.0),
+                              borderRadius: BorderRadius.circular(4.0))
+                              : new RoundedRectangleBorder(
+                              side: new BorderSide(color: Colors.white, width: 2.0),
+                              borderRadius: BorderRadius.circular(4.0)),
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
@@ -583,7 +626,7 @@ class _NotamPageState extends State<NotamPage> {
               padding: EdgeInsets.symmetric(horizontal: 5),
               child: Text(startTime,
                 style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 ),
               ),
             ),
@@ -597,12 +640,114 @@ class _NotamPageState extends State<NotamPage> {
               padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
               child: Text(notamEnd,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 11,
                 ),
               ),
             ),
           ),
         ],
+      );
+    }
+
+    Widget timesActiveWidget() {
+      if (thisNotam.validTimes == "") {
+        return SizedBox.shrink();
+      } else {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.alarm,
+                color: Colors.black,
+                size: 18,
+              ),
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                  child: Text(thisNotam.validTimes,
+                    style: TextStyle(
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    Widget bottomTopLimitsWidget() {
+      Widget bottomIcon;
+      Widget bottomText;
+
+      if (thisNotam.bottomLimit != "") {
+        bottomIcon = Icon(
+          Icons.vertical_align_bottom,
+          color: Colors.black,
+          size: 18,
+        );
+        bottomText = Flexible(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: Text(thisNotam.bottomLimit,
+                  style: TextStyle(
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+        );
+      } else {
+        bottomIcon = SizedBox.shrink();
+        bottomText = SizedBox.shrink();
+      }
+
+      Widget middlePadding;
+      Widget topIcon;
+      Widget topText;
+      if (thisNotam.topLimit != "") {
+        double mPad;
+        thisNotam.bottomLimit != "" ? mPad = 15 : mPad = 0;
+        middlePadding = Padding (
+          padding: EdgeInsets.symmetric(horizontal: mPad)
+        );
+        topIcon = Icon(
+          Icons.vertical_align_top,
+          color: Colors.black,
+          size: 18,
+        );
+        topText = Flexible(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+            child: Text(thisNotam.topLimit,
+              style: TextStyle(
+                fontSize: 11,
+              ),
+            ),
+          ),
+        );
+      } else {
+        middlePadding = SizedBox.shrink();
+        topIcon = SizedBox.shrink();
+        topText = SizedBox.shrink();
+      }
+
+      double myPadding = 0;
+      if (thisNotam.bottomLimit != ""|| thisNotam.topLimit != ""){
+        myPadding = 10;
+      }
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: myPadding),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            bottomIcon,
+            bottomText,
+            middlePadding,
+            topIcon,
+            topText,
+          ]
+        ),
       );
     }
 
@@ -647,6 +792,8 @@ class _NotamPageState extends State<NotamPage> {
             ],
           ),
         ),
+        timesActiveWidget(),
+        bottomTopLimitsWidget(),
       ],
     );
   }

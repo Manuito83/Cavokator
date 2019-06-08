@@ -41,6 +41,12 @@ class NotamSingle extends NotamGeneric {
   DateTime endTime;
   bool estimated;
   bool permanent;
+  // Valid Times
+  String validTimes;
+  // Top and bottom limits
+  String topLimit;
+  String bottomLimit;
+
 }
 
 class NotamItemBuilder {
@@ -188,6 +194,7 @@ class NotamItemBuilder {
           _thisNotam.longitude = finalNotamItemList[j].longitude;
           _thisNotam.radius = finalNotamItemList[j].radius;
 
+          // Dates
           String myStartString = finalNotamItemList[j].startTime;
           _thisNotam.startTime = DateTime.parse(myStartString);
 
@@ -200,6 +207,13 @@ class NotamItemBuilder {
           } else {
             _thisNotam.endTime = null;
           }
+
+          // Times
+          _thisNotam.validTimes = finalNotamItemList[j].spanTime;
+
+          // Limits
+          _thisNotam.topLimit = finalNotamItemList[j].topLimit;
+          _thisNotam.bottomLimit = finalNotamItemList[j].bottomLimit;
 
           notamModel.airportNotams.add(_thisNotam);
         }
