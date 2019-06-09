@@ -1,6 +1,5 @@
 import 'package:cavokator_flutter/json_models/notam_json.dart';
 
-
 class NotamModelList {
   var notamModelList = List<NotamModel>();
 }
@@ -51,9 +50,10 @@ class NotamSingle extends NotamGeneric {
 
 class NotamItemBuilder {
   var jsonNotamList = List<NotamJson>();
+  bool sortCategories;
   var result = NotamModelList();
 
-  NotamItemBuilder({ this.jsonNotamList }) {
+  NotamItemBuilder({ this.jsonNotamList, this.sortCategories }) {
     // Iterate every airport inside of list
     for (var i = 0; i < jsonNotamList.length; i++) {
       var notamModel = NotamModel();
@@ -65,105 +65,107 @@ class NotamItemBuilder {
         notamModel.airportWithNoNotam = true;
       }
       else if (jsonNotamList[i].notamCount > 0) {
-
-        // Find out which categories are here
-        var categoryW = List<int>();
-        var categoryL = List<int>();
-        var categoryM = List<int>();
-        var categoryF = List<int>();
-        var categoryA = List<int>();
-        var categoryS = List<int>();
-        var categoryP = List<int>();
-        var categoryC = List<int>();
-        var categoryI = List<int>();
-        var categoryG = List<int>();
-        var categoryN = List<int>();
-        var categoryR = List<int>();
-        var categoryO = List<int>();
-        var categoryNotReported = List<int>();
-
-        for (var n = 0; n < jsonNotamList[i].airportNotam.length; n++) {
-          var currentNotamCategory = jsonNotamList[i].airportNotam[n].categoryPrimary;
-          if (currentNotamCategory == "Warnings") {
-            categoryW.add(n);
-          } else if (currentNotamCategory == "Lighting facilities") {
-            categoryL.add(n);
-          } else if (currentNotamCategory == "Movement and landing area") {
-            categoryM.add(n);
-          } else if (currentNotamCategory == "Facilities and services") {
-            categoryF.add(n);
-          } else if (currentNotamCategory == "Airspace organization") {
-            categoryA.add(n);
-          } else if (currentNotamCategory == "Air traffic and VOLMET") {
-            categoryS.add(n);
-          } else if (currentNotamCategory == "Air traffic procedures") {
-            categoryP.add(n);
-          } else if (currentNotamCategory == "Communications and surveillance") {
-            categoryC.add(n);
-          } else if (currentNotamCategory == "Instrument landing system") {
-            categoryI.add(n);
-          } else if (currentNotamCategory == "GNSS services") {
-            categoryG.add(n);
-          } else if (currentNotamCategory == "Terminal and en-route navaids") {
-            categoryN.add(n);
-          } else if (currentNotamCategory == "Airspace restrictions") {
-            categoryR.add(n);
-          } else if (currentNotamCategory == "Other information") {
-            categoryO.add(n);
-          } else {
-            categoryNotReported.add(n);
-          }
-        }
-
-        var sortedNotamList = List<AirportNotam>();
-        for (var sorted in categoryW) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryL) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryM) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryF) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryA) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryS) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryP) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryC) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryI) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryG) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryN) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryR) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryO) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-        for (var sorted in categoryNotReported) {
-          sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
-        }
-
-        // TODO: add conditional here for sorting NOTAMS
-        // TODO: careful if NotamQ = false! here and elsewhere
         var finalNotamItemList = List<AirportNotam>();
-        finalNotamItemList = sortedNotamList;
-        // ELSE --> finalNotamItemList = jsonNotamList[i].airportNotam;
+        if (sortCategories){
+          // Find out which categories are here
+          var categoryW = List<int>();
+          var categoryL = List<int>();
+          var categoryM = List<int>();
+          var categoryF = List<int>();
+          var categoryA = List<int>();
+          var categoryS = List<int>();
+          var categoryP = List<int>();
+          var categoryC = List<int>();
+          var categoryI = List<int>();
+          var categoryG = List<int>();
+          var categoryN = List<int>();
+          var categoryR = List<int>();
+          var categoryO = List<int>();
+          var categoryNotReported = List<int>();
+
+          for (var n = 0; n < jsonNotamList[i].airportNotam.length; n++) {
+            var currentNotamCategory = jsonNotamList[i].airportNotam[n].categoryPrimary;
+            if (currentNotamCategory == "Warnings") {
+              categoryW.add(n);
+            } else if (currentNotamCategory == "Lighting facilities") {
+              categoryL.add(n);
+            } else if (currentNotamCategory == "Movement and landing area") {
+              categoryM.add(n);
+            } else if (currentNotamCategory == "Facilities and services") {
+              categoryF.add(n);
+            } else if (currentNotamCategory == "Airspace organization") {
+              categoryA.add(n);
+            } else if (currentNotamCategory == "Air traffic and VOLMET") {
+              categoryS.add(n);
+            } else if (currentNotamCategory == "Air traffic procedures") {
+              categoryP.add(n);
+            } else if (currentNotamCategory == "Communications and surveillance") {
+              categoryC.add(n);
+            } else if (currentNotamCategory == "Instrument landing system") {
+              categoryI.add(n);
+            } else if (currentNotamCategory == "GNSS services") {
+              categoryG.add(n);
+            } else if (currentNotamCategory == "Terminal and en-route navaids") {
+              categoryN.add(n);
+            } else if (currentNotamCategory == "Airspace restrictions") {
+              categoryR.add(n);
+            } else if (currentNotamCategory == "Other information") {
+              categoryO.add(n);
+            } else {
+              categoryNotReported.add(n);
+            }
+          }
+
+          var sortedNotamList = List<AirportNotam>();
+          for (var sorted in categoryW) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryL) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryM) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryF) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryA) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryS) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryP) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryC) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryI) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryG) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryN) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryR) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryO) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+          for (var sorted in categoryNotReported) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
+
+          // TODO: careful if NotamQ = false! here and elsewhere
+
+          finalNotamItemList = sortedNotamList;
+        } else {
+          finalNotamItemList = jsonNotamList[i].airportNotam;
+        }
 
         // We will compare against this variable
         var currentCategory = "";

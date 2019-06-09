@@ -15,6 +15,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
+import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -32,16 +33,26 @@ class _NotamPageState extends State<NotamPage> {
   final _myTextController = new TextEditingController();
 
   String _requestedTime;
-
   Timer _ticker;
+
+  bool _sortByCategories = true;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
 
-  // Google Maps API
-  GoogleMapController _mapController;
+  //int _initialPopupValue = 0;
+  // ^^ this is not working yet, see:
+  // https://github.com/flutter/flutter/issues/19954
+  // when working, it should highlight what's active
+  List<CustomNotamPopup> _popupChoices = <CustomNotamPopup>[
+    CustomNotamPopup(title: 'Sort by category'),
+    CustomNotamPopup(title: 'Sort by number'),
+  ];
+
+  // Google Maps API - Not necessary??
+  //GoogleMapController _mapController;
 
   AutoScrollController _scrollController;
   final _scrollDirection = Axis.vertical;
@@ -103,7 +114,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
 
-  Future<void> fabCallback({bool init = false}) async {
+  Future<void> fabCallback({bool init = false, bool clear = false}) async {
     // This shared preference recall is here because otherwise
     // it would execute after the FAB loads
     if (init) {
@@ -114,7 +125,7 @@ class _NotamPageState extends State<NotamPage> {
       });
     }
 
-    if (_myNotamList.length > 0){
+    if (_myNotamList.length > 0 && !clear){
       widget.callback(SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: IconThemeData(size: 22.0),
@@ -162,7 +173,49 @@ class _NotamPageState extends State<NotamPage> {
           ),
         ),
       ),
+      actions: <Widget>[
+        PopupMenuButton<CustomNotamPopup>(
+          icon: Icon(Icons.sort),
+          //initialValue: _popupChoices[_initialPopupValue],
+          onSelected: _selectCategoryMenu,
+          itemBuilder: (BuildContext context) {
+            return _popupChoices.map((CustomNotamPopup choice) {
+              return PopupMenuItem<CustomNotamPopup>(
+                value: choice,
+                child: Text(choice.title),
+              );
+            }).toList();
+          },
+        ),
+      ],
     );
+  }
+
+  void _selectCategoryMenu(CustomNotamPopup choice){
+    setState(() {
+      if (choice == _popupChoices[0]){
+        _sortByCategories = true;
+        //_initialPopupValue = 0;
+      } else {
+        _sortByCategories = false;
+        //_initialPopupValue = 1;
+      }
+    });
+
+
+    String mText;
+    _sortByCategories 
+      ? mText = "Sorting by categories!" 
+      : mText = "Sorting by NOTAM number & date!";
+    
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mText),
+      ),
+    );
+
+    SharedPreferencesModel().setNotamCategorySorting(_sortByCategories);
+    
   }
 
   Widget _inputForm() {
@@ -292,7 +345,8 @@ class _NotamPageState extends State<NotamPage> {
       );
     } else {
       if (_myNotamList.isNotEmpty) {
-        var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList);
+        var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList,
+                                            sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
 
         DateTime myRequestedTime = DateTime.parse(_requestedTime);
@@ -460,9 +514,13 @@ class _NotamPageState extends State<NotamPage> {
                       );
                     }
                     else if (item is NotamCategory) {
-                      return ListTile(
-                        title: notamCategoryCard(item),
-                      );
+                      if (_sortByCategories) {
+                        return ListTile(
+                          title: notamCategoryCard(item),
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     }
                   }
                 },
@@ -886,6 +944,10 @@ class _NotamPageState extends State<NotamPage> {
         _requestedTime = onValue;
       });
 
+      SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
+          _sortByCategories = onValue;
+      });
+      
     } catch (except) {
       // pass
     }
@@ -896,6 +958,7 @@ class _NotamPageState extends State<NotamPage> {
     // through the form validator. We clear it here so that we don't get
     // any repetitions later
     _myRequestedAirports.clear();
+    fabCallback(clear: true);
 
     if (_formKey.currentState.validate()) {
       setState(() {
@@ -1059,7 +1122,8 @@ class _NotamPageState extends State<NotamPage> {
           content: GoogleMap(
             mapType: MapType.hybrid,
             onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
+              // Not necessary??
+              //_mapController = controller;
             },
             initialCameraPosition: CameraPosition(
               target: _center,
