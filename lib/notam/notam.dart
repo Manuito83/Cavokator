@@ -16,6 +16,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
+import 'package:share/share.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -41,6 +42,8 @@ class _NotamPageState extends State<NotamPage> {
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
+
+  String _shareGlobalString = "";
 
   //int _initialPopupValue = 0;
   // ^^ this is not working yet, see:
@@ -185,6 +188,13 @@ class _NotamPageState extends State<NotamPage> {
                 child: Text(choice.title),
               );
             }).toList();
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.share),
+          color: Colors.black,
+          onPressed: () {
+            Share.share(_shareGlobalString);
           },
         ),
       ],
@@ -348,6 +358,34 @@ class _NotamPageState extends State<NotamPage> {
         var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList,
                                             sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
+
+        _shareGlobalString = "";
+        _shareGlobalString += "************************";
+        _shareGlobalString += "\n*** CAVOKATOR NOTAMS ***";
+        _shareGlobalString += "\n************************";
+        for (var a = 0; a < notamModel.notamModelList.length; a++){
+          var airportName =
+            notamModel.notamModelList[a].airportHeading == null
+            ? _myRequestedAirports[a].toUpperCase()
+            : notamModel.notamModelList[a].airportHeading;
+          _shareGlobalString += "\n\n\n**** $airportName ****";
+          if (notamModel.notamModelList[a].airportNotFound){
+            _shareGlobalString += "\n\nERROR: AIRPORT NOT FOUND!";
+          }
+          if (notamModel.notamModelList[a].airportWithNoNotam){
+            _shareGlobalString += "\n\nNo NOTAM found in this airport!";
+          }
+          for (var b = 0; b < notamModel.notamModelList[a].airportNotams.length; b++) {
+            var thisItem = notamModel.notamModelList[a].airportNotams[b];
+
+            if (thisItem is NotamCategory){
+              _shareGlobalString += "\n\n++ ${thisItem.mainCategory} ++";
+            } else if (thisItem is NotamSingle) {
+              _shareGlobalString += "\n\n**\n${thisItem.raw}\n**";
+            }
+          }
+        }
+        _shareGlobalString += "\n\n\n\n *** END CAVOKATOR REPORT ***";
 
         DateTime myRequestedTime = DateTime.parse(_requestedTime);
         PrettyDuration myPrettyDuration = PrettyDuration(
