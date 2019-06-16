@@ -125,7 +125,11 @@ class MetarColorize {
     for (var word in splitMetar){
 
       // CONDITION
-      var conditionRegex = new RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))|((\b)(([0-9]|\/){8})+(\b))|((\b)+(R\/SNOCLO)+(\b))|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
+      var conditionRegex = new RegExp(
+          r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))"
+          r"|((\b)(([0-9]|\/){8})+(\b))"
+          r"|((\b)+(R\/SNOCLO)+(\b))"
+          r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
       if (conditionRegex.hasMatch(word)){
         thisSpan = TextSpan(
           text: word + " ",

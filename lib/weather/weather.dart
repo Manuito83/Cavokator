@@ -274,6 +274,13 @@ class _WeatherPageState extends State<WeatherPage> {
                       TextSpan wxSpan;
                       Widget myWeatherLineWidget;
                       if (item is AirportMetar){
+
+                        // DEBUG
+                        /*
+                        item.metars[0] = "LEZL 162030Z CAVOK 15/10 R27L/356691 "
+                            "lala 88356691 LALA R/SNOCLO LALA R27/CLRD// LALA";
+                         */
+
                         wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
                         myWeatherLineWidget = RichText(text: wxSpan);
                       } else if (item is AirportTafor){

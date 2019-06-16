@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
+import 'package:cavokator_flutter/condition/condition_decode.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ConditionPage extends StatefulWidget {
@@ -128,10 +129,10 @@ class _ConditionPageState extends State<ConditionPage> {
                           ),
                           validator: (value) {
                             RegExp exp = RegExp(
-                                r"((R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6}))|" +
-                                r"((([0-9]|\/){8}))|" +
-                                r"((R\/SNOCLO))|" +
-                                r"((R\d\d([LCR]?)+(\/)+(CLRD)+(\/\/)))",
+                                r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))"
+                                r"|((\b)(([0-9]|\/){8})+(\b))"
+                                r"|((\b)+(R\/SNOCLO)+(\b))"
+                                r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))",
                                 caseSensitive: false);
                             String myMatch = exp
                                 .stringMatch(_myTextController.text)
@@ -215,7 +216,10 @@ class _ConditionPageState extends State<ConditionPage> {
 
   void _decodeButtonPressed() {
     if (_formKey.currentState.validate()) {
-      print("BUUU: " + _userConditionInput);
+      _userConditionInput = _myTextController.text;
+      var condition = ConditionDecode(conditionString: _userConditionInput);
+      var decodedCondition = condition.getDecodedCondition;
+
     }
 
   }
