@@ -27,7 +27,7 @@ class MetarTimes extends AirportWeather {
 
 class TaforTimes extends AirportWeather {
   var taforTimes = List<DateTime>();
-  bool error;
+  bool error = false;
 }
 
 class WxItemBuilder {

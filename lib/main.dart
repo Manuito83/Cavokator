@@ -8,7 +8,10 @@ class Cavokator extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Cavokator",
-      theme: ThemeData(primarySwatch: Colors.blueGrey),
+      theme: ThemeData(
+        primarySwatch: Colors.blueGrey,
+        //brightness: Brightness.dark,
+      ),
       home: DrawerPage(),
     );
   }

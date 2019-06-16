@@ -43,7 +43,7 @@ class _NotamPageState extends State<NotamPage> {
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
 
-  String _shareGlobalString = "";
+  String mySharedNotam = "";
 
   //int _initialPopupValue = 0;
   // ^^ this is not working yet, see:
@@ -194,7 +194,7 @@ class _NotamPageState extends State<NotamPage> {
           icon: Icon(Icons.share),
           color: Colors.black,
           onPressed: () {
-            Share.share(_shareGlobalString);
+            Share.share(mySharedNotam);
           },
         ),
       ],
@@ -252,7 +252,7 @@ class _NotamPageState extends State<NotamPage> {
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
                       ImageIcon(
-                        AssetImage("assets/icons/drawer_wx.png"),
+                        AssetImage("assets/icons/drawer_notam.png"),
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -359,39 +359,39 @@ class _NotamPageState extends State<NotamPage> {
                                             sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
 
-        _shareGlobalString = "";
-        _shareGlobalString += "************************";
-        _shareGlobalString += "\n*** CAVOKATOR NOTAMS ***";
-        _shareGlobalString += "\n************************";
+        mySharedNotam = "";
+        mySharedNotam += "###";
+        mySharedNotam += "\n### CAVOKATOR NOTAMS ###";
+        mySharedNotam += "\n###";
         for (var a = 0; a < notamModel.notamModelList.length; a++){
           var airportName =
             notamModel.notamModelList[a].airportHeading == null
             ? _myRequestedAirports[a].toUpperCase()
             : notamModel.notamModelList[a].airportHeading;
-          _shareGlobalString += "\n\n\n**** $airportName ****";
+          mySharedNotam += "\n\n\n### $airportName ###";
           if (notamModel.notamModelList[a].airportNotFound){
-            _shareGlobalString += "\n\nERROR: AIRPORT NOT FOUND!";
+            mySharedNotam += "\n\nERROR: AIRPORT NOT FOUND!";
           }
           if (notamModel.notamModelList[a].airportWithNoNotam){
-            _shareGlobalString += "\n\nNo NOTAM found in this airport!";
+            mySharedNotam += "\n\nNo NOTAM found in this airport!";
           }
           for (var b = 0; b < notamModel.notamModelList[a].airportNotams.length; b++) {
             var thisItem = notamModel.notamModelList[a].airportNotams[b];
 
             if (thisItem is NotamCategory){
-              _shareGlobalString += "\n\n++ ${thisItem.mainCategory} ++";
+              mySharedNotam += "\n\n## ${thisItem.mainCategory}";
             } else if (thisItem is NotamSingle) {
-              _shareGlobalString += "\n\n**\n${thisItem.raw}\n**";
+              mySharedNotam += "\n\n***\n${thisItem.raw}\n***";
             }
           }
         }
-        _shareGlobalString += "\n\n\n\n *** END CAVOKATOR REPORT ***";
+        mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
 
         DateTime myRequestedTime = DateTime.parse(_requestedTime);
         PrettyDuration myPrettyDuration = PrettyDuration(
           referenceTime: myRequestedTime,
           header: "Requested",
-          type: "NOTAM"
+          prettyType: PrettyType.notam
         );
         PrettyTimeCombination myFinalDuration = myPrettyDuration.getDuration;
 
@@ -546,7 +546,7 @@ class _NotamPageState extends State<NotamPage> {
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: notamSingleCard(item),
+                            child: notamSingleCard(item, airportName),
                           ),
                         ),
                       );
@@ -633,7 +633,7 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Widget notamSingleCard (NotamSingle thisNotam) {
+  Widget notamSingleCard (NotamSingle thisNotam, String thisAirportName) {
 
     final notamId = thisNotam.id;
     final notamCategorySubMain = thisNotam.categorySubMain;
@@ -641,79 +641,79 @@ class _NotamPageState extends State<NotamPage> {
     final notamFreeText = thisNotam.freeText;
     final notamRaw = thisNotam.raw;
 
-    Widget myMapWidget;
-    if (thisNotam.latitude != null) {
-      myMapWidget = IconButton(
-        icon: Icon(Icons.map),
-        color: Colors.black,
-        onPressed: () {
-          _showMap(
-              notamId: thisNotam.id,
-              latitude: thisNotam.latitude,
-              longitude: thisNotam.longitude,
-              radius: thisNotam.radius
-          );
-        },
-      );
-    } else {
-      myMapWidget = SizedBox.shrink();
+    Widget myMapWidget() {
+      if (thisNotam.latitude != null) {
+        return IconButton(
+          icon: Icon(Icons.map),
+          color: Colors.black,
+          onPressed: () {
+            _showMap(
+                notamId: thisNotam.id,
+                latitude: thisNotam.latitude,
+                longitude: thisNotam.longitude,
+                radius: thisNotam.radius
+            );
+          },
+        );
+      } else {
+        return SizedBox.shrink();
+      }
     }
 
-    Widget subCategoriesWidget;
-    if (thisNotam.categorySubMain != "" && thisNotam.categorySubSecondary != "") {
-      subCategoriesWidget = Padding(
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(notamCategorySubMain,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.blue,
+    Widget subCategoriesWidget(){
+      if (thisNotam.categorySubMain != "" && thisNotam.categorySubSecondary != "") {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(notamCategorySubMain,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.blue,
+                ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(Icons.play_arrow,
-                      color: Colors.black,
-                      size: 12,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(Icons.play_arrow,
+                        color: Colors.black,
+                        size: 12,
+                      ),
                     ),
-                  ),
-                  Text(
-                    notamCategorySubSecondary,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue,
+                    Text(
+                      notamCategorySubSecondary,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
-    else if (thisNotam.categorySubMain != "") {
-      subCategoriesWidget = Padding(
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: <Widget>[
-            Text(notamCategorySubMain,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.blue,
+            ],
+          ),
+        );
+      } else if (thisNotam.categorySubMain != "") {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: <Widget>[
+              Text(notamCategorySubMain,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.blue,
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
-    else {
-      subCategoriesWidget = SizedBox.shrink();
+            ],
+          ),
+        );
+      } else {
+        return SizedBox.shrink();
+      }
     }
 
     Widget datesAndTimesWidget(){
@@ -895,10 +895,22 @@ class _NotamPageState extends State<NotamPage> {
                 _showFullNotam(notamId, notamRaw);
               },
             ),
-            myMapWidget,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                myMapWidget(),
+                IconButton(
+                  icon: Icon(Icons.share),
+                  color: Colors.black,
+                  onPressed: () {
+                    Share.share(_shareThisNotam(thisNotam, thisAirportName));
+                  },
+                ),
+              ],
+            ),
           ],
         ),
-        subCategoriesWidget,
+        subCategoriesWidget(),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Row(
@@ -1267,4 +1279,56 @@ class _NotamPageState extends State<NotamPage> {
     }
   }
 
+  String _shareThisNotam(NotamSingle thisNotam, String thisAirportName) {
+    String mySharedNotam = "";
+
+    mySharedNotam += "###";
+    mySharedNotam += "\n### CAVOKATOR NOTAMS ###";
+    mySharedNotam += "\n###";
+
+    mySharedNotam += "\n\n*AIRPORT: $thisAirportName\n";
+
+    mySharedNotam += "\n*NOTAM ID: ${thisNotam.id}\n";
+
+    if (thisNotam.categorySubMain != "") {
+    mySharedNotam += "\n*Category: ${thisNotam.categorySubMain}";
+    }
+    if (thisNotam.categorySubSecondary != "") {
+    mySharedNotam += "\n*Subcategory: ${thisNotam.categorySubSecondary}";
+    }
+
+    mySharedNotam += "\n\n${thisNotam.freeText}";
+
+    // Time formatting
+    var formatter = new DateFormat('yyyy-MMM-dd HH:mm');
+    String startTimeFormatted = formatter.format(thisNotam.startTime);
+    mySharedNotam += "\n\n*From: $startTimeFormatted";
+
+    String notamEndFormatted;
+    if (thisNotam.permanent){
+      notamEndFormatted = "PERMANENT";
+    } else if (thisNotam.estimated){
+      notamEndFormatted = formatter.format(thisNotam.endTime) + " (EST)";
+    } else {
+      notamEndFormatted = formatter.format(thisNotam.endTime);
+    }
+    mySharedNotam += "\n*To: $notamEndFormatted";
+
+    if (thisNotam.validTimes != "") {
+    mySharedNotam += "\n\n*Validity: ${thisNotam.validTimes}";
+    }
+
+    if (thisNotam.bottomLimit != "") {
+    mySharedNotam += "\n\n*Bottom limit: ${thisNotam.bottomLimit}";
+    }
+    if (thisNotam.topLimit != "") {
+    mySharedNotam += "\n*Top limit: ${thisNotam.topLimit}";
+    }
+
+    mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
+    return mySharedNotam;
+
+  }
+
+  // END OF CLASS
 }

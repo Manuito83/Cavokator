@@ -6,6 +6,12 @@ class PrettyTimeCombination {
   DateTime referenceTime;
 }
 
+enum PrettyType {
+  metar,
+  tafor,
+  notam
+}
+
 
 class PrettyDuration {
 
@@ -13,17 +19,17 @@ class PrettyDuration {
   PrettyTimeCombination _prettyTime;
   String _header;
   int _totalHours;
-  String _type;
+  PrettyType _prettyType;
 
   get getDuration => _prettyTime;
   //get getDurationInMinutes => _durationList[1];  // TODO: delete? useless
 
   /// [header] is expected to be something like "METAR" or "TAFOR".
-  /// [type] determines the color (different depending on what it is)
+  /// [prettyType] determines the color (different depending on what it is)
   PrettyDuration({ @required DateTime referenceTime, @required String header,
-                   @required String type}) {
+                   @required PrettyType prettyType}) {
     _header = header;
-    _type = type;
+    _prettyType = prettyType;
     var timeNow = DateTime.now().toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
     var duration = timeNow.difference(referenceTime);
     _totalHours = duration.inHours;
@@ -103,7 +109,7 @@ class PrettyDuration {
     PrettyTimeCombination myTextAndColor = PrettyTimeCombination();
     myTextAndColor.prettyDuration = myResult;
 
-    if (_type == "WEATHER") {
+    if (_prettyType == PrettyType.metar) {
       if (_totalHours < 2){
         myTextAndColor.prettyColor = Colors.green;
       }
@@ -113,7 +119,17 @@ class PrettyDuration {
       else {
         myTextAndColor.prettyColor = Colors.red;
       }
-    } else if (_type == "NOTAM"){
+    } else if (_prettyType == PrettyType.tafor) {
+      if (_totalHours < 6) {
+        myTextAndColor.prettyColor = Colors.green;
+      }
+      else if (_totalHours >= 6 && _totalHours < 12) {
+        myTextAndColor.prettyColor = Colors.orange;
+      }
+      else {
+        myTextAndColor.prettyColor = Colors.red;
+      }
+    } else if (_prettyType == PrettyType.notam){
       if (_totalHours < 6){
         myTextAndColor.prettyColor = Colors.green;
       }
@@ -124,9 +140,6 @@ class PrettyDuration {
         myTextAndColor.prettyColor = Colors.red;
       }
     }
-
-
-
 
     return myTextAndColor;
   }

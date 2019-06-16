@@ -11,12 +11,15 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/weather/wx_colorize.dart';
 import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
+//import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class WeatherPage extends StatefulWidget {
 
-  WeatherPage({@required this.isThemeDark});
+  WeatherPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
 
   final bool isThemeDark;
+  final Widget myFloat;
+  final Function callback;
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -66,7 +69,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
   Widget _myAppBar() {
     return SliverAppBar(
-      iconTheme: new IconThemeData(color: Colors.black),
+      iconTheme: IconThemeData(color: Colors.black),
       title: Text(
           "Weather",
         style: TextStyle(color: Colors.black),
@@ -76,9 +79,9 @@ class _WeatherPageState extends State<WeatherPage> {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage('assets/images/weather_header.jpg'),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/weather_header.jpg'),
               fit: BoxFit.fitWidth,
             ),
           ),
@@ -356,7 +359,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           var myPrettyDuration = PrettyDuration(
                             referenceTime: item.metarTimes[0],
                             header: "METAR",
-                            type: "WEATHER"
+                            prettyType: PrettyType.metar
                           );
                           metarTimeFinal = myPrettyDuration.getDuration;
                           clockIconColor = metarTimeFinal.prettyColor;
@@ -378,7 +381,7 @@ class _WeatherPageState extends State<WeatherPage> {
                               ),
                               Padding(padding: EdgeInsets.only(right: 15)),
                               Flexible(
-                                child: Text(metarTimeFinal.prettyDuration, // _testMap[myKey].prettyDuration,
+                                child: Text(metarTimeFinal.prettyDuration,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: metarTimeFinal.prettyColor,
@@ -392,9 +395,54 @@ class _WeatherPageState extends State<WeatherPage> {
                     }
 
                     if (item is TaforTimes){
+                      PrettyTimeCombination taforTimeFinal;
+                      Color clockIconColor;
+                      if (!item.error) {
+                        try {
+                          // TODO: what if time null in API??
+                          var myPrettyDuration = PrettyDuration(
+                              referenceTime: item.taforTimes[0],
+                              header: "TAFOR",
+                              prettyType: PrettyType.tafor
+                          );
+                          taforTimeFinal = myPrettyDuration.getDuration;
+                          clockIconColor = taforTimeFinal.prettyColor;
+
+                        } catch (Exception) {
+                          // TODO error
+                          clockIconColor = Colors.red;
+                        }
+                      } else {
+                        // TODO error
+                        clockIconColor = Colors.red;
+                      }
+                      return ListTile(
+                        title: Container(
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.access_time,
+                                color: clockIconColor,
+                              ),
+                              Padding(padding: EdgeInsets.only(right: 15)),
+                              Flexible(
+                                child: Text(taforTimeFinal.prettyDuration,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: taforTimeFinal.prettyColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
+                      /*
                       return ListTile(
                         title: Text(item.taforTimes[0].toString()),
                       );
+
+                       */
                     }
 
                   },
@@ -449,11 +497,19 @@ class _WeatherPageState extends State<WeatherPage> {
 
     _restoreSharedPreferences();
 
+    // Delayed callback for FAB
+    Future.delayed(Duration.zero, () => fabCallback());
+
     _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
 
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
   }
+
+  Future<void> fabCallback() async {
+    widget.callback(SizedBox.shrink());
+  }
+
 
   void _restoreSharedPreferences() {
     SharedPreferencesModel().getWeatherUserInput().then((onValue) {
@@ -582,8 +638,5 @@ class _WeatherPageState extends State<WeatherPage> {
     }
     return exportedJson;
   }
-
-
-
 
 }

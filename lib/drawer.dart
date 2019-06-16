@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/weather/weather.dart';
 import 'package:cavokator_flutter/notam/notam.dart';
+import 'package:cavokator_flutter/condition/condition.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class DrawerItem {
@@ -14,7 +15,8 @@ class DrawerItem {
 class DrawerPage extends StatefulWidget {
   final drawerItems = [
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
-    new DrawerItem("NOTAM", "assets/icons/drawer_wx.png")
+    new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
+    new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png")
   ];
 
   @override
@@ -46,9 +48,17 @@ class _DrawerPageState extends State<DrawerPage> {
       case 0:
         return WeatherPage(
           isThemeDark: _isThemeDark,
+          myFloat: myFloat,
+          callback: callbackFab,
         );
       case 1:
         return NotamPage(
+          isThemeDark: _isThemeDark,
+          myFloat: myFloat,
+          callback: callbackFab,
+        );
+      case 2:
+        return ConditionPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
@@ -82,6 +92,8 @@ class _DrawerPageState extends State<DrawerPage> {
       drawerOptions.add(
         ListTileTheme(
           selectedColor: Colors.red,
+          iconColor: Colors.black,
+          textColor: Colors.black,
           child: Ink(
             color: myBackgroundColor,
             child: ListTile(
