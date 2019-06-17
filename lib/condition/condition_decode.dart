@@ -3,6 +3,27 @@ import 'package:flutter/material.dart';
 class ConditionModel {
   bool error = false;
 
+  bool rwyError = false;
+  String rwyCode = "";
+  String rwyValue = "";
+  int rwyInt = 0;
+
+  String depositCode = "";
+  bool depositError = false;
+
+  String extentCode = "";
+  bool extentError = false;
+
+  String depthCode = "";
+  bool depthError = false;
+  int depthValue = 0;
+
+  String frictionCode = "";
+  bool frictionError = false;
+  int frictionValue = 0;
+
+  bool snoclo = false;
+  bool clrd = false;
 }
 
 
@@ -103,7 +124,25 @@ class ConditionDecode {
 
         // (Type 1 for RXXL/123456)
         case 1:
-
+          position2 += 3;
+          position3 += 3;
+          position4 += 3;
+          position6 += 3;
+          // RUNWAY CODE
+          try {
+            int intRunway = int.tryParse(_conditionInput.substring(1, 3));
+            if (intRunway <= 36) {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 5);
+              myConditionModel.rwyValue = _conditionInput.substring(1, 4);
+              myConditionModel.rwyInt = intRunway;
+            } else {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 5);
+              myConditionModel.rwyError = true;
+            }
+          } catch (Exception) {
+            myConditionModel.rwyCode = _conditionInput.substring(0, 5);
+            myConditionModel.rwyError = true;
+          }
           break;
 
         // (Type 2 for RXX/123456)
@@ -118,8 +157,132 @@ class ConditionDecode {
       }
 
       // We only need to calculate deposit, extent, depth and friction for conditions 1, 2 or 3
+      if (_conditionType < 4) {
 
+        // DEPOSIT TYPE
+        try {
+          if (_conditionInput.substring(position2, position2 + 1) == "/") {
+            myConditionModel.depositCode = "/";
+          } else {
+            myConditionModel.depositCode = _conditionInput.substring(position2, position2 + 1);
 
+            if (int.tryParse(_conditionInput.substring(position2, position2 + 1)) == null) {
+              myConditionModel.depositError = true;
+            }
+          }
+        } catch (Exception) {
+          myConditionModel.depositCode = _conditionInput.substring(position2, position2 + 1);
+          myConditionModel.depositError = true;
+        }
+
+        // EXTENT TYPE
+        try {
+          if (_conditionInput.substring(position3, position3 + 1) == "/") {
+            myConditionModel.extentCode = "/";
+          } else {
+            int intExtent = int.tryParse(_conditionInput.substring(position3, position3 + 1));
+            if (intExtent != null) {
+              myConditionModel.extentCode = _conditionInput.substring(position3, position3 + 1);
+              if (!(intExtent == 1 || intExtent == 2 || intExtent == 5 || intExtent == 9)) {
+                myConditionModel.extentError = true;
+              }
+            } else {
+              myConditionModel.extentError = true;
+            }
+          }
+        }
+        catch (Exception) {
+          myConditionModel.extentCode = _conditionInput.substring(position3, position3 + 1);
+          myConditionModel.extentError = true;
+        }
+
+        // DEPTH
+        try {
+          if (_conditionInput.substring(position4, position4 + 2) == "//") {
+            myConditionModel.depthCode = "//";
+          } else {
+            myConditionModel.depthCode = _conditionInput.substring(position4, position4 + 2);
+            int intDepth = int.tryParse(_conditionInput.substring(position4, position4 + 2));
+            if (intDepth != null) {
+              myConditionModel.depthValue = intDepth;
+              if (intDepth == 91) {
+                myConditionModel.depthError = true;
+              }
+            } else {
+              myConditionModel.depthError = true;
+            }
+          }
+        } catch (Exception) {
+          myConditionModel.depthCode = _conditionInput.substring(position4, position4 + 2);
+          myConditionModel.depthError = true;
+        }
+
+        // FRICTION
+        try {
+          if (_conditionInput.substring(position6, position6 + 2) == "//") {
+            myConditionModel.frictionCode = "//";
+          } else {
+            myConditionModel.frictionCode = _conditionInput.substring(position6, position6 + 2);
+            int intFriction = int.tryParse(_conditionInput.substring(position6, position6 + 2));
+            if (intFriction != null) {
+              myConditionModel.frictionValue = intFriction;
+              if (intFriction >= 96 && intFriction <= 98) {
+                myConditionModel.frictionError = true;
+              }
+            } else {
+              myConditionModel.frictionError = true;
+            }
+          }
+        } catch (Exception) {
+          myConditionModel.frictionCode = _conditionInput.substring(position6, position6 + 2);
+          myConditionModel.frictionError = true;
+        }
+
+      // Conditions type 4, 5 or 6
+      } else {
+        // R/SNOCLO
+        if (_conditionType == 4) {
+          myConditionModel.snoclo = true;
+        }
+        // RXXL/CLRD//
+        else if (_conditionType == 5) {
+          myConditionModel.clrd = true;
+
+          try {
+            int intRunway = int.tryParse(_conditionInput.substring(1, 3));
+            if (intRunway <= 36) {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 4);
+              myConditionModel.rwyValue = _conditionInput.substring(1, 4);
+              myConditionModel.rwyInt = intRunway;
+            } else {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 4);
+              myConditionModel.rwyError = true;
+            }
+          } catch (Exception) {
+            myConditionModel.rwyCode = _conditionInput.substring(0, 4);
+            myConditionModel.rwyError = true;
+          }
+        }
+        // RXX/CLRD//
+        else if (_conditionType == 6) {
+          myConditionModel.clrd = true;
+
+          try {
+            int intRunway = int.tryParse(_conditionInput.substring(1, 3));
+            if (intRunway <= 36 || intRunway == 88 || intRunway == 99) {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+              myConditionModel.rwyValue = _conditionInput.substring(1, 3);
+              myConditionModel.rwyInt = intRunway;
+            } else {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+              myConditionModel.rwyError = true;
+            }
+          } catch (Exception) {
+            myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+            myConditionModel.rwyError = true;
+          }
+        }
+      }
     }
 
     return myConditionModel;
