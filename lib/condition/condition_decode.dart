@@ -7,6 +7,7 @@ class ConditionModel {
   String rwyCode = "";
   String rwyValue = "";
   int rwyInt = 0;
+  String rwyDecoded = "";
 
   String depositCode = "";
   bool depositError = false;
@@ -33,21 +34,22 @@ class ConditionDecode {
   ConditionModel _conditionModel;
   
   bool _mainError = false;
-  int _conditionType = 0;
-  
+
 
   get getDecodedCondition => _conditionModel;
 
   ConditionDecode({@required String conditionString}){
     _conditionInput = conditionString;
 
-    _discernType();
-    _conditionModel = _fillConditionModel();
+    int thisType = _discernType();
+    _conditionModel = _fillConditionModel(thisType);
+    _addDecodingToConditionModel();
 
   }
 
 
-  void _discernType() {
+  int _discernType() {
+    int conditionType;
     try
     {
       // TYPE 1: R12L/123456
@@ -59,7 +61,7 @@ class ConditionDecode {
           (RegExp(r"(([0-9]|\/){6})").hasMatch(_conditionInput.substring(5, 11))) &&
           (_conditionInput.length == 11))
       {
-        _conditionType = 1;
+        conditionType = 1;
       }
       // TYPE 2: R12/123456
       else if ((_conditionInput.substring(0, 1) == "R") &&
@@ -68,17 +70,17 @@ class ConditionDecode {
           (RegExp(r"(([0-9]|\/){6})").hasMatch(_conditionInput.substring(4, 10))) &&
           (_conditionInput.length == 10))
       {
-        _conditionType = 2;
+        conditionType = 2;
       }
       // TYPE 3: 88123456
       else if (RegExp(r"(\b)+(([0-9]|\/){8})+(\b)").hasMatch(_conditionInput))
       {
-        _conditionType = 3;
+        conditionType = 3;
       }
       // TYPE 4: R/SNOCLO
       else if (RegExp(r"(\b)+(R\/SNOCLO)+(\b)").hasMatch(_conditionInput))
       {
-        _conditionType = 4;
+        conditionType = 4;
       }
       // TYPE 5: R14L/CLRD//
       else if ((_conditionInput.substring(0, 1) == "R") &&
@@ -89,7 +91,7 @@ class ConditionDecode {
           (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(5, 11))) &&
           (_conditionInput.length == 11))
       {
-        _conditionType = 5;
+        conditionType = 5;
       }
       // TYPE 6: R14/CLRD//
       else if ((_conditionInput.substring(0, 1) == "R") &&
@@ -97,16 +99,18 @@ class ConditionDecode {
           (_conditionInput.substring(3, 4) == "/") &&
           (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(4, 10))) &&
           (_conditionInput.length == 10)) {
-        _conditionType = 6;
+        conditionType = 6;
       } else {
         _mainError = true;
       }
     } catch (Exception) {
       _mainError = true;
     }
+
+    return conditionType;
   }
 
-  ConditionModel _fillConditionModel () {
+  ConditionModel _fillConditionModel (int thisType) {
     var myConditionModel = ConditionModel();
     if (_mainError) {
       myConditionModel.error = true;
@@ -120,7 +124,7 @@ class ConditionDecode {
       int position4 = 4;
       int position6 = 6;
 
-      switch(_conditionType) {
+      switch(thisType) {
 
         // (Type 1 for RXXL/123456)
         case 1:
@@ -132,11 +136,11 @@ class ConditionDecode {
           try {
             int intRunway = int.tryParse(_conditionInput.substring(1, 3));
             if (intRunway <= 36) {
-              myConditionModel.rwyCode = _conditionInput.substring(0, 5);
+              myConditionModel.rwyCode = _conditionInput.substring(0, 4);
               myConditionModel.rwyValue = _conditionInput.substring(1, 4);
               myConditionModel.rwyInt = intRunway;
             } else {
-              myConditionModel.rwyCode = _conditionInput.substring(0, 5);
+              myConditionModel.rwyCode = _conditionInput.substring(0, 4);
               myConditionModel.rwyError = true;
             }
           } catch (Exception) {
@@ -147,17 +151,50 @@ class ConditionDecode {
 
         // (Type 2 for RXX/123456)
         case 2:
+          position2 += 2;
+          position3 += 2;
+          position4 += 2;
+          position6 += 2;
 
+          // RUNWAY CODE
+          try {
+            int intRunway = int.tryParse(_conditionInput.substring(1, 3));
+            if (intRunway <= 36 || intRunway == 88 || intRunway == 99) {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+              myConditionModel.rwyValue = _conditionInput.substring(1, 3);
+              myConditionModel.rwyInt = intRunway;
+            } else {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+              myConditionModel.rwyError = true;
+            }
+          } catch (Exception) {
+            myConditionModel.rwyCode = _conditionInput.substring(0, 3);
+            myConditionModel.rwyError = true;
+          }
           break;
 
         // (Type 3 for XX123456)
         case 3:
+          try {
+            int intRunway = int.tryParse(_conditionInput.substring(0, 2));
 
+            myConditionModel.rwyCode = _conditionInput.substring(0, 2);
+            myConditionModel.rwyValue = _conditionInput.substring(0, 2);
+            myConditionModel.rwyInt = intRunway;
+
+            if (!(intRunway <= 36 || intRunway == 88 || intRunway == 99)) {
+              myConditionModel.rwyCode = _conditionInput.substring(0, 2);
+              myConditionModel.rwyError = true;
+            }
+          } catch (Exception) {
+            myConditionModel.rwyCode = _conditionInput.substring(0, 2);
+            myConditionModel.rwyError = true;
+          }
           break;
       }
 
       // We only need to calculate deposit, extent, depth and friction for conditions 1, 2 or 3
-      if (_conditionType < 4) {
+      if (thisType < 4) {
 
         // DEPOSIT TYPE
         try {
@@ -241,11 +278,11 @@ class ConditionDecode {
       // Conditions type 4, 5 or 6
       } else {
         // R/SNOCLO
-        if (_conditionType == 4) {
+        if (thisType == 4) {
           myConditionModel.snoclo = true;
         }
         // RXXL/CLRD//
-        else if (_conditionType == 5) {
+        else if (thisType == 5) {
           myConditionModel.clrd = true;
 
           try {
@@ -264,7 +301,7 @@ class ConditionDecode {
           }
         }
         // RXX/CLRD//
-        else if (_conditionType == 6) {
+        else if (thisType == 6) {
           myConditionModel.clrd = true;
 
           try {
@@ -286,6 +323,41 @@ class ConditionDecode {
     }
 
     return myConditionModel;
+  }
+
+  _addDecodingToConditionModel () {
+    // RWY Decoding
+    if (_conditionModel.rwyError) {
+      _conditionModel.rwyDecoded = "Error! Runway not valid";
+    } else {
+     if (_conditionModel.rwyInt <= 36) {
+       _conditionModel.rwyDecoded = "Runway ${_conditionModel.rwyInt}";
+     } else if (_conditionModel.rwyInt == 88) {
+       _conditionModel.rwyDecoded = "All runways";
+     } else if (_conditionModel.rwyInt == 99) {
+       _conditionModel.rwyDecoded = "Previous report being repeated";
+     }
+    }
+
+    // DEPOSIT Decoding
+
+
+    // EXTENT Decoding
+
+
+    // Depth Decoding
+
+
+    // Friction Decoding
+
+
+    // SNOCLO
+
+
+    // CLRD
+
+
+
   }
 
 }
