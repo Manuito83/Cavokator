@@ -14,6 +14,9 @@ class SharedPreferencesModel {
   final String _kNotamRequestedTimePrefs = "notam_requestTime";
   final String _kNotamCategorySortingPrefs = "notam_categorySorting";
 
+  final String _kConditionModelPrefs = "condition_model";
+  final String _kConditionInputPrefs = "condition_input";
+
   /// ----------------------------
   /// Methods for weather requests
   /// ----------------------------
@@ -103,6 +106,29 @@ class SharedPreferencesModel {
   Future<bool> setNotamCategorySorting(bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setBool(_kNotamCategorySortingPrefs, value);
+  }
+
+  /// ----------------------------
+  /// Methods for notam requests
+  /// ----------------------------
+  Future<String> getConditionModel() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kConditionModelPrefs) ?? "";
+  }
+
+  Future<bool> setConditionModel(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kConditionModelPrefs, value);
+  }
+
+  Future<String> getConditionInput() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kConditionInputPrefs) ?? "";
+  }
+
+  Future<bool> setConditionInput(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kConditionInputPrefs, value);
   }
 
 }

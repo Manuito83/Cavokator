@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:cavokator_flutter/condition/condition_decode.dart';
 
 class MetarColorize {
 
@@ -130,15 +131,25 @@ class MetarColorize {
           r"|((\b)(([0-9]|\/){8})+(\b))"
           r"|((\b)+(R\/SNOCLO)+(\b))"
           r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
+      var conditionRegexSevere = new RegExp(
+          r"((\b)+(R\/SNOCLO)+(\b))");
       if (conditionRegex.hasMatch(word)){
         thisSpan = TextSpan(
-          text: word + " ",
-          style: TextStyle(color: Colors.orange),
+          text: word,
+          style: TextStyle(
+            color: conditionRegexSevere.hasMatch(word)
+                ? Colors.red : Colors.orange,
+            decoration: TextDecoration.underline,
+          ),
           recognizer: TapGestureRecognizer()..onTap = () {
-            _conditionDialog();
+            _conditionDialog(word);
           }
         );
+        var spanSpace = TextSpan(
+          text: " ",
+        );
         spanList.add(thisSpan);
+        spanList.add(spanSpace);
         continue;
       }
 
@@ -169,7 +180,7 @@ class MetarColorize {
 
 
       /*
-      // BAD WEATHER // TODO: Implement this
+      // BAD WEATHER // TODO: IMPORTANT!!! Implement this
       for (var badWx in BadWeather) {
         if (word.contains(badWx)) {
           thisSpan = TextSpan(
@@ -184,7 +195,7 @@ class MetarColorize {
 
       // STANDARD (NOTHING FOUND)
       thisSpan = TextSpan(
-        text: word + " ",  // TODO: what happens if underline? Probably add more spans just for spaces
+        text: word + " ",
         style: TextStyle(color: Colors.black),
       );
       spanList.add(thisSpan);
@@ -196,33 +207,306 @@ class MetarColorize {
   }
 
 
-  Future<void> _conditionDialog() async {
+  Future<void> _conditionDialog(String input) async {
+
+    var condition = ConditionDecode(conditionString: input);
+    ConditionModel decodedCondition = condition.getDecodedCondition;
+    Widget myDecodedContainer = _decodedContainer(decodedCondition);
+
     return showDialog<void>(
       context: myContext,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Rewind and remember'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('You will never be satisfied.'),
-                Text('You\’re like me. I’m never satisfied.'),
-              ],
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(15,25,15,25),
+              child: Column (
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                  margin: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(3.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent),
+                  ),
+                  child: Text(
+                    input,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                 myDecodedContainer,
+                  RaisedButton(
+                    child: Text(
+                      'Roger!',
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Regret'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
   }
 
+  Widget _decodedContainer(ConditionModel decodedCondition) {
+    if (decodedCondition.error) {
+      return Container(
+        padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text("ERROR!"
+                "\n\n"
+                "Invalid runway condition.",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (decodedCondition.isSnoclo) {
+     return Container(
+       padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(bottom: 30),
+              child: Text(
+                "SNOCLO",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            Text(
+              decodedCondition.snocloDecoded,
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (decodedCondition.isClrd) {
+      return Container(
+        padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(bottom: 30),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    decodedCondition.rwyError ?
+                    "(runway error)"
+                        : "Runway ${decodedCondition.rwyValue}",
+                    style: TextStyle(
+                      fontSize: decodedCondition.rwyError ? 16 : 20,
+                      fontWeight: FontWeight.bold,
+                      color: decodedCondition.rwyError ?
+                      Colors.red : null,
+                    ),
+                  ),
+                  Text(
+                    " CLEARED",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              decodedCondition.clrdDecoded,
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            // Runway
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 90,
+                    child: Text(
+                      decodedCondition.rwyCode,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        decodedCondition.rwyDecoded,
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Deposit type
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 90,
+                    child: Text(
+                      decodedCondition.depositCode,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        decodedCondition.depositDecoded,
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Extent
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 90,
+                    child: Text(
+                      decodedCondition.extentCode,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        decodedCondition.extentDecoded,
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Depth
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 90,
+                    child: Text(
+                      decodedCondition.depthCode,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        decodedCondition.depthDecoded,
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Runway
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 90,
+                    child: Text(
+                      decodedCondition.frictionCode,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        decodedCondition.frictionDecoded,
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
 }

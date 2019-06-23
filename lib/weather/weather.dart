@@ -276,10 +276,8 @@ class _WeatherPageState extends State<WeatherPage> {
                       if (item is AirportMetar){
 
                         // DEBUG
-                        /*
                         item.metars[0] = "LEZL 162030Z CAVOK 15/10 R27L/356691 "
                             "lala 88356691 LALA R/SNOCLO LALA R27/CLRD// LALA";
-                         */
 
                         wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
                         myWeatherLineWidget = RichText(text: wxSpan);
@@ -300,23 +298,24 @@ class _WeatherPageState extends State<WeatherPage> {
                               thisSpan.add(firstSpan);
                               thisSpan.add(secondSpan);
                               myWeatherRows.add(
-                                Row(
-                                  children: [
-                                    Padding(padding: EdgeInsets.only(left: 8)),
-                                    Icon(Icons.play_arrow, color: Colors.blue, size: 16,),
-                                    Padding(padding: EdgeInsets.only(left: 2)),
-                                    Flexible(
-                                      child: RichText(
-                                        text: TextSpan(
-                                          children: thisSpan
+                                Container(
+                                  padding: EdgeInsets.only(left: 8, top: 8),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.play_arrow, color: Colors.blue, size: 16,),
+                                      Padding(padding: EdgeInsets.only(left: 2)),
+                                      Flexible(
+                                        child: RichText(
+                                          text: TextSpan(
+                                              children: thisSpan
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
+                                    ],
+                                  ),
+                                ),
                               );
-                            }
-                            else {
+                            } else {
                               List<TextSpan> thisSpan = List<TextSpan>();
                               thisSpan.add(MetarColorize(metar: split, context: context).getResult);
                               myWeatherRows.add(
@@ -348,6 +347,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       return ListTile(
                         title: Card(
                           elevation: 2,
+                          margin: EdgeInsets.only(bottom: 10),
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
                             child: myWeatherLineWidget,
@@ -610,7 +610,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
     List<WxJson> exportedJson;
     try {
-      final response = await http.post(url).timeout(Duration(seconds: 15));
+      final response = await http.post(url).timeout(Duration(seconds: 60));
       if (response.statusCode != 200) {
         // TODO: this error is OK, but what about checking Internet connectivity as well??
         Scaffold.of(context).showSnackBar(

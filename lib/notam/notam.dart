@@ -1166,29 +1166,58 @@ class _NotamPageState extends State<NotamPage> {
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.all(5),
-          title: Text('NOTAM $notamId'),
-          content: GoogleMap(
-            mapType: MapType.hybrid,
-            onMapCreated: (GoogleMapController controller) {
-              // Not necessary??
-              //_mapController = controller;
-            },
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 11.0,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
+          child: Container(
+            padding: EdgeInsets.fromLTRB(15,25,15,15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding:  EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      'NOTAM $notamId',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded (
+                  child: GoogleMap(
+                    mapType: MapType.hybrid,
+                    onMapCreated: (GoogleMapController controller) {
+                      // Not necessary??
+                      //_mapController = controller;
+                    },
+                    initialCameraPosition: CameraPosition(
+                      target: _center,
+                      zoom: 11.0,
+                    ),
+                    markers: Set<Marker>.of(markersList),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only (top: 20),
+                  child: RaisedButton(
+                    child: Text(
+                      'Roger!',
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
             ),
-            markers: Set<Marker>.of(markersList),
           ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Roger!'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );

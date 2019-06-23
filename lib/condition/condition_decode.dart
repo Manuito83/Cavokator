@@ -11,27 +11,34 @@ class ConditionModel {
 
   String depositCode = "";
   bool depositError = false;
+  String depositDecoded = "";
 
   String extentCode = "";
   bool extentError = false;
+  String extentDecoded = "";
 
   String depthCode = "";
   bool depthError = false;
   int depthValue = 0;
+  String depthDecoded = "";
 
   String frictionCode = "";
   bool frictionError = false;
   int frictionValue = 0;
+  String frictionDecoded = "";
 
-  bool snoclo = false;
-  bool clrd = false;
+  bool isSnoclo = false;
+  String snocloDecoded = "";
+
+  bool isClrd = false;
+  String clrdDecoded = "";
 }
 
 
 class ConditionDecode {
 
   String _conditionInput;
-  ConditionModel _conditionModel;
+  ConditionModel _conditionModel = ConditionModel();
   
   bool _mainError = false;
 
@@ -220,7 +227,7 @@ class ConditionDecode {
             int intExtent = int.tryParse(_conditionInput.substring(position3, position3 + 1));
             if (intExtent != null) {
               myConditionModel.extentCode = _conditionInput.substring(position3, position3 + 1);
-              if (!(intExtent == 1 || intExtent == 2 || intExtent == 5 || intExtent == 9)) {
+              if (intExtent != 1 && intExtent != 2 && intExtent != 5 && intExtent != 9) {
                 myConditionModel.extentError = true;
               }
             } else {
@@ -279,11 +286,11 @@ class ConditionDecode {
       } else {
         // R/SNOCLO
         if (thisType == 4) {
-          myConditionModel.snoclo = true;
+          myConditionModel.isSnoclo = true;
         }
         // RXXL/CLRD//
         else if (thisType == 5) {
-          myConditionModel.clrd = true;
+          myConditionModel.isClrd = true;
 
           try {
             int intRunway = int.tryParse(_conditionInput.substring(1, 3));
@@ -302,7 +309,7 @@ class ConditionDecode {
         }
         // RXX/CLRD//
         else if (thisType == 6) {
-          myConditionModel.clrd = true;
+          myConditionModel.isClrd = true;
 
           try {
             int intRunway = int.tryParse(_conditionInput.substring(1, 3));
@@ -331,7 +338,7 @@ class ConditionDecode {
       _conditionModel.rwyDecoded = "Error! Runway not valid";
     } else {
      if (_conditionModel.rwyInt <= 36) {
-       _conditionModel.rwyDecoded = "Runway ${_conditionModel.rwyInt}";
+       _conditionModel.rwyDecoded = "Runway ${_conditionModel.rwyValue}";
      } else if (_conditionModel.rwyInt == 88) {
        _conditionModel.rwyDecoded = "All runways";
      } else if (_conditionModel.rwyInt == 99) {
@@ -340,24 +347,157 @@ class ConditionDecode {
     }
 
     // DEPOSIT Decoding
-
+    if (_conditionModel.depositError){
+      _conditionModel.depositDecoded = "Error! Deposit code not valid";
+    } else {
+      switch (_conditionModel.depositCode){
+        case "/":
+          _conditionModel.depositDecoded = "Clear and dry";
+          break;
+        case "0":
+          _conditionModel.depositDecoded = "Damp";
+          break;
+        case "1":
+          _conditionModel.depositDecoded = "Wet and water patches";
+          break;
+        case "2":
+          _conditionModel.depositDecoded = "Rime and frost covered (depth normally less than 1 mm)";
+          break;
+        case "3":
+          _conditionModel.depositDecoded = "Dry snow";
+          break;
+        case "4":
+          _conditionModel.depositDecoded = "Wet snow";
+          break;
+        case "5":
+          _conditionModel.depositDecoded = "Slush";
+          break;
+        case "6":
+          _conditionModel.depositDecoded = "Ice";
+          break;
+        case "7":
+          _conditionModel.depositDecoded = "Compacted or rolled snow";
+          break;
+        case "8":
+          _conditionModel.depositDecoded = "Frozen ruts or ridges";
+          break;
+        case "9":
+          _conditionModel.depositDecoded = "Type of deposit not reported";
+          break;
+      }
+    }
 
     // EXTENT Decoding
-
+    if (_conditionModel.extentError){
+      _conditionModel.extentDecoded = "Error! Extent code not valid";
+    } else {
+      switch (_conditionModel.extentCode){
+        case "/":
+          _conditionModel.extentDecoded = "Contamination extent not reported";
+          break;
+        case "1":
+          _conditionModel.extentDecoded = "Less than 10% of runway contaminated (covered)";
+          break;
+        case "2":
+          _conditionModel.extentDecoded = "11% to 25% of runway contaminated (covered)";
+          break;
+        case "5":
+          _conditionModel.extentDecoded = "26% to 50% of runway contaminated (covered)";
+          break;
+        case "9":
+          _conditionModel.extentDecoded = "51% to 100% of runway contaminated (covered)";
+          break;
+        default:
+          _conditionModel.extentDecoded = "Error! Extent code not valid";
+          break;
+      }
+    }
 
     // Depth Decoding
-
+    if (_conditionModel.depthError){
+      _conditionModel.depthDecoded = "Error! Depth code not valid";
+    } else {
+      if (_conditionModel.depthCode == "//") {
+        _conditionModel.depthDecoded = "Depth of deposit operationally not significant or not measurable";
+      } else if (_conditionModel.depthValue == 0) {
+        _conditionModel.depthDecoded = "Depth less than 1 mm";
+      } else if (_conditionModel.depthValue >= 1 && _conditionModel.depthValue <= 90) {
+        _conditionModel.depthDecoded = "Depth ${_conditionModel.depthValue} mm";
+      } else if (_conditionModel.depthValue >= 92 && _conditionModel.depthValue <= 97) {
+        switch (_conditionModel.depthValue) {
+          case (92):
+            _conditionModel.depthDecoded = "Depth 10 cm";
+            break;
+          case (93):
+            _conditionModel.depthDecoded = "Depth 15 cm";
+            break;
+          case (94):
+            _conditionModel.depthDecoded = "Depth 20 cm";
+            break;
+          case (95):
+            _conditionModel.depthDecoded = "Depth 25 cm";
+            break;
+          case (96):
+            _conditionModel.depthDecoded = "Depth 30 cm";
+            break;
+          case (97):
+            _conditionModel.depthDecoded = "Depth 35 cm";
+            break;
+          case (98):
+            _conditionModel.depthDecoded = "Depth 40 cm or more";
+            break;
+        } 
+      } else if (_conditionModel.depthValue == 99) {
+        _conditionModel.depthDecoded = "Runway or runways non-operational "
+            "due to snow, slush, ice, large drifts or runway "
+            "clearance, but depth not reported";
+      } else {
+        _conditionModel.depthDecoded = "Error! Depth code not valid";
+      }
+    }
 
     // Friction Decoding
-
+    if (_conditionModel.frictionError){
+      _conditionModel.frictionDecoded = "Error! Friction code not valid";
+    } else {
+      if (_conditionModel.frictionCode == "//") {
+        _conditionModel.frictionDecoded = "Braking conditions not reported and/or runway not operational";
+      } else if (_conditionModel.frictionValue >= 1 && _conditionModel.frictionValue <= 90) {
+        _conditionModel.frictionDecoded = "Friction coefficient .${_conditionModel.frictionValue}";
+      } else if (_conditionModel.frictionValue >= 91 && _conditionModel.frictionValue <= 95) {
+        switch (_conditionModel.frictionValue) {
+          case (91):
+            _conditionModel.frictionDecoded = "Braking action poor";
+            break;
+          case (92):
+            _conditionModel.frictionDecoded = "Braking action medium/poor";
+            break;
+          case (93):
+            _conditionModel.frictionDecoded = "Braking action medium";
+            break;
+          case (94):
+            _conditionModel.frictionDecoded = "Braking action medium/good";
+            break;
+          case (95):
+            _conditionModel.frictionDecoded = "Braking action good";
+            break;
+        }
+      } else if (_conditionModel.frictionValue == 99) {
+        _conditionModel.frictionDecoded = "Friction coefficient unreliable";
+      } else {
+        _conditionModel.frictionDecoded = "Error! Friction code not valid";
+      }
+    }
 
     // SNOCLO
-
+    if (_conditionModel.isSnoclo) {
+      _conditionModel.snocloDecoded = "Aerodrome is closed due to extreme deposit of snow";
+    }
 
     // CLRD
-
-
-
+    if (_conditionModel.isClrd) {
+      _conditionModel.clrdDecoded = "Contaminations have ceased to exist (CLEARED)";
+    }
   }
 
 }
