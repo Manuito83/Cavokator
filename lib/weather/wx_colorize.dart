@@ -33,15 +33,15 @@ class MetarColorize {
   int _regularRvr = 1000;
   int _badRvr = 1500;
 
-  List<String> GoodWeather = [
+  List<String> goodWeather = [
     r"CAVOK",
     r"NOSIG",
     r"NSC",
     r"00000KT"
   ];
 
-  List<String> RegularWeather = [
-    r"(VC)([A-Z]+)",
+  List<String> regularWeather = [
+    r"(VC)(?!PO|DS|SS)([A-Z]+)",
     r"^(?!\+)(SH|-SH)([A-Z]+)?",
     r"^(?!\+)(MI|-MI)([A-Z]+)?",
     r"^(?!\+)(BC|-BC)([A-Z]+)?",
@@ -66,11 +66,6 @@ class MetarColorize {
     r"^(?!\+)(DU|-DU)([A-Z]+)?",
     r"^(?!\+)(SA|-SA)([A-Z]+)?",
     r"^(?!\+)(HZ|-HZ)([A-Z]+)?",
-    r"^(?!\+)(PO|-PO)([A-Z]+)?",
-    r"^(?!\+)(SQ|-SQ)([A-Z]+)?",
-    r"^(?!\+)(FC|-FC)([A-Z]+)?",
-    r"^(?!\+)(SS|-SS)([A-Z]+)?",
-    r"^(?!\+)(DS|-DS)([A-Z]+)?",
     r"OVC003",
     r"OVC004",
     r"OVC005",
@@ -86,33 +81,17 @@ class MetarColorize {
   ];
 
 
-  List<String> BadWeather = [
-    "\s[+](([A-Z]+)|(\z))",                // ANYTHING WITH A "+"
-    "[+]TS(([A-Z]+)|(\z))",                // +TS, +TS(whatever), including last word in string
-    "[+]SH(([A-Z]+)|(\z))",                // +SH, +SH(whatever), including last word in string
-    "[+]FZ(([A-Z]+)|(\z))",                // +FZ, +FZ(whatever), including last word in string
-    "\sFZ(([A-Z]+)|(\z))",                 // FZ, FZ(whatever), including last word in string
-
-    "[+]RA",                               // Rain
-    "[+]DZ",                               // Drizzle
-    "[+]SG",                               // Snow Grains
-    "[+]PE",                               // Ice Pellets
-    "\sSN", "[+]SN", "BLSN",               // Snow
-
-    "SHSN", "SHPE", "SHGR", "SHGS",        // Red Showers
-
-    "\sFG", "\sVA+(\s|\b)",                // Visibility
-
-    "OVC001", "OVC002",                    // Cloud cover
-    "BKN001", "BKN002",
-
-    "\sPO", "\sSQ", "\sFC", "\sSS",        // Sand/Dust Whirls, Squalls, Funnel Cloud, Sandstorm
-    "\sDS+(\s|\z)",                        // Trying to avoid american "distant" (DSNT)
-    "[+]FC","[+]SS","[+]DS",
-    "\sVCPO", "\sVCSS", "\sVCDS",
-
-    "\sSNOCLO+(\s|\b)"                     // SNOW CLOSED... should be triggered by runway condition
-                                           // assessment as in R/SNOCLO//... but just in case
+  List<String> badWeather = [
+    r"^(\+)([A-Z]+)?",               // ANYTHING WITH A "+"
+    r"BLSN",
+    r"OVC001", "OVC002",             // Cloud cover
+    r"BKN001", "BKN002",
+    r"(\+)?(PO)",
+    r"(\+)?(SQ)",
+    r"(\+)?(FC)",
+    r"(\+)?(SS)",
+    r"(\+)?(\-)?(DS)(?![DSNT])",     // Trying to avoid american "distant" (DSNT)
+    r"VCPO", r"VCSS", r"VCDS",
   ];
 
 
@@ -138,7 +117,7 @@ class MetarColorize {
           text: word,
           style: TextStyle(
             color: conditionRegexSevere.hasMatch(word)
-                ? Colors.red : Colors.orange,
+                ? Colors.red : Colors.blue,
             decoration: TextDecoration.underline,
           ),
           recognizer: TapGestureRecognizer()..onTap = () {
@@ -154,7 +133,7 @@ class MetarColorize {
       }
 
       // GOOD WEATHER
-      String goodString = GoodWeather.join("|");
+      String goodString = goodWeather.join("|");
       var goodRegex = new RegExp(goodString);
       if (goodRegex.hasMatch(word)){
         thisSpan = TextSpan(
@@ -165,9 +144,8 @@ class MetarColorize {
         continue;
       }
 
-
       // REGULAR WEATHER
-      String regularString = RegularWeather.join("|");
+      String regularString = regularWeather.join("|");
       var regularRegex = new RegExp(regularString);
       if (regularRegex.hasMatch(word)){
         thisSpan = TextSpan(
@@ -178,24 +156,50 @@ class MetarColorize {
         continue;
       }
 
-
-      /*
-      // BAD WEATHER // TODO: IMPORTANT!!! Implement this
-      for (var badWx in BadWeather) {
-        if (word.contains(badWx)) {
-          thisSpan = TextSpan(
-            text: word + " ",
-            style: TextStyle(color: Colors.red),
-          );
-          spanList.add(thisSpan);
-          break;
-        }
+      // BAD WEATHER // TODO: IMPORTANT!!!
+      String badString = badWeather.join("|");
+      var badRegex = new RegExp(badString);
+      if (badRegex.hasMatch(word)){
+        thisSpan = TextSpan(
+          text: word + " ",
+          style: TextStyle(color: Colors.red),
+        );
+        spanList.add(thisSpan);
+        continue;
       }
-      */
+
+      // WIND
+      var windRegex = new RegExp(
+          r"[0-9]+KT");
+      if (windRegex.hasMatch(word)){
+        try {
+          Color thisColor = Colors.black;
+          int knots = int.tryParse(word.substring(3,5));
+          if (knots >= _regularWindIntensity && knots < _badWindIntensity) {
+            thisColor = Colors.orange;
+          } else if (knots > _badWindIntensity) {
+            thisColor = Colors.red;
+          }
+          thisSpan = TextSpan(
+              text: word + " ",
+              style: TextStyle(color: thisColor));
+        } catch (Exception) {
+          // pass
+        }
+        spanList.add(thisSpan);
+        continue;
+      }
+
+
+
+
+
+
 
       // STANDARD (NOTHING FOUND)
       thisSpan = TextSpan(
         text: word + " ",
+        // This has to be here even with themes
         style: TextStyle(color: Colors.black),
       );
       spanList.add(thisSpan);

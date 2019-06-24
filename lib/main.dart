@@ -10,7 +10,7 @@ class Cavokator extends StatelessWidget {
       title: "Cavokator",
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
-        //brightness: Brightness.dark,
+        //brightness: Brightness.light,
       ),
       home: DrawerPage(),
     );
