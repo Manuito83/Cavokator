@@ -168,16 +168,40 @@ class MetarColorize {
         continue;
       }
 
-      // WIND
+      // WIND KNOTS - e.g.: 25015KT
       var windRegex = new RegExp(
-          r"[0-9]+KT");
+          r"\b[0-9]+KT");
       if (windRegex.hasMatch(word)){
         try {
           Color thisColor = Colors.black;
           int knots = int.tryParse(word.substring(3,5));
-          if (knots >= _regularWindIntensity && knots < _badWindIntensity) {
+          if (knots >= _regularWindIntensity && knots <= _badWindIntensity) {
             thisColor = Colors.orange;
           } else if (knots > _badWindIntensity) {
+            thisColor = Colors.red;
+          }
+          thisSpan = TextSpan(
+              text: word + " ",
+              style: TextStyle(color: thisColor));
+        } catch (Exception) {
+          // pass
+        }
+        spanList.add(thisSpan);
+        continue;
+      }
+
+      // WIND KNOTS 2 - e.g.: 25015G34KT
+      var wind2Regex = new RegExp(
+          r"[0-9]+G[0-9]+KT");
+      if (wind2Regex.hasMatch(word)){
+        try {
+          Color thisColor = Colors.black;
+          int knots = int.tryParse(word.substring(3,5));
+          int gust = int.tryParse(word.substring(6,8));
+          if ((knots >= _regularWindIntensity || gust >= _regularGustIntensity)
+              && knots <= _badWindIntensity && gust <= _badGustIntensity) {
+            thisColor = Colors.orange;
+          } else if (knots > _badWindIntensity || gust > _badGustIntensity) {
             thisColor = Colors.red;
           }
           thisSpan = TextSpan(
