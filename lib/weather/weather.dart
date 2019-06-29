@@ -275,10 +275,9 @@ class _WeatherPageState extends State<WeatherPage> {
                       Widget myWeatherLineWidget;
                       if (item is AirportMetar){
 
-                        // TODO: DELETE DEBUG
-                        item.metars[0] = "LEZL 162030Z CAVOK "
-                            "MMM "
-                            "23030KT END";
+                        // DEBUG HERE
+                        //item.metars[0] = "LEZL 162030Z CAVOK "
+                        //"R25R/123456 2000 0800 R23/M2000U";
 
                         wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
                         myWeatherLineWidget = RichText(text: wxSpan);

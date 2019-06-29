@@ -26,18 +26,19 @@ class MetarColorize {
   int _badMpsGustIntensity = 20;
 
   // Visibility
-  int _regularVisibility = 6000;
-  int _badVisibility = 1000;
+  int _regularVisibility = 4000;
+  int _badVisibility = 800;
 
   // RVR
   int _regularRvr = 1000;
-  int _badRvr = 1500;
+  int _badRvr = 600;
 
   List<String> goodWeather = [
     r"CAVOK",
     r"NOSIG",
     r"NSC",
-    r"00000KT"
+    r"00000KT",
+    r"9999"
   ];
 
   List<String> regularWeather = [
@@ -86,7 +87,7 @@ class MetarColorize {
     r"BLSN",
     r"OVC001", "OVC002",             // Cloud cover
     r"BKN001", "BKN002",
-    r"(\+)?(PO)",
+    r"(?<!TEM)(\+)?(PO)",
     r"(\+)?(SQ)",
     r"(\+)?(FC)",
     r"(\+)?(SS)",
@@ -102,7 +103,9 @@ class MetarColorize {
     var splitMetar = metar.split(" ");
     TextSpan thisSpan;
 
-    for (var word in splitMetar){
+    for (int i = 0; i < splitMetar.length; i++){
+
+      String currentWord = splitMetar[i];
 
       // CONDITION
       var conditionRegex = new RegExp(
@@ -112,16 +115,16 @@ class MetarColorize {
           r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
       var conditionRegexSevere = new RegExp(
           r"((\b)+(R\/SNOCLO)+(\b))");
-      if (conditionRegex.hasMatch(word)){
+      if (conditionRegex.hasMatch(currentWord)){
         thisSpan = TextSpan(
-          text: word,
+          text: currentWord,
           style: TextStyle(
-            color: conditionRegexSevere.hasMatch(word)
+            color: conditionRegexSevere.hasMatch(currentWord)
                 ? Colors.red : Colors.blue,
             decoration: TextDecoration.underline,
           ),
           recognizer: TapGestureRecognizer()..onTap = () {
-            _conditionDialog(word);
+            _conditionDialog(currentWord);
           }
         );
         var spanSpace = TextSpan(
@@ -135,33 +138,35 @@ class MetarColorize {
       // GOOD WEATHER
       String goodString = goodWeather.join("|");
       var goodRegex = new RegExp(goodString);
-      if (goodRegex.hasMatch(word)){
+      if (goodRegex.hasMatch(currentWord)){
         thisSpan = TextSpan(
-          text: word + " ",
+          text: currentWord + " ",
           style: TextStyle(color: Colors.green),
         );
         spanList.add(thisSpan);
         continue;
       }
 
+
+
       // REGULAR WEATHER
       String regularString = regularWeather.join("|");
       var regularRegex = new RegExp(regularString);
-      if (regularRegex.hasMatch(word)){
+      if (regularRegex.hasMatch(currentWord)){
         thisSpan = TextSpan(
-            text: word + " ",
+            text: currentWord + " ",
             style: TextStyle(color: Colors.orange),
         );
         spanList.add(thisSpan);
         continue;
       }
 
-      // BAD WEATHER // TODO: IMPORTANT!!!
+      // BAD WEATHER
       String badString = badWeather.join("|");
       var badRegex = new RegExp(badString);
-      if (badRegex.hasMatch(word)){
+      if (badRegex.hasMatch(currentWord)){
         thisSpan = TextSpan(
-          text: word + " ",
+          text: currentWord + " ",
           style: TextStyle(color: Colors.red),
         );
         spanList.add(thisSpan);
@@ -171,20 +176,23 @@ class MetarColorize {
       // WIND KNOTS - e.g.: 25015KT
       var windRegex = new RegExp(
           r"\b[0-9]+KT");
-      if (windRegex.hasMatch(word)){
+      if (windRegex.hasMatch(currentWord)){
+        Color thisColor = Colors.black;
         try {
-          Color thisColor = Colors.black;
-          int knots = int.tryParse(word.substring(3,5));
+          int knots = int.tryParse(currentWord.substring(3,5));
           if (knots >= _regularWindIntensity && knots <= _badWindIntensity) {
             thisColor = Colors.orange;
           } else if (knots > _badWindIntensity) {
             thisColor = Colors.red;
           }
           thisSpan = TextSpan(
-              text: word + " ",
+              text: currentWord + " ",
               style: TextStyle(color: thisColor));
         } catch (Exception) {
-          // pass
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
         }
         spanList.add(thisSpan);
         continue;
@@ -193,11 +201,11 @@ class MetarColorize {
       // WIND KNOTS 2 - e.g.: 25015G34KT
       var wind2Regex = new RegExp(
           r"[0-9]+G[0-9]+KT");
-      if (wind2Regex.hasMatch(word)){
+      if (wind2Regex.hasMatch(currentWord)){
+        Color thisColor = Colors.black;
         try {
-          Color thisColor = Colors.black;
-          int knots = int.tryParse(word.substring(3,5));
-          int gust = int.tryParse(word.substring(6,8));
+          int knots = int.tryParse(currentWord.substring(3,5));
+          int gust = int.tryParse(currentWord.substring(6,8));
           if ((knots >= _regularWindIntensity || gust >= _regularGustIntensity)
               && knots <= _badWindIntensity && gust <= _badGustIntensity) {
             thisColor = Colors.orange;
@@ -205,24 +213,193 @@ class MetarColorize {
             thisColor = Colors.red;
           }
           thisSpan = TextSpan(
-              text: word + " ",
+              text: currentWord + " ",
               style: TextStyle(color: thisColor));
         } catch (Exception) {
-          // pass
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+        }
+        spanList.add(thisSpan);
+        continue;
+      }
+
+      // WIND MPS - e.g.: 25015MPS
+      var windRegexMps = new RegExp(
+          r"\b[0-9]+MPS");
+      if (windRegexMps.hasMatch(currentWord)){
+        Color thisColor = Colors.black;
+        try {
+          int mps = int.tryParse(currentWord.substring(3,5));
+          if (mps >= _regularMpsWindIntensity && mps <= _badMpsWindIntensity) {
+            thisColor = Colors.orange;
+          } else if (mps > _badMpsWindIntensity) {
+            thisColor = Colors.red;
+          }
+          thisSpan = TextSpan(
+              text: currentWord + " ",
+              style: TextStyle(color: thisColor));
+        } catch (Exception) {
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+        }
+        spanList.add(thisSpan);
+        continue;
+      }
+
+      // WIND MPS 2 - e.g.: 25015G34MPS
+      var wind2RegexMps = new RegExp(
+          r"[0-9]+G[0-9]+MPS");
+      if (wind2RegexMps.hasMatch(currentWord)){
+        Color thisColor = Colors.black;
+        try {
+          int mps = int.tryParse(currentWord.substring(3,5));
+          int gust = int.tryParse(currentWord.substring(6,8));
+          if ((mps >= _regularMpsWindIntensity || gust >= _regularMpsGustIntensity)
+              && mps <= _badMpsWindIntensity && gust <= _badMpsGustIntensity) {
+            thisColor = Colors.orange;
+          } else if (mps > _badMpsWindIntensity || gust > _badMpsGustIntensity) {
+            thisColor = Colors.red;
+          }
+          thisSpan = TextSpan(
+              text: currentWord + " ",
+              style: TextStyle(color: thisColor));
+        } catch (Exception) {
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
         }
         spanList.add(thisSpan);
         continue;
       }
 
 
+      // VISIBILITY
+      // Need to get exclude all / before and after, otherwise some parts
+      // won't work (e.g. RVR, times, etc)
+      var visibilityRegex = new RegExp(
+          r"(?<!\/)(\b)[0-9]{4}(?!\/)\b");
+
+      Color thisColor = Colors.black;
+
+      if (visibilityRegex.hasMatch(currentWord)){
+
+        // We need to include some exceptions for US codes
+        // based on https://weather.cod.edu/notes/metar.html
+        if (i > 0
+            && splitMetar[i - 1] == "WSHFT") {
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+          spanList.add(thisSpan);
+          continue;
+        }
+
+        try {
+          int vis = int.tryParse(currentWord);
+          if (vis <= _regularVisibility && vis > _badVisibility) {
+            thisColor = Colors.orange;
+          } else if (vis <= _badVisibility) {
+            thisColor = Colors.red;
+          }
+          thisSpan = TextSpan(
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+        } catch (Exception) {
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+        }
+        spanList.add(thisSpan);
+        continue;
+      }
 
 
+      // RVR
+      var rvrRegex = new RegExp(
+          r"\b(R)+(\d\d([LCR]?))+(\/)+([PM]?)+([0-9]{4})+([UDN]?)\b");
 
+      if (currentWord == "R/8888"){
+        print("WORD");
+      }
 
+      if (rvrRegex.hasMatch(currentWord)) {
+
+        TextSpan firstSpan;
+
+        Color thisColor = Colors.black;
+        try {
+          int rvr;
+          int addRunway = 0;
+          int addExtreme = 0;
+          int decreaseTrend = 0;
+
+          if (currentWord.substring(3, 4) != "/") {
+            addRunway = 1;
+            if (currentWord.substring(5, 6) == "P" || currentWord.substring(5, 6) == "M") {
+              addExtreme = 1;
+            }
+          } else {
+            if (currentWord.substring(4, 5) == "P" || currentWord.substring(4, 5) == "M") {
+              addExtreme = 1;
+            }
+          }
+          if (currentWord[currentWord.length - 1] == "U"
+              || currentWord[currentWord.length - 1] == "N"
+              || currentWord[currentWord.length - 1] == "D") {
+            decreaseTrend = 1;
+          }
+
+          rvr = int.tryParse(currentWord.substring(
+              4 + addRunway + addExtreme, currentWord.length - decreaseTrend));
+
+          String firstSplit = currentWord.substring(0, 4 + addRunway);
+
+          String secondSplit = currentWord.substring(4 + addRunway);
+
+          if (rvr <= _regularRvr && rvr >= _badRvr) {
+            thisColor = Colors.orange;
+          } else if (rvr < _badRvr) {
+            thisColor = Colors.red;
+          }
+          firstSpan = TextSpan(
+              text: firstSplit,
+              style: TextStyle(color: Colors.black));
+          thisSpan = TextSpan(
+              text: secondSplit + " ",
+              style: TextStyle(color: thisColor));
+        } catch (Exception) {
+          thisSpan = TextSpan (
+            text: currentWord + " ",
+            style: TextStyle(color: thisColor),
+          );
+        }
+        spanList.add(firstSpan);
+        spanList.add(thisSpan);
+        continue;
+      }
+
+      // TEMPORARY
+      var temporaryRegex = new RegExp(
+          r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}");
+      if (temporaryRegex.hasMatch(currentWord)) {
+          thisSpan = TextSpan(
+              text: currentWord + " ",
+              style: TextStyle(color: Colors.blue));
+          spanList.add(thisSpan);
+          continue;
+      }
 
       // STANDARD (NOTHING FOUND)
       thisSpan = TextSpan(
-        text: word + " ",
+        text: currentWord + " ",
         // This has to be here even with themes
         style: TextStyle(color: Colors.black),
       );
