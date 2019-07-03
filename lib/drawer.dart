@@ -34,7 +34,7 @@ class _DrawerPageState extends State<DrawerPage> {
   int _selectedDrawerIndex = 0;
 
   bool _isThemeDark;
-  String _switchThemeString = "DARK";
+  String _switchThemeString = "";
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -83,13 +83,13 @@ class _DrawerPageState extends State<DrawerPage> {
   _handleThemeChanged(bool newValue) {
     setState(() {
       _isThemeDark = newValue;
-      _switchThemeString = (newValue == false) ? "LIGHT" : "DARK";
-      if (newValue == false) {
-        widget.changeBrightness(Brightness.light);
-        SharedPreferencesModel().setAppTheme("LIGHT");
-      } else {
+      _switchThemeString = (newValue == true) ? "DARK" : "LIGHT";
+      if (newValue == true) {
         widget.changeBrightness(Brightness.dark);
         SharedPreferencesModel().setAppTheme("DARK");
+      } else {
+        widget.changeBrightness(Brightness.light);
+        SharedPreferencesModel().setAppTheme("LIGHT");
       }
     });
   }
@@ -97,6 +97,7 @@ class _DrawerPageState extends State<DrawerPage> {
   @override
   Widget build(BuildContext context) {
     _isThemeDark = widget.savedThemeDark;
+    _switchThemeString = _isThemeDark == true ? "DARK" : "LIGHT";
     var drawerOptions = <Widget>[];
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var myItem = widget.drawerItems[i];
