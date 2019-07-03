@@ -83,6 +83,9 @@ class _WeatherPageState extends State<WeatherPage> {
             image: DecorationImage(
               image: AssetImage('assets/images/weather_header.jpg'),
               fit: BoxFit.fitWidth,
+              colorFilter: widget.isThemeDark == true
+                  ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                  : null,
             ),
           ),
         ),
@@ -114,7 +117,7 @@ class _WeatherPageState extends State<WeatherPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           border: Border.all(color: Colors.grey),
-          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground) // TODO: change this
           //color: Colors.grey[200],
         ),
         child: Column(

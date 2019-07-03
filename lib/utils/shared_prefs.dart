@@ -4,6 +4,8 @@ class SharedPreferencesModel {
   ///
   /// Instantiation of the SharedPreferences library
   ///
+  final String _kAppThemePrefs = "app_theme";
+
   final String _kWeatherInformationPrefs = "wx_information";
   final String _kWeatherUserInputPrefs = "wx_userInput";
 
@@ -16,6 +18,20 @@ class SharedPreferencesModel {
 
   final String _kConditionModelPrefs = "condition_model";
   final String _kConditionInputPrefs = "condition_input";
+
+
+  /// ----------------------------
+  /// Methods for app theme
+  /// ----------------------------
+  Future<String> getAppTheme() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppThemePrefs) ?? "";
+  }
+
+  Future<bool> setAppTheme(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kAppThemePrefs, value);
+  }
 
   /// ----------------------------
   /// Methods for weather requests

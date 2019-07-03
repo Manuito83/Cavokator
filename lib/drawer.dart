@@ -4,6 +4,7 @@ import 'package:cavokator_flutter/weather/weather.dart';
 import 'package:cavokator_flutter/notam/notam.dart';
 import 'package:cavokator_flutter/condition/condition.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
 class DrawerItem {
   String title;
@@ -13,6 +14,12 @@ class DrawerItem {
 }
 
 class DrawerPage extends StatefulWidget {
+
+  final Function changeBrightness;
+  final bool savedThemeDark;
+
+  DrawerPage({@required this.changeBrightness, @required this.savedThemeDark});
+
   final drawerItems = [
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
     new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
@@ -26,8 +33,8 @@ class DrawerPage extends StatefulWidget {
 class _DrawerPageState extends State<DrawerPage> {
   int _selectedDrawerIndex = 0;
 
-  bool _isThemeDark = false;
-  String _switchThemeString = "Dark";
+  bool _isThemeDark;
+  String _switchThemeString = "DARK";
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -77,11 +84,19 @@ class _DrawerPageState extends State<DrawerPage> {
     setState(() {
       _isThemeDark = newValue;
       _switchThemeString = (newValue == false) ? "LIGHT" : "DARK";
+      if (newValue == false) {
+        widget.changeBrightness(Brightness.light);
+        SharedPreferencesModel().setAppTheme("LIGHT");
+      } else {
+        widget.changeBrightness(Brightness.dark);
+        SharedPreferencesModel().setAppTheme("DARK");
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    _isThemeDark = widget.savedThemeDark;
     var drawerOptions = <Widget>[];
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var myItem = widget.drawerItems[i];
