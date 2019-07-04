@@ -69,10 +69,14 @@ class _WeatherPageState extends State<WeatherPage> {
 
   Widget _myAppBar() {
     return SliverAppBar(
-      iconTheme: IconThemeData(color: Colors.black),
+      iconTheme: IconThemeData(
+        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+      ),
       title: Text(
           "Weather",
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        ),
       ),
       expandedHeight: 150,
       // TODO: Settings option (value '0' if inactive)
@@ -84,13 +88,14 @@ class _WeatherPageState extends State<WeatherPage> {
               image: AssetImage('assets/images/weather_header.jpg'),
               fit: BoxFit.fitWidth,
               colorFilter: widget.isThemeDark == true
-                  ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                  ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken)
                   : null,
             ),
           ),
         ),
       ),
       actions: <Widget>[
+        /*
         IconButton(
           icon: Icon(Icons.access_alarm),
           color: Colors.black,
@@ -98,13 +103,7 @@ class _WeatherPageState extends State<WeatherPage> {
             // TEST
           },
         ),
-        IconButton(
-          icon: Icon(Icons.clear),
-          color: Colors.black,
-          onPressed: () {
-            // TEST
-          },
-        ),
+        */
       ],
     );
   }
@@ -117,7 +116,7 @@ class _WeatherPageState extends State<WeatherPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           border: Border.all(color: Colors.grey),
-          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground) // TODO: change this
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
           //color: Colors.grey[200],
         ),
         child: Column(
@@ -135,6 +134,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       ),
                       ImageIcon(
                         AssetImage("assets/icons/drawer_wx.png"),
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -143,7 +143,6 @@ class _WeatherPageState extends State<WeatherPage> {
                         child: TextFormField(
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.black,
                           ),
                           keyboardType: TextInputType.text,
                           maxLines: null,
@@ -244,8 +243,10 @@ class _WeatherPageState extends State<WeatherPage> {
                   child: Container(
                     margin: EdgeInsetsDirectional.only(bottom: 25),
                     height: 60.0,
-                    color: (state.isPinned ? Colors.red[300] : Colors.lightBlue)
-                        .withOpacity(1.0 - state.scrollPercentage),
+                    color: (state.isPinned
+                        ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
+                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)
+                        .withOpacity(1.0 - state.scrollPercentage)),
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -282,7 +283,11 @@ class _WeatherPageState extends State<WeatherPage> {
                         //item.metars[0] = "LEZL 162030Z CAVOK "
                         //"R25R/123456 2000 0800 R23/M2000U";
 
-                        wxSpan = MetarColorize(metar: item.metars[0], context: context).getResult;
+                        wxSpan = MetarColorize(
+                            metar: item.metars[0],
+                            isThemeDark: widget.isThemeDark,
+                            context: context)
+                            .getResult;
                         myWeatherLineWidget = RichText(text: wxSpan);
                       } else if (item is AirportTafor){
                         var myTaforString = item.tafors[0];
@@ -295,9 +300,16 @@ class _WeatherPageState extends State<WeatherPage> {
                               var splitAgain = split.split("[/trend]");
                               var firstSpan = TextSpan(
                                 text: splitAgain[0],
-                                style: TextStyle(color: Colors.blue),
+                                style: TextStyle(
+                                  color: ThemeMe.apply(widget.isThemeDark,
+                                      DesiredColor.BlueTempo),
+                                ),
                               );
-                              var secondSpan = MetarColorize(metar: splitAgain[1], context: context).getResult;
+                              var secondSpan = MetarColorize(
+                                  metar: splitAgain[1],
+                                  isThemeDark: widget.isThemeDark,
+                                  context: context)
+                                  .getResult;
                               thisSpan.add(firstSpan);
                               thisSpan.add(secondSpan);
                               myWeatherRows.add(
@@ -305,7 +317,10 @@ class _WeatherPageState extends State<WeatherPage> {
                                   padding: EdgeInsets.only(left: 8, top: 8),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.play_arrow, color: Colors.blue, size: 16,),
+                                      Icon(Icons.play_arrow,
+                                        color: ThemeMe.apply(widget.isThemeDark,
+                                            DesiredColor.BlueTempo),
+                                        size: 16,),
                                       Padding(padding: EdgeInsets.only(left: 2)),
                                       Flexible(
                                         child: RichText(
@@ -320,7 +335,11 @@ class _WeatherPageState extends State<WeatherPage> {
                               );
                             } else {
                               List<TextSpan> thisSpan = List<TextSpan>();
-                              thisSpan.add(MetarColorize(metar: split, context: context).getResult);
+                              thisSpan.add(MetarColorize(
+                                  metar: split,
+                                  isThemeDark: widget.isThemeDark,
+                                  context: context)
+                                  .getResult);
                               myWeatherRows.add(
                                 Row(
                                   children: [
@@ -343,7 +362,11 @@ class _WeatherPageState extends State<WeatherPage> {
                         }
                         else {
                           // TODO: is this OK?
-                          wxSpan = MetarColorize(metar: myTaforString, context: context).getResult;
+                          wxSpan = MetarColorize(
+                              metar: myTaforString,
+                              isThemeDark: widget.isThemeDark,
+                              context: context)
+                              .getResult;
                           myWeatherLineWidget = RichText(text: wxSpan);
                         }
                       }

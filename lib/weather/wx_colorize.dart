@@ -1,9 +1,11 @@
+import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:cavokator_flutter/condition/condition_decode.dart';
 
 class MetarColorize {
 
+  bool _isThemeDark;
   BuildContext myContext;
 
   TextSpan _colorizedResult;
@@ -96,8 +98,10 @@ class MetarColorize {
   ];
 
 
-  MetarColorize ({@required String metar, @required BuildContext context}) {
+  MetarColorize ({@required String metar, @required bool isThemeDark,
+    @required BuildContext context}) {
 
+    _isThemeDark = isThemeDark;
     myContext = context;
     List<TextSpan> spanList = List<TextSpan>();
     var splitMetar = metar.split(" ");
@@ -177,7 +181,7 @@ class MetarColorize {
       var windRegex = new RegExp(
           r"\b[0-9]+KT");
       if (windRegex.hasMatch(currentWord)){
-        Color thisColor = Colors.black;
+        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
           int knots = int.tryParse(currentWord.substring(3,5));
           if (knots >= _regularWindIntensity && knots <= _badWindIntensity) {
@@ -202,7 +206,7 @@ class MetarColorize {
       var wind2Regex = new RegExp(
           r"[0-9]+G[0-9]+KT");
       if (wind2Regex.hasMatch(currentWord)){
-        Color thisColor = Colors.black;
+        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
           int knots = int.tryParse(currentWord.substring(3,5));
           int gust = int.tryParse(currentWord.substring(6,8));
@@ -229,7 +233,7 @@ class MetarColorize {
       var windRegexMps = new RegExp(
           r"\b[0-9]+MPS");
       if (windRegexMps.hasMatch(currentWord)){
-        Color thisColor = Colors.black;
+        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
           int mps = int.tryParse(currentWord.substring(3,5));
           if (mps >= _regularMpsWindIntensity && mps <= _badMpsWindIntensity) {
@@ -254,7 +258,7 @@ class MetarColorize {
       var wind2RegexMps = new RegExp(
           r"[0-9]+G[0-9]+MPS");
       if (wind2RegexMps.hasMatch(currentWord)){
-        Color thisColor = Colors.black;
+        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
           int mps = int.tryParse(currentWord.substring(3,5));
           int gust = int.tryParse(currentWord.substring(6,8));
@@ -284,7 +288,7 @@ class MetarColorize {
       var visibilityRegex = new RegExp(
           r"(?<!\/)(\b)[0-9]{4}(?!\/)\b");
 
-      Color thisColor = Colors.black;
+      Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
 
       if (visibilityRegex.hasMatch(currentWord)){
 
@@ -334,7 +338,7 @@ class MetarColorize {
 
         TextSpan firstSpan;
 
-        Color thisColor = Colors.black;
+        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
           int rvr;
           int addRunway = 0;
@@ -371,7 +375,9 @@ class MetarColorize {
           }
           firstSpan = TextSpan(
               text: firstSplit,
-              style: TextStyle(color: Colors.black));
+              style: TextStyle(
+                color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+              ));
           thisSpan = TextSpan(
               text: secondSplit + " ",
               style: TextStyle(color: thisColor));
@@ -392,7 +398,8 @@ class MetarColorize {
       if (temporaryRegex.hasMatch(currentWord)) {
           thisSpan = TextSpan(
               text: currentWord + " ",
-              style: TextStyle(color: Colors.blue));
+              style: TextStyle(color: ThemeMe.apply(_isThemeDark,
+                  DesiredColor.BlueTempo),));
           spanList.add(thisSpan);
           continue;
       }
@@ -401,7 +408,9 @@ class MetarColorize {
       thisSpan = TextSpan(
         text: currentWord + " ",
         // This has to be here even with themes
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(
+          color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+        ),
       );
       spanList.add(thisSpan);
     }

@@ -132,7 +132,7 @@ class _NotamPageState extends State<NotamPage> {
       widget.callback(SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: IconThemeData(size: 22.0),
-        overlayColor: Colors.black,
+        overlayColor: Colors.grey[800],
         overlayOpacity: 0.5,
         backgroundColor: Colors.orange,
         foregroundColor: Colors.black,
@@ -145,7 +145,7 @@ class _NotamPageState extends State<NotamPage> {
     }
     else {
       widget.callback(SpeedDial(
-        overlayColor: Colors.black,
+        overlayColor: Colors.grey[800],
         overlayOpacity: 0.5,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -158,10 +158,14 @@ class _NotamPageState extends State<NotamPage> {
 
   Widget _myAppBar() {
     return SliverAppBar(
-      iconTheme: new IconThemeData(color: Colors.black),
+      iconTheme: new IconThemeData(
+        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+      ),
       title: Text(
         "NOTAM",
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        ),
       ),
       expandedHeight: 150,
       // TODO: Settings option (value '0' if inactive)
@@ -172,13 +176,19 @@ class _NotamPageState extends State<NotamPage> {
             image: new DecorationImage(
               image: new AssetImage('assets/images/notam_header.jpg'),
               fit: BoxFit.fitWidth,
+              colorFilter: widget.isThemeDark == true
+                  ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken)
+                  : null,
             ),
           ),
         ),
       ),
       actions: <Widget>[
         PopupMenuButton<CustomNotamPopup>(
-          icon: Icon(Icons.sort),
+          icon: Icon(
+            Icons.sort,
+            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          ),
           //initialValue: _popupChoices[_initialPopupValue],
           onSelected: _selectCategoryMenu,
           itemBuilder: (BuildContext context) {
@@ -192,7 +202,7 @@ class _NotamPageState extends State<NotamPage> {
         ),
         IconButton(
           icon: Icon(Icons.share),
-          color: Colors.black,
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
             Share.share(mySharedNotam);
           },
@@ -253,6 +263,7 @@ class _NotamPageState extends State<NotamPage> {
                       ),
                       ImageIcon(
                         AssetImage("assets/icons/drawer_notam.png"),
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -261,7 +272,7 @@ class _NotamPageState extends State<NotamPage> {
                         child: TextFormField(
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.black,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                           ),
                           keyboardType: TextInputType.text,
                           maxLines: null,
@@ -439,8 +450,9 @@ class _NotamPageState extends State<NotamPage> {
                   child: Container(
                     margin: EdgeInsetsDirectional.only(bottom: 25),
                     height: 60.0,
-                    color: (state.isPinned ? Colors.red[300] : Colors.lightBlue)
-                        .withOpacity(1.0 - state.scrollPercentage),
+                    color: (state.isPinned ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
+                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)
+                        .withOpacity(1.0 - state.scrollPercentage)),
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -499,7 +511,9 @@ class _NotamPageState extends State<NotamPage> {
                     final item = notamModel.notamModelList[i].airportNotams[index];
                     if (item is NotamSingle){
                       bool colorBorderActive = false;
-                      Color colorBorderValue = Colors.white;
+                      Color colorBorderValue = ThemeMe.apply(
+                          widget.isThemeDark,
+                          DesiredColor.MainText);
 
                       // WARNING IN ORANGE
                       if (item.categorySubMain == "Air display" ||
@@ -540,9 +554,7 @@ class _NotamPageState extends State<NotamPage> {
                               ? new RoundedRectangleBorder(
                               side: new BorderSide(color: colorBorderValue, width: 2.0),
                               borderRadius: BorderRadius.circular(4.0))
-                              : new RoundedRectangleBorder(
-                              side: new BorderSide(color: Colors.white, width: 2.0),
-                              borderRadius: BorderRadius.circular(4.0)),
+                              : null,
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
@@ -608,7 +620,7 @@ class _NotamPageState extends State<NotamPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
             side: BorderSide(
-              color: Colors.deepPurple,
+              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory),
               width: 2,
             ),
           ),
@@ -645,7 +657,7 @@ class _NotamPageState extends State<NotamPage> {
       if (thisNotam.latitude != null) {
         return IconButton(
           icon: Icon(Icons.map),
-          color: Colors.black,
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
             _showMap(
                 notamId: thisNotam.id,
@@ -680,7 +692,7 @@ class _NotamPageState extends State<NotamPage> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Icon(Icons.play_arrow,
-                        color: Colors.black,
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                         size: 12,
                       ),
                     ),
@@ -705,7 +717,7 @@ class _NotamPageState extends State<NotamPage> {
               Text(notamCategorySubMain,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.blue,
+                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.BlueTempo),
                 ),
               ),
             ],
@@ -745,7 +757,9 @@ class _NotamPageState extends State<NotamPage> {
       return Row(
         children: <Widget>[
           Icon(Icons.today,
-            color: notamValid ? Colors.red[300] : Colors.black,
+            color: notamValid
+                ? Colors.red[300]
+                : ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
             size: 18,
           ),
           Flexible(
@@ -759,7 +773,7 @@ class _NotamPageState extends State<NotamPage> {
             ),
           ),
           Icon(Icons.play_arrow,
-            color: Colors.black,
+            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
             size: 12,
           ),
           Flexible(
@@ -785,7 +799,7 @@ class _NotamPageState extends State<NotamPage> {
           child: Row(
             children: <Widget>[
               Icon(Icons.alarm,
-                color: Colors.black,
+                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                 size: 18,
               ),
               Flexible(
@@ -811,7 +825,7 @@ class _NotamPageState extends State<NotamPage> {
       if (thisNotam.bottomLimit != "") {
         bottomIcon = Icon(
           Icons.vertical_align_bottom,
-          color: Colors.black,
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           size: 18,
         );
         bottomText = Flexible(
@@ -840,7 +854,7 @@ class _NotamPageState extends State<NotamPage> {
         );
         topIcon = Icon(
           Icons.vertical_align_top,
-          color: Colors.black,
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           size: 18,
         );
         topText = Flexible(
@@ -901,7 +915,7 @@ class _NotamPageState extends State<NotamPage> {
                 myMapWidget(),
                 IconButton(
                   icon: Icon(Icons.share),
-                  color: Colors.black,
+                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                   onPressed: () {
                     Share.share(_shareThisNotam(thisNotam, thisAirportName));
                   },
@@ -1279,6 +1293,9 @@ class _NotamPageState extends State<NotamPage> {
           child: Icon(Icons.local_airport),
           backgroundColor: Colors.red,
           label: _scrollList[i].toUpperCase(),
+          labelStyle: TextStyle(
+            color: Colors.black,
+          ),
           onTap: () => _scrollToNotam(position: i),
         );
         _myDialsList.add(singleDial);
@@ -1290,6 +1307,9 @@ class _NotamPageState extends State<NotamPage> {
       child: Icon(Icons.arrow_upward),
       backgroundColor: Colors.green,
       label: 'Top',
+      labelStyle: TextStyle(
+        color: Colors.black,
+      ),
       onTap: () => _scrollController.animateTo(0,
           duration: Duration(seconds: 2),
           curve: Curves.ease),
