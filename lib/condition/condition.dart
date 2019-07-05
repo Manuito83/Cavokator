@@ -74,8 +74,7 @@ class _ConditionPageState extends State<ConditionPage> {
         "Runway Condition",
         style: TextStyle(color: Colors.white),
       ),
-      expandedHeight: 150,
-      // TODO: Settings option (value '0' if inactive)
+      expandedHeight: 150,  // TODO: Settings option (value '0' if inactive)
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -83,6 +82,9 @@ class _ConditionPageState extends State<ConditionPage> {
             image: new DecorationImage(
               image: new AssetImage('assets/images/condition_header.jpg'),
               fit: BoxFit.fitWidth,
+              colorFilter: widget.isThemeDark == true
+                  ? ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
+                  : null,
             ),
           ),
         ),
@@ -116,6 +118,7 @@ class _ConditionPageState extends State<ConditionPage> {
                       ),
                       ImageIcon(
                         AssetImage("assets/icons/drawer_condition.png"),
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -124,7 +127,7 @@ class _ConditionPageState extends State<ConditionPage> {
                         child: TextFormField(
                           style: TextStyle(
                             fontSize: 24,
-                            color: Colors.black,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                           ),
                           keyboardType: TextInputType.text,
                           maxLines: 1,

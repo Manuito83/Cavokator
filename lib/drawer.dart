@@ -5,6 +5,7 @@ import 'package:cavokator_flutter/notam/notam.dart';
 import 'package:cavokator_flutter/condition/condition.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
+import 'package:cavokator_flutter/utils/theme_me.dart';
 
 class DrawerItem {
   String title;
@@ -108,8 +109,8 @@ class _DrawerPageState extends State<DrawerPage> {
       drawerOptions.add(
         ListTileTheme(
           selectedColor: Colors.red,
-          iconColor: Colors.black,
-          textColor: Colors.black,
+          iconColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+          textColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
           child: Ink(
             color: myBackgroundColor,
             child: ListTile(
@@ -132,39 +133,57 @@ class _DrawerPageState extends State<DrawerPage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text('CAVOKATOR'),
-                    Text('CAVOKATOR 2'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(_switchThemeString),
+            Container(
+              height: 300,
+              child: DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                child: Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Flexible(
+                        child: Image(
+                          image: AssetImage('assets/images/appicon.png'),
+                          fit: BoxFit.fill,
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 20),
+                      ),
+                      Text(
+                        'CAVOKATOR',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Flexible(
-                          child: Switch(
-                            value: _isThemeDark,
-                            onChanged: (bool value) {
-                                _handleThemeChanged(value);
-                              },
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Flexible(
+                              child: Text(_switchThemeString),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 20),
+                            ),
+                            Flexible(
+                              child: Switch(
+                                value: _isThemeDark,
+                                onChanged: (bool value) {
+                                  _handleThemeChanged(value);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+
             Column(children: drawerOptions)
           ],
         ),
