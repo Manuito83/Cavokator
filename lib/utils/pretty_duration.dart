@@ -22,7 +22,6 @@ class PrettyDuration {
   PrettyType _prettyType;
 
   get getDuration => _prettyTime;
-  //get getDurationInMinutes => _durationList[1];  // TODO: delete? useless
 
   /// [header] is expected to be something like "METAR" or "TAFOR".
   /// [prettyType] determines the color (different depending on what it is)
@@ -30,7 +29,7 @@ class PrettyDuration {
                    @required PrettyType prettyType}) {
     _header = header;
     _prettyType = prettyType;
-    var timeNow = DateTime.now().toUtc();  // TODO: CHANGE WHEN TESTS PERFORMED
+    var timeNow = DateTime.now().toUtc();
     var duration = timeNow.difference(referenceTime);
     _totalHours = duration.inHours;
     _calculateDuration(duration);

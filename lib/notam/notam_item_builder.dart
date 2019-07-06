@@ -6,7 +6,7 @@ class NotamModelList {
 
 class NotamModel {
   String airportHeading;
-  String airportCode;
+  String airportCode; // Not using this for anything at the moment
   var airportNotams = List<NotamGeneric>();
 
   bool airportWithNoNotam = false;
@@ -20,7 +20,8 @@ class NotamCategory extends NotamGeneric {
 }
 
 class NotamSingle extends NotamGeneric {
-  // Top categories
+  bool notamQ;
+    // Top categories
   String mainCategory;
   // Notam ID
   String id;
@@ -82,10 +83,13 @@ class NotamItemBuilder {
           var categoryR = List<int>();
           var categoryO = List<int>();
           var categoryNotReported = List<int>();
+          var noNotamQ = List<int>();
 
           for (var n = 0; n < jsonNotamList[i].airportNotam.length; n++) {
             var currentNotamCategory = jsonNotamList[i].airportNotam[n].categoryPrimary;
-            if (currentNotamCategory == "Warnings") {
+            if (!jsonNotamList[i].airportNotam[n].notamQ) {
+              noNotamQ.add(n);
+            } else if (currentNotamCategory == "Warnings") {
               categoryW.add(n);
             } else if (currentNotamCategory == "Lighting facilities") {
               categoryL.add(n);
@@ -159,10 +163,12 @@ class NotamItemBuilder {
           for (var sorted in categoryNotReported) {
             sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
           }
-
-          // TODO: careful if NotamQ = false! here and elsewhere
+          for (var sorted in noNotamQ) {
+            sortedNotamList.add(jsonNotamList[i].airportNotam[sorted]);
+          }
 
           finalNotamItemList = sortedNotamList;
+
         } else {
           finalNotamItemList = jsonNotamList[i].airportNotam;
         }
@@ -179,6 +185,11 @@ class NotamItemBuilder {
             finalNotamItemList[j].categoryPrimary = "(no category)";
           }
 
+          if (!finalNotamItemList[j].notamQ) {
+            finalNotamItemList[j].categoryPrimary = "(raw)";
+          }
+
+
           if (finalNotamItemList[j].categoryPrimary != currentCategory) {
             currentCategory = finalNotamItemList[j].categoryPrimary;
             categoryToBeAdded.mainCategory = finalNotamItemList[j].categoryPrimary;
@@ -186,36 +197,43 @@ class NotamItemBuilder {
           }
 
           var _thisNotam = NotamSingle();
-          _thisNotam.mainCategory = finalNotamItemList[j].categoryPrimary;
-          _thisNotam.id = finalNotamItemList[j].notamId;
-          _thisNotam.categorySubMain = finalNotamItemList[j].categorySubMain;
-          _thisNotam.categorySubSecondary = finalNotamItemList[j].categorySubSecondary;
-          _thisNotam.freeText = finalNotamItemList[j].notamFreeText;
-          _thisNotam.raw = finalNotamItemList[j].notamRaw;
-          _thisNotam.latitude = finalNotamItemList[j].latitude;
-          _thisNotam.longitude = finalNotamItemList[j].longitude;
-          _thisNotam.radius = finalNotamItemList[j].radius;
 
-          // Dates
-          String myStartString = finalNotamItemList[j].startTime;
-          _thisNotam.startTime = DateTime.parse(myStartString);
+          if (finalNotamItemList[j].notamQ) {
+            _thisNotam.notamQ = true;
+            _thisNotam.mainCategory = finalNotamItemList[j].categoryPrimary;
+            _thisNotam.id = finalNotamItemList[j].notamId;
+            _thisNotam.categorySubMain = finalNotamItemList[j].categorySubMain;
+            _thisNotam.categorySubSecondary = finalNotamItemList[j].categorySubSecondary;
+            _thisNotam.freeText = finalNotamItemList[j].notamFreeText;
+            _thisNotam.raw = finalNotamItemList[j].notamRaw;
+            _thisNotam.latitude = finalNotamItemList[j].latitude;
+            _thisNotam.longitude = finalNotamItemList[j].longitude;
+            _thisNotam.radius = finalNotamItemList[j].radius;
 
-          // Be careful, a the API passes DateTime.maxValue if Permanent
-          _thisNotam.estimated = finalNotamItemList[j].endTimeEstimated;
-          _thisNotam.permanent = finalNotamItemList[j].endTimePermanent;
-          if (!_thisNotam.permanent) {
-            String myEndString = finalNotamItemList[j].endTime;
-            _thisNotam.endTime = DateTime.parse(myEndString);
+            // Dates
+            String myStartString = finalNotamItemList[j].startTime;
+            _thisNotam.startTime = DateTime.tryParse(myStartString);
+
+            // Be careful, a the API passes DateTime.maxValue if Permanent
+            _thisNotam.estimated = finalNotamItemList[j].endTimeEstimated;
+            _thisNotam.permanent = finalNotamItemList[j].endTimePermanent;
+            if (!_thisNotam.permanent) {
+              String myEndString = finalNotamItemList[j].endTime;
+              _thisNotam.endTime = DateTime.tryParse(myEndString);
+            } else {
+              _thisNotam.endTime = null;
+            }
+
+            // Times
+            _thisNotam.validTimes = finalNotamItemList[j].spanTime;
+
+            // Limits
+            _thisNotam.topLimit = finalNotamItemList[j].topLimit;
+            _thisNotam.bottomLimit = finalNotamItemList[j].bottomLimit;
           } else {
-            _thisNotam.endTime = null;
+            _thisNotam.notamQ = false;
+            _thisNotam.raw = finalNotamItemList[j].notamRaw;
           }
-
-          // Times
-          _thisNotam.validTimes = finalNotamItemList[j].spanTime;
-
-          // Limits
-          _thisNotam.topLimit = finalNotamItemList[j].topLimit;
-          _thisNotam.bottomLimit = finalNotamItemList[j].bottomLimit;
 
           notamModel.airportNotams.add(_thisNotam);
         }
@@ -225,9 +243,11 @@ class NotamItemBuilder {
       }
 
       notamModel.airportHeading = jsonNotamList[i].fullAirportDetails.name;
+
       jsonNotamList[i].airportIdIata == "" ?
         notamModel.airportCode = jsonNotamList[i].airportIdIcao :
         notamModel.airportCode = jsonNotamList[i].airportIdIata;
+
       result.notamModelList.add(notamModel);
     }
   }

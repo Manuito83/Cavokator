@@ -7,6 +7,7 @@ class WxModelList {
 class WxModel {
   String airportHeading;
   var airportWeather = List <AirportWeather>();
+  bool airportFound;
 }
 
 abstract class AirportWeather {}
@@ -70,6 +71,12 @@ class WxItemBuilder {
         }
         // Tafor
         _myTafors.tafors.add(tafs.tafor);
+      }
+
+      if (jsonWeatherList[i].airportNotFound) {
+        wxModel.airportFound = false;
+      } else {
+        wxModel.airportFound = true;
       }
 
       wxModel.airportHeading = jsonWeatherList[i].fullAirportDetails.name;

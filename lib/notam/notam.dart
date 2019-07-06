@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
 import 'package:share/share.dart';
+import 'package:connectivity/connectivity.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -168,7 +169,8 @@ class _NotamPageState extends State<NotamPage> {
         ),
       ),
       expandedHeight: 150,
-      // TODO: Settings option (value '0' if inactive)
+      // TODO (Feature): Settings option to show pictures in appBar
+      // (set '0' if inactive)
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -366,6 +368,7 @@ class _NotamPageState extends State<NotamPage> {
       );
     } else {
       if (_myNotamList.isNotEmpty) {
+
         var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList,
                                             sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
@@ -558,7 +561,9 @@ class _NotamPageState extends State<NotamPage> {
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: notamSingleCard(item, airportName),
+                            child: item.notamQ
+                                ? notamQSingleCard(item, airportName)
+                                : notamOtherSingleCard(item),
                           ),
                         ),
                       );
@@ -645,7 +650,7 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Widget notamSingleCard (NotamSingle thisNotam, String thisAirportName) {
+  Widget notamQSingleCard (NotamSingle thisNotam, String thisAirportName) {
 
     final notamId = thisNotam.id;
     final notamCategorySubMain = thisNotam.categorySubMain;
@@ -951,6 +956,28 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
+  Widget notamOtherSingleCard (NotamSingle thisNotam) {
+
+    final notamRaw = thisNotam.raw;
+
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(top: 10),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(notamRaw),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
   Widget _scrollToBar (int j) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
@@ -989,8 +1016,8 @@ class _NotamPageState extends State<NotamPage> {
           var savedJson = notamJsonFromJson(onValue);
           for (var i = 0; i < req.length; i++) {
             for (var n in savedJson) {
-              if (req[i].toUpperCase() == n.airportIdIata ||
-                  req[i].toUpperCase() == n.airportIdIcao) {
+              if ((req[i].length == 3 && req[i].toUpperCase() == n.airportIdIata) ||
+                  (req[i].length == 4 && req[i].toUpperCase() == n.airportIdIcao)) {
                 newList.add(n);
                 break;
               }
@@ -1087,16 +1114,6 @@ class _NotamPageState extends State<NotamPage> {
 
     _scrollList.clear();
 
-    String myFetchText = 'Fetching NOTAMS, hold position!';
-    if (_myRequestedAirports.length > 3){
-      myFetchText += "\n\nMany airports chosen, this might take a while!";
-    }
-    Scaffold.of(context).showSnackBar(
-      SnackBar(
-        content: Text(myFetchText),
-      ),
-    );
-
     if (_myRequestedAirports.isNotEmpty) {
       for (var i = 0; i < _myRequestedAirports.length; i++) {
         if (i != _myRequestedAirports.length - 1) {
@@ -1115,16 +1132,14 @@ class _NotamPageState extends State<NotamPage> {
     String url = server + api + source + airports;
 
     List<NotamJson> exportedJson;
+
     try {
-      int timeOut = 20 * _myRequestedAirports.length;
-      final response = await http.post(url).timeout(Duration(seconds: timeOut));
-      if (response.statusCode != 200) {
-        // TODO: this error is OK, but what about checking Internet connectivity as well??
-        // TODO: message for > 3 airports?
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Oops! There was connection error!',
+                'Oops! No Internet connection!',
                 style: TextStyle(
                   color: Colors.black,
                 )
@@ -1133,16 +1148,46 @@ class _NotamPageState extends State<NotamPage> {
           ),
         );
         return null;
+      } else {
+
+        String myFetchText = 'Fetching NOTAMS, hold position!';
+        if (_myRequestedAirports.length > 3){
+          myFetchText += "\n\nMany airports chosen, this might take a while!";
+        }
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text(myFetchText),
+          ),
+        );
+
+        int timeOut = 20 * _myRequestedAirports.length;
+        final response = await http.post(url).timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode != 200) {
+          Scaffold.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Oops! There was connection error!',
+                  style: TextStyle(
+                    color: Colors.black,
+                  )
+              ),
+              backgroundColor: Colors.red[100],
+            ),
+          );
+          return null;
+        }
+
+        exportedJson = notamJsonFromJson(response.body);
+
+        var timeNow = DateTime.now().toUtc();
+        _requestedTime = timeNow.toIso8601String();
+
+        SharedPreferencesModel().setNotamInformation(response.body);
+        SharedPreferencesModel().setNotamUserInput(_userSubmitText);
+        SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
+        SharedPreferencesModel().setNotamRequestedTime(_requestedTime);
       }
-      exportedJson = notamJsonFromJson(response.body);
-
-      var timeNow = DateTime.now().toUtc();
-      _requestedTime = timeNow.toIso8601String();
-
-      SharedPreferencesModel().setNotamInformation(response.body);
-      SharedPreferencesModel().setNotamUserInput(_userSubmitText);
-      SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
-      SharedPreferencesModel().setNotamRequestedTime(_requestedTime);
 
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(

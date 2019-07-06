@@ -74,7 +74,9 @@ class _ConditionPageState extends State<ConditionPage> {
         "Runway Condition",
         style: TextStyle(color: Colors.white),
       ),
-      expandedHeight: 150,  // TODO: Settings option (value '0' if inactive)
+      expandedHeight: 150,
+      // TODO (Feature): Settings option to show pictures in appBar
+      // (set '0' if inactive)
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(

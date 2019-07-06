@@ -11,6 +11,7 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/weather/wx_colorize.dart';
 import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
+import 'package:connectivity/connectivity.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -79,7 +80,8 @@ class _WeatherPageState extends State<WeatherPage> {
         ),
       ),
       expandedHeight: 150,
-      // TODO: Settings option (value '0' if inactive)
+      // TODO (Feature): Settings option to show pictures in appBar
+      // (set '0' if inactive)
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -235,6 +237,12 @@ class _WeatherPageState extends State<WeatherPage> {
         var wxModel = wxBuilder.result;
 
         for (var i = 0; i < wxModel.wxModelList.length; i++) {
+
+          var airportName =
+            wxModel.wxModelList[i].airportHeading == null ?
+            _myRequestedAirports[i].toUpperCase() :
+            wxModel.wxModelList[i].airportHeading;
+
           mySections.add(
             SliverStickyHeaderBuilder(
               builder: (context, state) {
@@ -257,7 +265,8 @@ class _WeatherPageState extends State<WeatherPage> {
                         ),
                         Flexible(
                           child: Text(
-                            wxModel.wxModelList[i].airportHeading,
+                            "(${_myRequestedAirports[i].toUpperCase()}) " +
+                            airportName,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -270,26 +279,74 @@ class _WeatherPageState extends State<WeatherPage> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
 
-                    // TODO: errors need to be implemented! (ej: LECS/CUAC)
+                    if (!wxModel.wxModelList[i].airportFound) {
 
-                    final item = wxModel.wxModelList[i].airportWeather[index];
+                      return ListTile(
+                        title: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Airport not found!",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
 
-                    if (item is AirportMetar || item is AirportTafor){
-                      TextSpan wxSpan;
-                      Widget myWeatherLineWidget;
+                    } else {
+
+                      final item = wxModel.wxModelList[i].airportWeather[index];
+
                       if (item is AirportMetar){
 
                         // DEBUG HERE
                         //item.metars[0] = "LEZL 162030Z CAVOK "
                         //"R25R/123456 2000 0800 R23/M2000U";
 
-                        wxSpan = MetarColorize(
-                            metar: item.metars[0],
-                            isThemeDark: widget.isThemeDark,
-                            context: context)
-                            .getResult;
-                        myWeatherLineWidget = RichText(text: wxSpan);
-                      } else if (item is AirportTafor){
+                        var metarLines = List<Widget>();
+                        for (var m = 0; m < item.metars.length; m++) {
+                          var wxSpan = MetarColorize(
+                              metar: item.metars[m],
+                              isThemeDark: widget.isThemeDark,
+                              context: context)
+                              .getResult;
+
+                          var myText = RichText(text: wxSpan);
+
+                          metarLines.add(myText);
+
+                          if (m < item.metars.length - 1) {
+                            metarLines.add(
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 20),
+                              )
+                            );
+                          }
+                        }
+
+                        return ListTile(
+                          title: Card(
+                            elevation: 2,
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                              child: Column (
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: metarLines,
+                              ),
+                            ),
+                          ),
+                        );
+
+                      }
+
+                      if (item is AirportTafor) {
+                        TextSpan wxSpan;
+                        var myWeatherLineWidget;
+
                         var myTaforString = item.tafors[0];
                         List<Widget> myWeatherRows = List<Widget>();
                         if (_splitTafor){
@@ -359,9 +416,7 @@ class _WeatherPageState extends State<WeatherPage> {
                             );
 
                           }
-                        }
-                        else {
-                          // TODO: is this OK?
+                        } else {
                           wxSpan = MetarColorize(
                               metar: myTaforString,
                               isThemeDark: widget.isThemeDark,
@@ -369,117 +424,134 @@ class _WeatherPageState extends State<WeatherPage> {
                               .getResult;
                           myWeatherLineWidget = RichText(text: wxSpan);
                         }
-                      }
-                      return ListTile(
-                        title: Card(
-                          elevation: 2,
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: myWeatherLineWidget,
+
+                        return ListTile(
+                          title: Card(
+                            elevation: 2,
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                              child: myWeatherLineWidget,
+                            ),
                           ),
-                        ),
-                      );
-                    }
+                        );
+                      }
 
-                    if (item is MetarTimes){
-                      PrettyTimeCombination metarTimeFinal;
-                      Color clockIconColor;
-                      if (!item.error) {
-                        try {
 
-                          // TODO: what if time null in API??
-                          var myPrettyDuration = PrettyDuration(
-                            referenceTime: item.metarTimes[0],
-                            header: "METAR",
-                            prettyType: PrettyType.metar
-                          );
-                          metarTimeFinal = myPrettyDuration.getDuration;
-                          clockIconColor = metarTimeFinal.prettyColor;
+                      if (item is MetarTimes){
+                        PrettyTimeCombination metarTimeFinal;
+                        Color clockIconColor;
 
-                        } catch (Exception) {
-                          // TODO error
+                        if (!item.error) {
+                          try {
+                            var myPrettyDuration = PrettyDuration(
+                                referenceTime: item.metarTimes[0],
+                                header: "METAR",
+                                prettyType: PrettyType.metar
+                            );
+                            metarTimeFinal = myPrettyDuration.getDuration;
+                            clockIconColor = metarTimeFinal.prettyColor;
+
+                          } catch (Exception) {
+                            clockIconColor = Colors.red;
+                          }
+                        } else {
                           clockIconColor = Colors.red;
                         }
-                      } else {
-                        // TODO error
-                        clockIconColor = Colors.red;
-                      }
-                      return ListTile(
-                        title: Container(
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.access_time,
-                                color: clockIconColor,
-                              ),
-                              Padding(padding: EdgeInsets.only(right: 15)),
-                              Flexible(
-                                child: Text(metarTimeFinal.prettyDuration,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: metarTimeFinal.prettyColor,
+                        return ListTile(
+                          title: Container(
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.access_time,
+                                  color: clockIconColor,
+                                ),
+                                Padding(padding: EdgeInsets.only(right: 15)),
+                                Flexible(
+                                  child: Text(
+                                    item.error
+                                        ? "(no time information)"
+                                        : metarTimeFinal.prettyDuration,
+                                    style: item.error
+                                        ? TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.red,
+                                          )
+                                        : TextStyle(
+                                            fontSize: 14,
+                                            color: metarTimeFinal.prettyColor,
+                                          ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }
+                        );
+                      }
 
-                    if (item is TaforTimes){
-                      PrettyTimeCombination taforTimeFinal;
-                      Color clockIconColor;
-                      if (!item.error) {
-                        try {
-                          // TODO: what if time null in API??
-                          var myPrettyDuration = PrettyDuration(
-                              referenceTime: item.taforTimes[0],
-                              header: "TAFOR",
-                              prettyType: PrettyType.tafor
-                          );
-                          taforTimeFinal = myPrettyDuration.getDuration;
-                          clockIconColor = taforTimeFinal.prettyColor;
+                      if (item is TaforTimes){
+                        PrettyTimeCombination taforTimeFinal;
+                        Color clockIconColor;
 
-                        } catch (Exception) {
-                          // TODO error
+                        if (!item.error) {
+                          try {
+                            var myPrettyDuration = PrettyDuration(
+                                referenceTime: item.taforTimes[0],
+                                header: "TAFOR",
+                                prettyType: PrettyType.tafor
+                            );
+                            taforTimeFinal = myPrettyDuration.getDuration;
+                            clockIconColor = taforTimeFinal.prettyColor;
+
+                          } catch (Exception) {
+                            clockIconColor = Colors.red;
+                          }
+                        } else {
                           clockIconColor = Colors.red;
                         }
-                      } else {
-                        // TODO error
-                        clockIconColor = Colors.red;
-                      }
-                      return ListTile(
-                        title: Container(
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.access_time,
-                                color: clockIconColor,
-                              ),
-                              Padding(padding: EdgeInsets.only(right: 15)),
-                              Flexible(
-                                child: Text(taforTimeFinal.prettyDuration,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: taforTimeFinal.prettyColor,
+                        return ListTile(
+                          title: Container(
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.access_time,
+                                  color: clockIconColor,
+                                ),
+                                Padding(padding: EdgeInsets.only(right: 15)),
+                                Flexible(
+                                  child: Text(
+                                    item.error
+                                        ? "(no time information)"
+                                        : taforTimeFinal.prettyDuration,
+                                    style: item.error
+                                        ? TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.red,
+                                          )
+                                        : TextStyle(
+                                            fontSize: 14,
+                                            color: taforTimeFinal.prettyColor,
+                                          ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
+                        );
 
-                      /*
+                        /*
                       return ListTile(
                         title: Text(item.taforTimes[0].toString()),
                       );
 
                        */
-                    }
+                      }
 
+                    }
                   },
-                  childCount: wxModel.wxModelList[i].airportWeather.length,
+                  childCount: wxModel.wxModelList[i].airportFound
+                      ? wxModel.wxModelList[i].airportWeather.length
+                      : 1,
                 ),
               ),
             ),
@@ -558,6 +630,10 @@ class _WeatherPageState extends State<WeatherPage> {
         });
       }
     });
+
+    SharedPreferencesModel().getWeatherRequestedAirports().then((onValue) {
+      _myRequestedAirports = onValue;
+    });
   }
 
   @override
@@ -570,11 +646,6 @@ class _WeatherPageState extends State<WeatherPage> {
     _myRequestedAirports.clear();
 
     if (_formKey.currentState.validate()) {
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Fetching weather, hold short!'),
-        ),
-      );
       setState(() {
         _apiCall = true;
       });
@@ -632,17 +703,20 @@ class _WeatherPageState extends State<WeatherPage> {
     String api = "Wx/GetWx?";
     String source = "source=Cavokator";
     String airports = "&airports=$allAirports";
-    String url = server + api + source + airports;
+    String mostRecent = "&mostRecent=false";
+    String hoursBefore = "&hoursBefore=2";
+    String url = server + api + source + airports + mostRecent + hoursBefore;
 
     List<WxJson> exportedJson;
+
     try {
-      final response = await http.post(url).timeout(Duration(seconds: 60));
-      if (response.statusCode != 200) {
-        // TODO: this error is OK, but what about checking Internet connectivity as well??
+
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Oops! There was connection error!',
+                'Oops! No Internet connection!',
                 style: TextStyle(
                   color: Colors.black,
                 )
@@ -651,10 +725,36 @@ class _WeatherPageState extends State<WeatherPage> {
           ),
         );
         return null;
+      } else {
+
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fetching weather, hold position!'),
+          ),
+        );
+
+        final response = await http.post(url).timeout(Duration(seconds: 60));
+        if (response.statusCode != 200) {
+          Scaffold.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Oops! There was connection error!',
+                  style: TextStyle(
+                    color: Colors.black,
+                  )
+              ),
+              backgroundColor: Colors.red[100],
+            ),
+          );
+          return null;
+        }
+
+        exportedJson = wxJsonFromJson(response.body);
+        SharedPreferencesModel().setWeatherInformation(response.body);
+        SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
+        SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
       }
-      exportedJson = wxJsonFromJson(response.body);
-      SharedPreferencesModel().setWeatherInformation(response.body);
-      SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
+
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(
         SnackBar(

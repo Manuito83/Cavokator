@@ -8,6 +8,7 @@ class SharedPreferencesModel {
 
   final String _kWeatherInformationPrefs = "wx_information";
   final String _kWeatherUserInputPrefs = "wx_userInput";
+  final String _kWeatherRequestedAirportsPrefs = "wx_requestedAirports";
 
   final String _kNotamInformationPrefs = "notam_information";
   final String _kNotamUserInputPrefs = "notam_userInput";
@@ -46,6 +47,7 @@ class SharedPreferencesModel {
     return prefs.setString(_kWeatherInformationPrefs, value);
   }
 
+  // ***********
   Future<String> getWeatherUserInput() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(_kWeatherUserInputPrefs) ?? "";
@@ -56,6 +58,18 @@ class SharedPreferencesModel {
     return prefs.setString(_kWeatherUserInputPrefs, value);
   }
 
+  // ***********
+  Future<List<String>> getWeatherRequestedAirports() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_kWeatherRequestedAirportsPrefs) ?? List<String>();
+  }
+
+  Future<bool> setWeatherRequestedAirports(List<String> value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setStringList(_kWeatherRequestedAirportsPrefs, value);
+  }
+  
+  
   /// ----------------------------
   /// Methods for notam requests
   /// ----------------------------
