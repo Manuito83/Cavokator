@@ -4,7 +4,6 @@ import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/condition/condition_decode.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ConditionPage extends StatefulWidget {
@@ -32,6 +31,7 @@ class _ConditionPageState extends State<ConditionPage> {
     super.initState();
 
     _restoreSharedPreferences();
+    SharedPreferencesModel().setSettingsLastUsedSection("2");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());

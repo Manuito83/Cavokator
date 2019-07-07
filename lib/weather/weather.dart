@@ -39,6 +39,10 @@ class _WeatherPageState extends State<WeatherPage> {
   List<WxJson> _myWeatherList = new List<WxJson>();
   bool _apiCall = false;
 
+  int _hoursBefore = 10;
+  bool _mostRecent = true;
+
+
   @override
   Widget build(BuildContext context) {
     return Builder(
@@ -97,15 +101,14 @@ class _WeatherPageState extends State<WeatherPage> {
         ),
       ),
       actions: <Widget>[
-        /*
         IconButton(
-          icon: Icon(Icons.access_alarm),
-          color: Colors.black,
+          icon: Icon(Icons.settings),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
-            // TEST
+            _showSettings();
           },
         ),
-        */
+
       ],
     );
   }
@@ -601,6 +604,7 @@ class _WeatherPageState extends State<WeatherPage> {
     super.initState();
 
     _restoreSharedPreferences();
+    SharedPreferencesModel().setSettingsLastUsedSection("0");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
@@ -633,6 +637,10 @@ class _WeatherPageState extends State<WeatherPage> {
 
     SharedPreferencesModel().getWeatherRequestedAirports().then((onValue) {
       _myRequestedAirports = onValue;
+    });
+
+    SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
+      _hoursBefore = onValue;
     });
   }
 
@@ -703,14 +711,24 @@ class _WeatherPageState extends State<WeatherPage> {
     String api = "Wx/GetWx?";
     String source = "source=Cavokator";
     String airports = "&airports=$allAirports";
-    String mostRecent = "&mostRecent=false";
-    String hoursBefore = "&hoursBefore=2";
+
+    int internalHoursBefore;
+    if (_hoursBefore == 0) {
+      _mostRecent = true;
+      internalHoursBefore = 10;
+    } else {
+      _mostRecent = false;
+      internalHoursBefore = _hoursBefore;
+    }
+
+    String mostRecent = "&mostRecent=$_mostRecent";
+    String hoursBefore = "&hoursBefore=$internalHoursBefore";
+
     String url = server + api + source + airports + mostRecent + hoursBefore;
 
     List<WxJson> exportedJson;
 
     try {
-
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
         Scaffold.of(context).showSnackBar(
@@ -770,6 +788,88 @@ class _WeatherPageState extends State<WeatherPage> {
       return null;
     }
     return exportedJson;
+  }
+
+  Future<void> _showSettings() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
+          child: Container(
+            padding: EdgeInsets.fromLTRB(15,25,15,15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "WX OPTIONS",
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+                Padding (
+                  padding: EdgeInsets.only (top: 40, bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text("Fetch previous METAR?"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only (bottom: 20),
+                  child: Row(
+                    children: <Widget> [
+                      Slider(
+                        value: _hoursBefore.toDouble(),
+                        max: 12,
+                        min: 0,
+                        divisions: 12,
+                        onChanged: (double newValue) => _hoursBeforeChanged(newValue),
+                      ),
+                      Flexible(
+                        child: Text(
+                          _hoursBefore == 0
+                              ? "Last only"
+                              : "Past $_hoursBefore hours",
+                          style: TextStyle(
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ]
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only (top: 30),
+                  child: RaisedButton(
+                    child: Text(
+                      'Done!',
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            )
+          )
+        );
+      }
+    );
+  }
+
+  void _hoursBeforeChanged(double newValue) {
+    setState(() {
+      _hoursBefore = newValue.toInt();
+    });
+
+    SharedPreferencesModel().setWeatherHoursBefore(newValue.toInt());
   }
 
 }

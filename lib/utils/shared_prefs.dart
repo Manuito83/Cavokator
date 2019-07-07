@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class SharedPreferencesModel {
   ///
@@ -6,9 +7,13 @@ class SharedPreferencesModel {
   ///
   final String _kAppThemePrefs = "app_theme";
 
+  final String _kSettingsOpenSpecificSection = "settings_openSpecificSection";
+  final String _kSettingsLastUsedSection = "settings_lastUsedSection";
+
   final String _kWeatherInformationPrefs = "wx_information";
   final String _kWeatherUserInputPrefs = "wx_userInput";
   final String _kWeatherRequestedAirportsPrefs = "wx_requestedAirports";
+  final String _kWeatherHoursBeforePrefs = "wx_hoursBefore";
 
   final String _kNotamInformationPrefs = "notam_information";
   final String _kNotamUserInputPrefs = "notam_userInput";
@@ -32,6 +37,29 @@ class SharedPreferencesModel {
   Future<bool> setAppTheme(String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString(_kAppThemePrefs, value);
+  }
+
+  /// ----------------------------
+  /// Methods for app settings
+  /// ----------------------------
+  Future<String> getSettingsOpenSpecificSection() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kSettingsOpenSpecificSection) ?? "99";
+  }
+
+  Future<bool> setSettingsOpenSpecificSection(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kSettingsOpenSpecificSection, value);
+  }
+
+  Future<String> getSettingsLastUsedSection() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kSettingsLastUsedSection) ?? "0";
+  }
+
+  Future<bool> setSettingsLastUsedSection(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kSettingsLastUsedSection, value);
   }
 
   /// ----------------------------
@@ -67,6 +95,17 @@ class SharedPreferencesModel {
   Future<bool> setWeatherRequestedAirports(List<String> value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setStringList(_kWeatherRequestedAirportsPrefs, value);
+  }
+
+  // ***********
+  Future<int> getWeatherHoursBefore() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kWeatherHoursBeforePrefs) ?? 0;
+  }
+
+  Future<bool> setWeatherHoursBefore(int value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setInt(_kWeatherHoursBeforePrefs, value);
   }
   
   

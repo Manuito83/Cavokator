@@ -66,6 +66,7 @@ class _NotamPageState extends State<NotamPage> {
   void initState() {
     super.initState();
     _restoreSharedPreferences();
+    SharedPreferencesModel().setSettingsLastUsedSection("1");
 
     _ticker = new Timer.periodic(Duration(minutes:1), (Timer t) => _updateTimes());
 
