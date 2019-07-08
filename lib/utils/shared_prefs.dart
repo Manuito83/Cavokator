@@ -9,6 +9,7 @@ class SharedPreferencesModel {
 
   final String _kSettingsOpenSpecificSection = "settings_openSpecificSection";
   final String _kSettingsLastUsedSection = "settings_lastUsedSection";
+  final String _kSettingsShowHeaders = "settings_showHeaders";
 
   final String _kWeatherInformationPrefs = "wx_information";
   final String _kWeatherUserInputPrefs = "wx_userInput";
@@ -52,6 +53,7 @@ class SharedPreferencesModel {
     return prefs.setString(_kSettingsOpenSpecificSection, value);
   }
 
+  // ***********
   Future<String> getSettingsLastUsedSection() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(_kSettingsLastUsedSection) ?? "0";
@@ -60,6 +62,17 @@ class SharedPreferencesModel {
   Future<bool> setSettingsLastUsedSection(String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString(_kSettingsLastUsedSection, value);
+  }
+
+  // ***********
+  Future<bool> getSettingsShowHeaders() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kSettingsShowHeaders) ?? true;
+  }
+
+  Future<bool> setSettingsShowHeaders(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(_kSettingsShowHeaders, value);
   }
 
   /// ----------------------------

@@ -238,9 +238,6 @@ class NotamItemBuilder {
           notamModel.airportNotams.add(_thisNotam);
         }
       }
-      else {
-        // TODO: no notams!
-      }
 
       notamModel.airportHeading = jsonNotamList[i].fullAirportDetails.name;
 

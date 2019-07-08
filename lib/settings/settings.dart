@@ -17,6 +17,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
 
   String _openSectionValue = "0";
+  bool _showHeaderImages = true;
 
   @override
   void initState() {
@@ -71,23 +72,48 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Padding (
-              padding: EdgeInsets.fromLTRB(20, 40, 0, 10),
-              child: Text (
-                "ON LAUNCH",
-                style: TextStyle (
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
+              child: Row(
+                children: <Widget>[
+                  Flexible(
+                    child: Text (
+                      "On launch: ",
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20),
+                  ),
+                  Flexible(
+                    child: _openSectionDropdown(),
+                  ),
+
+                ],
               ),
             ),
-            Padding (
-              padding: EdgeInsets.only(left: 40),
-              child: _openSectionDropdown(),
+            Divider(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Flexible(
+                    child: Text("Show header images"),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20),
+                  ),
+                  Flexible(
+                    child: Switch(
+                      value: _showHeaderImages,
+                      onChanged: (bool value) {
+                        _handleThemeChanged(value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Padding (
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Divider(),
-            )
+            Divider(),
           ],
         ),
       ),
@@ -144,10 +170,25 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  _handleThemeChanged(bool newValue) {
+    setState(() {
+      _showHeaderImages = newValue;
+    });
+
+    SharedPreferencesModel().setSettingsShowHeaders(newValue);
+  }
+
+
   void _restoreSharedPreferences() async {
     await SharedPreferencesModel().getSettingsOpenSpecificSection().then((onValue) {
       setState(() {
         _openSectionValue = onValue;
+      });
+    });
+
+    await SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+      setState(() {
+        _showHeaderImages = onValue;
       });
     });
   }

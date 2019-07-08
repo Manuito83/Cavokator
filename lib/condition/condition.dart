@@ -25,6 +25,8 @@ class _ConditionPageState extends State<ConditionPage> {
   bool _resultsToShow = false;
   Widget _resultsPositive;
 
+  bool _showHeaderImages = true;
+
 
   @override
   void initState() {
@@ -74,9 +76,7 @@ class _ConditionPageState extends State<ConditionPage> {
         "Runway Condition",
         style: TextStyle(color: Colors.white),
       ),
-      expandedHeight: 150,
-      // TODO (Feature): Settings option to show pictures in appBar
-      // (set '0' if inactive)
+      expandedHeight: _showHeaderImages ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -529,6 +529,12 @@ class _ConditionPageState extends State<ConditionPage> {
     if (_userConditionInput != "" || _myTextController.text != ""){
       _decodeCondition();
     }
+
+    await SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+      setState(() {
+        _showHeaderImages = onValue;
+      });
+    });
   }
 
 

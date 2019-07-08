@@ -39,6 +39,8 @@ class _NotamPageState extends State<NotamPage> {
 
   bool _sortByCategories = true;
 
+  bool _showHeaderImages = true;
+
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
   List<NotamJson> _myNotamList = new List<NotamJson>();
@@ -169,9 +171,7 @@ class _NotamPageState extends State<NotamPage> {
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
       ),
-      expandedHeight: 150,
-      // TODO (Feature): Settings option to show pictures in appBar
-      // (set '0' if inactive)
+      expandedHeight: _showHeaderImages ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -1039,7 +1039,13 @@ class _NotamPageState extends State<NotamPage> {
       SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
           _sortByCategories = onValue;
       });
-      
+
+      SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+        setState(() {
+          _showHeaderImages = onValue;
+        });
+      });
+
     } catch (except) {
       // pass
     }

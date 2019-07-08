@@ -42,6 +42,8 @@ class _WeatherPageState extends State<WeatherPage> {
   int _hoursBefore = 10;
   bool _mostRecent = true;
 
+  bool _showHeaderImages = true;
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +85,7 @@ class _WeatherPageState extends State<WeatherPage> {
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
       ),
-      expandedHeight: 150,
-      // TODO (Feature): Settings option to show pictures in appBar
-      // (set '0' if inactive)
+      expandedHeight: _showHeaderImages ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -620,7 +620,7 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
 
-  void _restoreSharedPreferences() {
+  void _restoreSharedPreferences() async {
     SharedPreferencesModel().getWeatherUserInput().then((onValue) {
       setState(() {
         _myTextController.text = onValue;
@@ -641,6 +641,12 @@ class _WeatherPageState extends State<WeatherPage> {
 
     SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
       _hoursBefore = onValue;
+    });
+
+    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+      setState(() {
+        _showHeaderImages = onValue;
+      });
     });
   }
 
