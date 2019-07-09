@@ -12,12 +12,14 @@ class Cavokator extends StatefulWidget {
 
 class _CavokatorState extends State<Cavokator> {
 
+  String _thisAppVersion = "2.0";  // TODO (IMPORTANT): update!
   Brightness _myBrightness = Brightness.light;
 
   @override
   void initState() {
     super.initState();
-    _restoreSharedPreferences();
+    _restoreThemePreferences();
+    SharedPreferencesModel().setAppVersion(_thisAppVersion);
   }
 
 
@@ -32,6 +34,7 @@ class _CavokatorState extends State<Cavokator> {
       home: DrawerPage(
         changeBrightness: callbackBrightness,
         savedThemeDark: _myBrightness == Brightness.dark ? true : false,
+        thisAppVersion: _thisAppVersion,
       ),
     );
   }
@@ -42,7 +45,7 @@ class _CavokatorState extends State<Cavokator> {
     });
   }
 
-  void _restoreSharedPreferences () {
+  void _restoreThemePreferences () {
     SharedPreferencesModel().getAppTheme().then((onValue) {
       setState(() {
         _myBrightness = onValue == "DARK" ? Brightness.dark : Brightness.light;

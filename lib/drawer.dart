@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +20,10 @@ class DrawerPage extends StatefulWidget {
 
   final Function changeBrightness;
   final bool savedThemeDark;
+  final String thisAppVersion;
 
-  DrawerPage({@required this.changeBrightness, @required this.savedThemeDark});
+  DrawerPage({@required this.changeBrightness, @required this.savedThemeDark,
+              @required this.thisAppVersion});
 
   final drawerItems = [
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
@@ -120,11 +120,11 @@ class _DrawerPageState extends State<DrawerPage> {
   void initState() {
     super.initState();
     _restoreSharedPreferences();
+    _handleVersionNumber();
   }
 
   @override
   Widget build(BuildContext context) {
-
     _isThemeDark = widget.savedThemeDark;
     _switchThemeString = _isThemeDark == true ? "DARK" : "LIGHT";
     var drawerOptions = <Widget>[];
@@ -234,8 +234,110 @@ class _DrawerPageState extends State<DrawerPage> {
         _selectedDrawerIndex = int.parse(onValue);
       }
     });
+  }
 
+  void _handleVersionNumber () {
+    String savedAppVersion;
+    SharedPreferencesModel().getAppVersion().then((onValue) {
+      savedAppVersion = onValue;
+      if (savedAppVersion != widget.thisAppVersion) {
+        _showChangeLogDialog(context);
+      }
+    });
+  }
 
+  void _showChangeLogDialog(BuildContext context) {
+    showDialog (
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(15,25,15,15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                "CAVOKATOR ${widget.thisAppVersion}",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Padding (
+                padding: EdgeInsets.fromLTRB(5, 30, 10, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Flexible (
+                      child: Text("FEATURES",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding (
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(Icons.local_airport, size: 20),
+                    Padding(padding: EdgeInsets.only(right: 8)),
+                    Flexible (
+                      child: Text("New app design with improved performance",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
+                child: Divider(),
+              ),
+              Padding (
+                padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Flexible (
+                      child: Text(
+                        "WARNING: Cavokator was not certified for in-flight"
+                            " use, please do not it for real in-flight operations or"
+                            " do so under your own responsability. There might"
+                            " be errors and the information shown might not be"
+                            " complete of outdated.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only (top: 30),
+                child: RaisedButton(
+                  child: Text(
+                    'Great!',
+                    style: TextStyle(
+                      fontSize: 15,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
 }

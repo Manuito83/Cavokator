@@ -6,6 +6,7 @@ class SharedPreferencesModel {
   /// Instantiation of the SharedPreferences library
   ///
   final String _kAppThemePrefs = "app_theme";
+  final String _kAppVersionPrefs = "app_version";
 
   final String _kSettingsOpenSpecificSection = "settings_openSpecificSection";
   final String _kSettingsLastUsedSection = "settings_lastUsedSection";
@@ -38,6 +39,19 @@ class SharedPreferencesModel {
   Future<bool> setAppTheme(String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString(_kAppThemePrefs, value);
+  }
+
+  /// ----------------------------
+  /// Methods for app version
+  /// ----------------------------
+  Future<String> getAppVersion() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppVersionPrefs) ?? "";
+  }
+
+  Future<bool> setAppVersion(String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(_kAppVersionPrefs, value);
   }
 
   /// ----------------------------
