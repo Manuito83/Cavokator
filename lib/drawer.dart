@@ -40,6 +40,7 @@ class _DrawerPageState extends State<DrawerPage> {
   int _selectedDrawerIndex = 0;
 
   bool _isThemeDark;
+  bool _showHeaderImages = true;
   String _switchThemeString = "";
 
   Widget myFloat = SpeedDial(
@@ -57,30 +58,39 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   _getDrawerItemWidget(int pos) {
+
+    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+        _showHeaderImages = onValue;
+    });
+
     switch (pos) {
       case 0:
         return WeatherPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
+          showHeaders: _showHeaderImages,
         );
       case 1:
         return NotamPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
+          showHeaders: _showHeaderImages
         );
       case 2:
         return ConditionPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
+          showHeaders: _showHeaderImages,
         );
       case 3:
         return SettingsPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
+          showHeaders: _showHeaderImages,
         );
       default:
         return new Text("Error");
@@ -144,9 +154,6 @@ class _DrawerPageState extends State<DrawerPage> {
     }
 
     return Scaffold(
-//      appBar: AppBar(
-//        title: Text(widget.drawerItems[_selectedDrawerIndex].title),
-//      ),
       floatingActionButton: myFloat,
       drawer: Drawer(
         child: ListView(
@@ -227,6 +234,8 @@ class _DrawerPageState extends State<DrawerPage> {
         _selectedDrawerIndex = int.parse(onValue);
       }
     });
+
+
   }
 
 }

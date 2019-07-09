@@ -7,8 +7,10 @@ class SettingsPage extends StatefulWidget {
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
+  final bool showHeaders;
 
-  SettingsPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
+  SettingsPage({@required this.isThemeDark, @required this.myFloat,
+                @required this.callback, @required this.showHeaders});
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -17,12 +19,13 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
 
   String _openSectionValue = "0";
-  bool _showHeaderImages = true;
+  bool showHeaderSwitchPosition;
+
 
   @override
   void initState() {
     super.initState();
-
+    showHeaderSwitchPosition = widget.showHeaders;
     _restoreSharedPreferences();
 
     // Delayed callback for FAB
@@ -104,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   Flexible(
                     child: Switch(
-                      value: _showHeaderImages,
+                      value: showHeaderSwitchPosition,
                       onChanged: (bool value) {
                         _handleThemeChanged(value);
                       },
@@ -172,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   _handleThemeChanged(bool newValue) {
     setState(() {
-      _showHeaderImages = newValue;
+      showHeaderSwitchPosition = newValue;
     });
 
     SharedPreferencesModel().setSettingsShowHeaders(newValue);
@@ -186,11 +189,6 @@ class _SettingsPageState extends State<SettingsPage> {
       });
     });
 
-    await SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-      setState(() {
-        _showHeaderImages = onValue;
-      });
-    });
   }
 
 }

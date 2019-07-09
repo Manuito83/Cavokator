@@ -23,8 +23,10 @@ class NotamPage extends StatefulWidget {
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
+  final bool showHeaders;
 
-  NotamPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
+  NotamPage({@required this.isThemeDark, @required this.myFloat,
+             @required this.callback, @required this.showHeaders});
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -38,8 +40,6 @@ class _NotamPageState extends State<NotamPage> {
   Timer _ticker;
 
   bool _sortByCategories = true;
-
-  bool _showHeaderImages = true;
 
   String _userSubmitText;
   List<String> _myRequestedAirports = new List<String>();
@@ -171,7 +171,7 @@ class _NotamPageState extends State<NotamPage> {
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
       ),
-      expandedHeight: _showHeaderImages ? 150 : 0,
+      expandedHeight: widget.showHeaders ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -1038,12 +1038,6 @@ class _NotamPageState extends State<NotamPage> {
 
       SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
           _sortByCategories = onValue;
-      });
-
-      SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-        setState(() {
-          _showHeaderImages = onValue;
-        });
       });
 
     } catch (except) {

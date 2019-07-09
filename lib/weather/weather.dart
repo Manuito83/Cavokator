@@ -16,11 +16,13 @@ import 'package:connectivity/connectivity.dart';
 
 class WeatherPage extends StatefulWidget {
 
-  WeatherPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
+  WeatherPage({@required this.isThemeDark, @required this.myFloat,
+               @required this.callback, @required this.showHeaders});
 
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
+  final bool showHeaders;
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -41,8 +43,6 @@ class _WeatherPageState extends State<WeatherPage> {
 
   int _hoursBefore = 10;
   bool _mostRecent = true;
-
-  bool _showHeaderImages = true;
 
 
   @override
@@ -85,7 +85,7 @@ class _WeatherPageState extends State<WeatherPage> {
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
       ),
-      expandedHeight: _showHeaderImages ? 150 : 0,
+      expandedHeight: widget.showHeaders ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -643,11 +643,6 @@ class _WeatherPageState extends State<WeatherPage> {
       _hoursBefore = onValue;
     });
 
-    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-      setState(() {
-        _showHeaderImages = onValue;
-      });
-    });
   }
 
   @override

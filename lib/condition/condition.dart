@@ -10,8 +10,10 @@ class ConditionPage extends StatefulWidget {
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
+  final bool showHeaders;
 
-  ConditionPage({@required this.isThemeDark, @required this.myFloat, @required this.callback});
+  ConditionPage({@required this.isThemeDark, @required this.myFloat,
+                 @required this.callback, @required this.showHeaders});
 
   @override
   _ConditionPageState createState() => _ConditionPageState();
@@ -24,8 +26,6 @@ class _ConditionPageState extends State<ConditionPage> {
 
   bool _resultsToShow = false;
   Widget _resultsPositive;
-
-  bool _showHeaderImages = true;
 
 
   @override
@@ -76,7 +76,7 @@ class _ConditionPageState extends State<ConditionPage> {
         "Runway Condition",
         style: TextStyle(color: Colors.white),
       ),
-      expandedHeight: _showHeaderImages ? 150 : 0,
+      expandedHeight: widget.showHeaders ? 150 : 0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -529,12 +529,6 @@ class _ConditionPageState extends State<ConditionPage> {
     if (_userConditionInput != "" || _myTextController.text != ""){
       _decodeCondition();
     }
-
-    await SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-      setState(() {
-        _showHeaderImages = onValue;
-      });
-    });
   }
 
 
