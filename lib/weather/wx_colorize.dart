@@ -2,6 +2,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:cavokator_flutter/condition/condition_decode.dart';
+import 'dart:async';
 
 class MetarColorize {
 
