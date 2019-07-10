@@ -1,3 +1,4 @@
+import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -12,6 +13,7 @@ import 'package:cavokator_flutter/weather/wx_colorize.dart';
 import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:share/share.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -40,6 +42,8 @@ class _WeatherPageState extends State<WeatherPage> {
   List<String> _myRequestedAirports = new List<String>();
   List<WxJson> _myWeatherList = new List<WxJson>();
   bool _apiCall = false;
+
+  String mySharedWeather = "";
 
   int _hoursBefore = 10;
   bool _mostRecent = true;
@@ -105,10 +109,16 @@ class _WeatherPageState extends State<WeatherPage> {
           icon: Icon(Icons.settings),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
-            _showSettings();
+            return _showSettings();
           },
         ),
-
+        IconButton(
+          icon: Icon(Icons.share),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            Share.share(mySharedWeather);
+          },
+        ),
       ],
     );
   }
@@ -239,12 +249,43 @@ class _WeatherPageState extends State<WeatherPage> {
         var wxBuilder = WxItemBuilder(jsonWeatherList: _myWeatherList);
         var wxModel = wxBuilder.result;
 
-        for (var i = 0; i < wxModel.wxModelList.length; i++) {
+        mySharedWeather = "";
+        mySharedWeather += "###";
+        mySharedWeather += "\n### CAVOKATOR WEATHER ###";
+        mySharedWeather += "\n###";
 
+
+
+
+        for (var i = 0; i < wxModel.wxModelList.length; i++) {
           var airportName =
             wxModel.wxModelList[i].airportHeading == null ?
             _myRequestedAirports[i].toUpperCase() :
             wxModel.wxModelList[i].airportHeading;
+
+            mySharedWeather += "\n\n\n### $airportName ###";
+            if (!wxModel.wxModelList[i].airportFound){
+              mySharedWeather += "\n\nERROR: AIRPORT NOT FOUND!";
+            }
+            if (wxModel.wxModelList[i].airportWeather.length == 0){
+              mySharedWeather += "\n\nNo weather information found in this airport!";
+            }
+            for (var b = 0; b < wxModel.wxModelList[i].airportWeather.length; b++) {
+              var thisItem = wxModel.wxModelList[i].airportWeather[b];
+
+              if (thisItem is AirportMetar){
+                for (var met in thisItem.metars) {
+                  mySharedWeather += "\n\n## METAR \n$met";
+                }
+              } else if (thisItem is AirportTafor) {
+                for (var taf in thisItem.tafors) {
+                  mySharedWeather += "\n\n## TAFOR \n$taf";
+                }
+              }
+            }
+            if (i == wxModel.wxModelList.length - 1) {
+              mySharedWeather += "\n\n\n\n ### END CAVOKATOR REPORT ###";
+            }
 
           mySections.add(
             SliverStickyHeaderBuilder(
@@ -710,7 +751,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
     String server = PrivateVariables.apiURL;
     String api = "Wx/GetWx?";
-    String source = "source=Cavokator";
+    String source = "source=AppPro";
     String airports = "&airports=$allAirports";
 
     int internalHoursBefore;
@@ -791,86 +832,22 @@ class _WeatherPageState extends State<WeatherPage> {
     return exportedJson;
   }
 
+
   Future<void> _showSettings() async {
-    return showDialog<void>(
+    return showDialog (
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
-          child: Container(
-            padding: EdgeInsets.fromLTRB(15,25,15,15),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  "WX OPTIONS",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-                Padding (
-                  padding: EdgeInsets.only (top: 40, bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Text("Fetch previous METAR?"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only (bottom: 20),
-                  child: Row(
-                    children: <Widget> [
-                      Slider(
-                        value: _hoursBefore.toDouble(),
-                        max: 12,
-                        min: 0,
-                        divisions: 12,
-                        onChanged: (double newValue) => _hoursBeforeChanged(newValue),
-                      ),
-                      Flexible(
-                        child: Text(
-                          _hoursBefore == 0
-                              ? "Last only"
-                              : "Past $_hoursBefore hours",
-                          style: TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ]
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only (top: 30),
-                  child: RaisedButton(
-                    child: Text(
-                      'Done!',
-                      style: TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ),
-              ],
-            )
-          )
+        return WeatherOptionsDialog(
+          hours: _hoursBefore,
+          hoursChangedCallback: _hoursBeforeChanged
         );
       }
     );
   }
 
+
   void _hoursBeforeChanged(double newValue) {
-    setState(() {
       _hoursBefore = newValue.toInt();
-    });
-
-    SharedPreferencesModel().setWeatherHoursBefore(newValue.toInt());
   }
-
 }

@@ -57,7 +57,11 @@ class WxItemBuilder {
           _myMetarsTimes.error = true;
         }
         // Metar
-        _myMetars.metars.add(mets.metar);
+        if (mets.metar == null || mets.metar == "") {
+          _myMetars.metars.add("No METAR found!");
+        } else {
+          _myMetars.metars.add(mets.metar);
+        }
       }
 
       for (var tafs in jsonWeatherList[i].tafors){
@@ -70,7 +74,12 @@ class WxItemBuilder {
           _myTaforsTimes.error = true;
         }
         // Tafor
-        _myTafors.tafors.add(tafs.tafor);
+        if (tafs.tafor == null || tafs.tafor == "") {
+          _myTafors.tafors.add("No TAFOR found!");
+        } else {
+          _myTafors.tafors.add(tafs.tafor);
+        }
+
       }
 
       if (jsonWeatherList[i].airportNotFound) {

@@ -1128,7 +1128,7 @@ class _NotamPageState extends State<NotamPage> {
 
     String server = PrivateVariables.apiURL;
     String api = "Notam/GetNotam?";
-    String source = "source=Cavokator";
+    String source = "source=AppPro";
     String airports = "&airports=$allAirports";
     String url = server + api + source + airports;
 

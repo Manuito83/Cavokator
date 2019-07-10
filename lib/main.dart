@@ -5,14 +5,19 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
 void main() => runApp(new Cavokator());
 
+/// TODO: LAUNCH CHECKLIST
+/// Is the current version OK? Update it?
+/// Update changelog?
+/// Are ew using the correct server?
+
+
 class Cavokator extends StatefulWidget {
   @override
   _CavokatorState createState() => _CavokatorState();
 }
 
 class _CavokatorState extends State<Cavokator> {
-
-  String _thisAppVersion = "2.0";  // TODO (IMPORTANT): update!
+  String _thisAppVersion = "2.0";
   Brightness _myBrightness = Brightness.light;
 
   @override

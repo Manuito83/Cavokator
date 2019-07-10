@@ -1,3 +1,4 @@
+import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/settings/settings.dart';
+import 'package:cavokator_flutter/about/about.dart';
 
 class DrawerItem {
   String title;
@@ -30,6 +32,7 @@ class DrawerPage extends StatefulWidget {
     new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
     new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
     new DrawerItem("Settings", "assets/icons/drawer_settings.png"),
+    new DrawerItem("About", "assets/icons/drawer_about.png"),
   ];
 
   @override
@@ -92,6 +95,13 @@ class _DrawerPageState extends State<DrawerPage> {
           callback: callbackFab,
           showHeaders: _showHeaderImages,
         );
+      case 4:
+        return AboutPage(
+          isThemeDark: _isThemeDark,
+          myFloat: myFloat,
+          callback: callbackFab,
+          thisAppVersion: widget.thisAppVersion,
+        );
       default:
         return new Text("Error");
     }
@@ -135,6 +145,12 @@ class _DrawerPageState extends State<DrawerPage> {
       if (i == _selectedDrawerIndex){
         myBackgroundColor = Colors.grey[200];
       }
+
+      // Adding divider just before SETTINGS and ABOUT (2 before end)
+      if (i == widget.drawerItems.length - 2) {
+        drawerOptions.add(Divider());
+      }
+
       drawerOptions.add(
         ListTileTheme(
           selectedColor: Colors.red,
@@ -250,93 +266,9 @@ class _DrawerPageState extends State<DrawerPage> {
     showDialog (
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(15,25,15,15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "CAVOKATOR ${widget.thisAppVersion}",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Padding (
-                padding: EdgeInsets.fromLTRB(5, 30, 10, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Flexible (
-                      child: Text("FEATURES",
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding (
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.local_airport, size: 20),
-                    Padding(padding: EdgeInsets.only(right: 8)),
-                    Flexible (
-                      child: Text("New app design with improved performance",
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
-                child: Divider(),
-              ),
-              Padding (
-                padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Flexible (
-                      child: Text(
-                        "WARNING: Cavokator was not certified for in-flight"
-                            " use, please do not it for real in-flight operations or"
-                            " do so under your own responsability. There might"
-                            " be errors and the information shown might not be"
-                            " complete of outdated.",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only (top: 30),
-                child: RaisedButton(
-                  child: Text(
-                    'Great!',
-                    style: TextStyle(
-                      fontSize: 15,
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (context) {
+        return ChangeLog(appVersion: widget.thisAppVersion);
+      }
     );
   }
 
