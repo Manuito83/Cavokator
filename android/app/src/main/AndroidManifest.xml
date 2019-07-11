@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cavokator.manuito83.github.com.cavokatorflutter">
+    package="com.github.manuito83.cavokator">
 
     <!-- The INTERNET permission is required for development. Specifically,
          flutter needs it to communicate with the running application
@@ -14,8 +14,8 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="cavokator_flutter"
-        android:icon="@mipmap/ic_launcher">
+        android:label="Cavokator"
+        android:icon="@mipmap/ic_appicon">
         <meta-data android:name="com.google.android.geo.API_KEY"
                    android:value="AIzaSyC2r0K_S7hTT1jQw2PQNxPpSnXMKy88hDA"/>
         <activity
