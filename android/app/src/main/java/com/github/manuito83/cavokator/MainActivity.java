@@ -1,4 +1,4 @@
-package cavokator.manuito83.github.com.cavokatorflutter;
+package com.github.manuito83.cavokator;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

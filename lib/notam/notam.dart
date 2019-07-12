@@ -302,6 +302,7 @@ class _NotamPageState extends State<NotamPage> {
                             if (_myRequestedAirports.length > 6) {
                               return "Too many airports (max is 6)!";
                             }
+                            return null;
                           },
                         ),
                       ),
@@ -579,6 +580,9 @@ class _NotamPageState extends State<NotamPage> {
                       }
                     }
                   }
+                  // Should not arrive here if all NotamGeneric items
+                  // are properly coded
+                  return null;
                 },
                   childCount: thisChildCount,
                 ),

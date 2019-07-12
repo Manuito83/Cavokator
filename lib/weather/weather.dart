@@ -181,6 +181,7 @@ class _WeatherPageState extends State<WeatherPage> {
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
                             }
+                            return null;
                           },
                         ),
                       ),
@@ -344,7 +345,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
                       final item = wxModel.wxModelList[i].airportWeather[index];
 
-                      if (item is AirportMetar){
+                      if (item is AirportMetar) {
 
                         // DEBUG HERE
                         //item.metars[0] = "LEZL 162030Z CAVOK "
@@ -592,6 +593,9 @@ class _WeatherPageState extends State<WeatherPage> {
                       }
 
                     }
+                    // Should not arrive here, if all AirportWeather
+                    // items are properly coded
+                    return null;
                   },
                   childCount: wxModel.wxModelList[i].airportFound
                       ? wxModel.wxModelList[i].airportWeather.length

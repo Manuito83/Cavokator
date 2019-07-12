@@ -152,6 +152,7 @@ class _ConditionPageState extends State<ConditionPage> {
                                 .toString();
                             if (myMatch != "null"){
                               _userConditionInput = myMatch;
+                              return null;
                             } else {
                               return "Invalid, double check!";
                             }
