@@ -318,7 +318,7 @@ class _NotamPageState extends State<NotamPage> {
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
                       RaisedButton(
-                          child: Text('Fetch WX!'),
+                          child: Text('Fetch NOTAM!'),
                           onPressed: () {
                             _fetchButtonPressed(context);
                           }),
