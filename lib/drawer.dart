@@ -32,7 +32,7 @@ class DrawerPage extends StatefulWidget {
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
     new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
     new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
-    new DrawerItem("TEMP Corrections", "assets/icons/drawer_thermometer.png"),
+    new DrawerItem("TEMP Corrections", "assets/icons/drawer_temperature.png"),
     new DrawerItem("Settings", "assets/icons/drawer_settings.png"),
     new DrawerItem("About", "assets/icons/drawer_about.png"),
   ];
