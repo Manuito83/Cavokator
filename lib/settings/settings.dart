@@ -163,6 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ),
+        // TODO: ADD LOW TEMPERATURE!
       ],
       onChanged: (value) {
         SharedPreferencesModel().setSettingsOpenSpecificSection(value);

@@ -8,7 +8,7 @@ void main() => runApp(new Cavokator());
 /// TODO: LAUNCH CHECKLIST
 /// Is the current version OK? Update it?
 /// Update changelog?
-/// Are ew using the correct server?
+/// Are we using the correct server?
 
 
 class Cavokator extends StatefulWidget {

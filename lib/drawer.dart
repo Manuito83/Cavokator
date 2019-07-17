@@ -1,3 +1,4 @@
+import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -31,6 +32,7 @@ class DrawerPage extends StatefulWidget {
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
     new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
     new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
+    new DrawerItem("TEMP Corrections", "assets/icons/drawer_thermometer.png"),
     new DrawerItem("Settings", "assets/icons/drawer_settings.png"),
     new DrawerItem("About", "assets/icons/drawer_about.png"),
   ];
@@ -89,13 +91,20 @@ class _DrawerPageState extends State<DrawerPage> {
           showHeaders: _showHeaderImages,
         );
       case 3:
-        return SettingsPage(
+        return TemperaturePage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
           callback: callbackFab,
           showHeaders: _showHeaderImages,
         );
       case 4:
+        return SettingsPage(
+          isThemeDark: _isThemeDark,
+          myFloat: myFloat,
+          callback: callbackFab,
+          showHeaders: _showHeaderImages,
+        );
+      case 5:
         return AboutPage(
           isThemeDark: _isThemeDark,
           myFloat: myFloat,
