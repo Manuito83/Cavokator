@@ -21,6 +21,16 @@ class TemperaturePage extends StatefulWidget {
 
 class _TemperaturePageState extends State<TemperaturePage> {
 
+  int _temperatureInput;
+
+  final _formKey = GlobalKey<FormState>();
+
+  List<Widget> _altitudeRepeater = List<Widget>();
+
+
+
+
+
   @override
   void initState() {
     super.initState();
@@ -96,119 +106,272 @@ class _TemperaturePageState extends State<TemperaturePage> {
       child: Container(
         padding: EdgeInsets.only(left: 30, top: 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row (
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      Text("Aerodrome Elevation (ft):",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          )
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                ),
-                Expanded(
-                  child: Column (
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        width: 80,
-                        child: TextFormField(
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(5),
-                          ],
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                          keyboardType: TextInputType.numberWithOptions(),
-                          maxLines: 1,
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return "Did you forget something?";
-                            } else {
-                              // TODO
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+
+            _topOptions(),
+
+            Column(
+              children: _altitudeRepeater,
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 15),
-            ),
-            Row (
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      Text("Temperature (ºC):",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          )
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                ),
-                Expanded(
-                  child: Column (
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        width: 40,
-                        child: TextFormField(
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(3),
-                          ],
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                          keyboardType: TextInputType.numberWithOptions(),
-                          maxLines: 1,
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return "Did you forget something?";
-                            } else {
-                              // TODO
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              child: Divider(),
-              padding: EdgeInsets.symmetric(vertical: 30),
-            ),
+
+            _bottomButtons(),
+
           ],
         ),
       ),
     );
   }
 
-  void _restoreSharedPreferences() {
+  Widget _topOptions () {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row (
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text("Aerodrome Elevation (ft):",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      )
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+            ),
+            Expanded(
+              child: Column (
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    width: 80,
+                    child: TextFormField(
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(5),
+                      ],
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(),
+                      maxLines: 1,
+                      autovalidate: true,
+                      initialValue: "0",
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return "";
+                        } else {
+                          int myAltitude = int.tryParse(value);
+                          if (myAltitude == null) {
+                            return "Error";
+                          }
+                          if (myAltitude < -2000 || myAltitude > 40000) {
+                            return "Error";
+                          }
+                          _temperatureInput = myAltitude;
+                          return null;
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: 15),
+        ),
+        Row (
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text("Temperature (ºC):",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      )
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+            ),
+            Expanded(
+              child: Column (
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    width: 40,
+                    child: TextFormField(
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(3),
+                      ],
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(),
+                      maxLines: 1,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return "Did you forget something?";
+                        } else {
+                          // TODO
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          child: Divider(),
+          padding: EdgeInsets.symmetric(vertical: 30),
+        ),
+      ],
+    );
+  }
 
+  Widget _bottomButtons () {
+    return Padding(
+      padding: EdgeInsets.only(top: 30, bottom: 30),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          RawMaterialButton (
+            shape: new CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.blue,
+            child: Icon(Icons.add),
+            onPressed: () {
+              _addRepeater();
+            },
+          ),
+
+          _altitudeRepeater.length > 1
+              ? RawMaterialButton (
+                  shape: new CircleBorder(),
+                  elevation: 2.0,
+                  fillColor: Colors.red,
+                  child: Icon(Icons.remove),
+                  onPressed: () {
+                    _removeRepeater();
+                  },
+                )
+              : SizedBox.shrink(),
+        ],
+      ),
+    );
+  }
+
+  _addRepeater() {
+    // TODO: probably need to convert this in StateFull??
+    int myValue = 6;
+    Widget repeaterWidget = Padding(
+      padding: EdgeInsets.only(bottom: 40),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Text("Altitude",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    )
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 5),
+                ),
+                Container(
+                  width: 80,
+                  child: TextFormField(
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(5),
+                    ],
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                    keyboardType: TextInputType.numberWithOptions(),
+                    maxLines: 1,
+                    autovalidate: true,
+                    initialValue: myValue.toString(),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return "";
+                      } else {
+                        int myAltitude = int.tryParse(value);
+                        if (myAltitude == null) {
+                          return "Error";
+                        }
+                        if (myAltitude < -2000 || myAltitude > 40000) {
+                          return "Error";
+                        }
+                        myValue = int.tryParse(value);
+                        return null;
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text("Corrected",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    )
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 5),
+                ),
+                Text(
+                  (myValue * _temperatureInput).toString(),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  )
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    setState(() {
+      _altitudeRepeater.add(repeaterWidget);
+    });
+  }
+
+  void _removeRepeater() {
+    if (_altitudeRepeater.length > 1) {
+      setState(() {
+        _altitudeRepeater.removeLast();
+      });
+    }
+  }
+
+  void _restoreSharedPreferences() {
+    // TODO
   }
 
 }
