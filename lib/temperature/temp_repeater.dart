@@ -5,12 +5,20 @@ import 'package:flutter/services.dart';
 
 
 class TempRepeaterWidget extends StatefulWidget {
+  final bool currentError;
+  final int elevation;
   final int temperature;
-  final Stream parentValueChange;
+  final Stream elevationParentValueChange;
+  final Stream temperatureParentValueChange;
+  final Stream errorParentValueChange;
 
   TempRepeaterWidget({
+    @required this.currentError,
+    @required this.elevation,
     @required this.temperature,
-    @required this.parentValueChange,
+    @required this.elevationParentValueChange,
+    @required this.temperatureParentValueChange,
+    @required this.errorParentValueChange,
   });
 
   @override
@@ -18,18 +26,33 @@ class TempRepeaterWidget extends StatefulWidget {
 }
 
 class _TempRepeaterWidget extends State<TempRepeaterWidget> {
-  StreamSubscription streamSubscription;
+  StreamSubscription errorStreamSubscription;
+  StreamSubscription elevationStreamSubscription;
+  StreamSubscription temperatureStreamSubscription;
 
   final _myTextController = new TextEditingController();
-  String _lastValidCorrected = "0";
+  bool parentError;
+  int parentElevation;
   int parentTemperature;
-  int _myValue = 0;
+  int _myValue; // TODO: we need to initialize to null so that we can give error
 
   @override
   void initState() {
     super.initState();
+
+    if (_myValue == null) {
+      parentError = true;
+    }
+
+    parentError = widget.currentError;
+    parentElevation = widget.elevation;
     parentTemperature = widget.temperature;
-    streamSubscription = widget.parentValueChange.listen((data) => onParentChange(data));
+    errorStreamSubscription =
+        widget.errorParentValueChange.listen((data) => onParentErrorChange(data));
+    elevationStreamSubscription =
+        widget.elevationParentValueChange.listen((data) => onParentElevationChange(data));
+    temperatureStreamSubscription =
+        widget.temperatureParentValueChange.listen((data) => onParentTemperatureChange(data));
     _myTextController.addListener(_onInputTextChange);
   }
 
@@ -37,73 +60,104 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 40),
-      child: Row(
+      child: Column(
         children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                Text("Altitude",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    )
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                ),
-                Container(
-                  width: 80,
-                  child: TextFormField(
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(5),
-                    ],
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                    keyboardType: TextInputType.numberWithOptions(),
-                    maxLines: 1,
-                    controller: _myTextController,
-                    autovalidate: true,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return "";
-                      } else {
-                        int myAltitude = int.tryParse(value);
-                        if (myAltitude == null) {
-                          return "Error";
-                        }
-                        if (myAltitude < -2000 || myAltitude > 40000) {
-                          return "Error";
-                        }
-                        return null;
-                      }
-                    },
+          Row (
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text("Altitude",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      )
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+              ),
+              Text("|",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  )
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text("Corrected",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      )
+                  ),
+                ],
+              ),
+            ],
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text("Corrected",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    )
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Container(
+                      width: 70,
+                      child: TextFormField(
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(5),
+                        ],
+                        style: TextStyle(
+                          fontSize: 15,
+                        ),
+                        keyboardType: TextInputType.numberWithOptions(),
+                        maxLines: 1,
+                        controller: _myTextController,
+                        autovalidate: true,
+                        textAlign: TextAlign.center,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return "";
+                          } else {
+                            int myAltitude = int.tryParse(value);
+                            if (myAltitude == null) {
+                              return "Error";
+                            }
+                            if (myAltitude < -2000 || myAltitude > 40000) {
+                              return "Error";
+                            }
+                            return null;
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _correctedTextWidget(),
+                  ],
                 ),
-                _correctedTextWidget(),
-              ],
-            ),
+              ),
+            ],
           ),
+
+
         ],
       ),
     );
@@ -112,42 +166,73 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   @override
   dispose() {
     super.dispose();
-    streamSubscription.cancel();
+    errorStreamSubscription.cancel();
+    elevationStreamSubscription.cancel();
+    temperatureStreamSubscription.cancel();
   }
-
 
   void _onInputTextChange() {
     setState(() {
       _myValue = int.tryParse(_myTextController.text);
+      if (_myValue == null) {
+        parentError = true;     // TODO: USE SOMETHING DIFFERENT FROM PARENTERROR (TO INITIALIZE BLANK!)
+      } else {
+        parentError = false;
+      }
     });
   }
 
   Widget _correctedTextWidget () {
-    String corrected = "";
-    try {
-      corrected = (_myValue * parentTemperature).toString();
-      _lastValidCorrected = corrected;
+    if (parentError) {
       return Text(
-          corrected,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          )
-      );
-    } catch (e) {
-      return Text(
-          _lastValidCorrected,
+          "error",
           style: TextStyle(
             color: Colors.red,
             fontSize: 15,
-            fontWeight: FontWeight.bold,
           )
       );
+    } else {
+      try {
+        String corrected = (_myValue * parentTemperature + parentElevation).toString();
+        return Text(
+            corrected,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            )
+        );
+      } catch (e) {
+        return Text(
+            "error",
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 15,
+            )
+        );
+      }
     }
+
+
 
   }
 
-  onParentChange(int dataChanged) {
+  onParentErrorChange(int dataChanged) {
+    setState(() {
+      if (dataChanged == 1) {
+        parentError = true;
+      } else {
+        parentError = false;
+      }
+    });
+  }
+
+  onParentElevationChange(int dataChanged) {
+    setState(() {
+      parentElevation = dataChanged;
+    });
+  }
+
+  onParentTemperatureChange(int dataChanged) {
     setState(() {
       parentTemperature = dataChanged;
     });

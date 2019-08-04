@@ -22,11 +22,15 @@ class TemperaturePage extends StatefulWidget {
 
 class _TemperaturePageState extends State<TemperaturePage> {
 
+  bool _currentError = false;
+  int _elevationInput;
   int _temperatureInput;
-  final _formKey = GlobalKey<FormState>();
   List<Widget> _altitudeRepeater = List<Widget>();
+  final _myElevationTextController = new TextEditingController();
   final _myTemperatureTextController = new TextEditingController();
-  final changeNotifier = new StreamController.broadcast();
+  final elevationChangeNotifier = new StreamController.broadcast();
+  final temperatureChangeNotifier = new StreamController.broadcast();
+  final errorChangeNotifier = new StreamController.broadcast();
 
 
   @override
@@ -34,12 +38,16 @@ class _TemperaturePageState extends State<TemperaturePage> {
     super.initState();
     _restoreSharedPreferences();
 
+    _myElevationTextController.text = "0";
+    _myTemperatureTextController.text = "0";
+
     // TODO: ACTIVATE THIS!
     // SharedPreferencesModel().setSettingsLastUsedSection("2");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
 
+    _myElevationTextController.addListener(_onElevationInputTextChange);
     _myTemperatureTextController.addListener(_onTemperatureInputTextChange);
   }
 
@@ -60,7 +68,9 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
   @override
   void dispose() {
-    changeNotifier.close();
+    errorChangeNotifier.close();
+    elevationChangeNotifier.close();
+    temperatureChangeNotifier.close();
     super.dispose();
   }
 
@@ -164,9 +174,8 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       ),
                       keyboardType: TextInputType.numberWithOptions(),
                       maxLines: 1,
-                      // TODO: ADD CONTROLLER
+                      controller: _myElevationTextController,
                       autovalidate: true,
-                      initialValue: "0",
                       validator: (value) {
                         if (value.isEmpty) {
                           return "";
@@ -178,9 +187,9 @@ class _TemperaturePageState extends State<TemperaturePage> {
                           if (myAltitude < -2000 || myAltitude > 40000) {
                             return "Error";
                           }
-                          // TODO: UPDATE VALUE HERE
-                          return null;
                         }
+                        _elevationInput = int.parse(value);
+                        return null;
                       },
                     ),
                   ),
@@ -284,6 +293,19 @@ class _TemperaturePageState extends State<TemperaturePage> {
                   },
                 )
               : SizedBox.shrink(),
+
+          _altitudeRepeater.length > 1
+              ? RawMaterialButton (
+            shape: new CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.yellow,
+            child: Icon(Icons.delete),
+            onPressed: () {
+              _clearAll();
+            },
+          )
+              : SizedBox.shrink(),
+
         ],
       ),
     );
@@ -291,8 +313,12 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
   _addRepeater() {
     Widget repeaterWidget = TempRepeaterWidget(
-        temperature: _temperatureInput,
-        parentValueChange: changeNotifier.stream,
+      currentError: _currentError,
+      elevation: _elevationInput,
+      temperature: _temperatureInput,
+      elevationParentValueChange: elevationChangeNotifier.stream,
+      temperatureParentValueChange: temperatureChangeNotifier.stream,
+      errorParentValueChange: errorChangeNotifier.stream,
     );
     setState(() {
       _altitudeRepeater.add(repeaterWidget);
@@ -307,9 +333,31 @@ class _TemperaturePageState extends State<TemperaturePage> {
     }
   }
 
+  void _clearAll() {
+    if (_altitudeRepeater.length > 1) {
+      setState(() {
+        _altitudeRepeater.clear();
+      });
+    }
+  }
+
+  void _onElevationInputTextChange() {
+    int myAltitude = int.tryParse(_myElevationTextController.text);
+    if (_myElevationTextController.text.isEmpty
+        || myAltitude == null
+        || myAltitude < -2000 || myAltitude > 40000) {
+      _currentError = true;
+      errorChangeNotifier.sink.add(1);
+    } else {
+      _currentError = false;
+      errorChangeNotifier.sink.add(0);
+      elevationChangeNotifier.sink.add(int.parse(_myElevationTextController.text));
+    }
+  }
+
   void _onTemperatureInputTextChange() {
     // TODO: ADD HERE SAME CONDITIONS AS IN VALIDATOR!
-    changeNotifier.sink.add(int.parse(_myTemperatureTextController.text));
+    temperatureChangeNotifier.sink.add(int.parse(_myTemperatureTextController.text));
   }
 
   void _restoreSharedPreferences() {
