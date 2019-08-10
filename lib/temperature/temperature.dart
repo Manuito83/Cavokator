@@ -26,6 +26,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
   int _elevationInput;
   int _temperatureInput;
   List<Widget> _altitudeRepeater = List<Widget>();
+  List<String> _repeaterValueList = List<String>();
   final _myElevationTextController = new TextEditingController();
   final _myTemperatureTextController = new TextEditingController();
   final elevationChangeNotifier = new StreamController.broadcast();
@@ -42,7 +43,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     _myTemperatureTextController.text = "0";
 
     // TODO: ACTIVATE THIS!
-    // SharedPreferencesModel().setSettingsLastUsedSection("2");
+    // SharedPreferencesModel().setSettingsLastUsedSection("3");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
@@ -93,7 +94,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
       ),
       title: Text(
-        "Temperature Corrections",
+        "Temp. Corrections",
         style: TextStyle(
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
@@ -272,46 +273,52 @@ class _TemperaturePageState extends State<TemperaturePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          RawMaterialButton (
-            shape: new CircleBorder(),
-            elevation: 2.0,
-            fillColor: Colors.blue,
-            child: Icon(Icons.add),
-            onPressed: () {
-              _addRepeater();
-            },
-          ),
+
+          _altitudeRepeater.length < 20
+            ? RawMaterialButton (
+                shape: new CircleBorder(),
+                elevation: 2.0,
+                fillColor: Colors.blue,
+                child: Icon(Icons.add),
+                onPressed: () {
+                  _addNewRepeater();
+                },
+            )
+            : SizedBox.shrink(),
 
           _altitudeRepeater.length > 0
-              ? RawMaterialButton (
-                  shape: new CircleBorder(),
-                  elevation: 2.0,
-                  fillColor: Colors.red,
-                  child: Icon(Icons.remove),
-                  onPressed: () {
-                    _removeRepeater();
-                  },
-                )
-              : SizedBox.shrink(),
+            ? RawMaterialButton (
+                shape: new CircleBorder(),
+                elevation: 2.0,
+                fillColor: Colors.red,
+                child: Icon(Icons.remove),
+                onPressed: () {
+                  _removeRepeater();
+                },
+              )
+            : SizedBox.shrink(),
 
           _altitudeRepeater.length > 1
-              ? RawMaterialButton (
-            shape: new CircleBorder(),
-            elevation: 2.0,
-            fillColor: Colors.yellow,
-            child: Icon(Icons.delete),
-            onPressed: () {
-              _clearAll();
-            },
-          )
-              : SizedBox.shrink(),
+            ? RawMaterialButton (
+                shape: new CircleBorder(),
+                elevation: 2.0,
+                fillColor: Colors.yellow,
+                child: Icon(Icons.delete),
+                onPressed: () {
+                  _clearAll();
+                },
+            )
+            : SizedBox.shrink(),
 
         ],
       ),
     );
   }
 
-  _addRepeater() {
+  _addNewRepeater() {
+
+    _repeaterValueList.add("");
+
     Widget repeaterWidget = TempRepeaterWidget(
       currentError: _currentError,
       elevation: _elevationInput,
@@ -319,10 +326,22 @@ class _TemperaturePageState extends State<TemperaturePage> {
       elevationParentValueChange: elevationChangeNotifier.stream,
       temperatureParentValueChange: temperatureChangeNotifier.stream,
       errorParentValueChange: errorChangeNotifier.stream,
+      repeaterId: _repeaterValueList.length - 1,
+      callbackValue: _repeaterWasUpdated,
+      // presetValue: // TODO: delete this, it's here just to remember this option when using the list
     );
+
     setState(() {
       _altitudeRepeater.add(repeaterWidget);
     });
+
+    if (_altitudeRepeater.length == 20) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Reached limit of corrections (20)!"),
+        ),
+      );
+    }
   }
 
   void _removeRepeater() {
@@ -330,6 +349,8 @@ class _TemperaturePageState extends State<TemperaturePage> {
       setState(() {
         _altitudeRepeater.removeLast();
       });
+      _repeaterValueList.removeLast();
+      SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
     }
   }
 
@@ -338,7 +359,14 @@ class _TemperaturePageState extends State<TemperaturePage> {
       setState(() {
         _altitudeRepeater.clear();
       });
+      _repeaterValueList.clear();
+      SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
     }
+  }
+
+  void _repeaterWasUpdated (int repeaterId, int newValue) {  // TODO: IMPLEMENT
+    _repeaterValueList[repeaterId] = newValue.toString();
+    SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
   }
 
   void _onElevationInputTextChange() {
@@ -356,12 +384,45 @@ class _TemperaturePageState extends State<TemperaturePage> {
   }
 
   void _onTemperatureInputTextChange() {
-    // TODO: ADD HERE SAME CONDITIONS AS IN VALIDATOR!
-    temperatureChangeNotifier.sink.add(int.parse(_myTemperatureTextController.text));
+    int myTemperature = int.tryParse(_myTemperatureTextController.text);
+    if (_myTemperatureTextController.text.isEmpty
+        || myTemperature == null
+        || myTemperature < -80 || myTemperature > 60) {
+      _currentError = true;
+      errorChangeNotifier.sink.add(1);
+    } else {
+      _currentError = false;
+      errorChangeNotifier.sink.add(0);
+      temperatureChangeNotifier.sink.add(int.parse(_myTemperatureTextController.text));
+    }
   }
 
-  void _restoreSharedPreferences() {
-    // TODO
+  void _restoreSharedPreferences() {  // TODO: IMPLEMENT!
+
+    // TODO: elevation and temperature
+
+
+    SharedPreferencesModel().getTemperatureValueList().then((onValue) {
+      if (onValue.isNotEmpty) {
+        _repeaterValueList = onValue;
+        for (var i = 0; i < _repeaterValueList.length; ++i) {
+          Widget repeaterWidget = TempRepeaterWidget(
+            currentError: _currentError,
+            elevation: _elevationInput,
+            temperature: _temperatureInput,
+            elevationParentValueChange: elevationChangeNotifier.stream,
+            temperatureParentValueChange: temperatureChangeNotifier.stream,
+            errorParentValueChange: errorChangeNotifier.stream,
+            repeaterId: _repeaterValueList.length - 1,
+            callbackValue: _repeaterWasUpdated,
+            presetValue: _repeaterValueList[i].toString(),
+          );
+          setState(() {
+            _altitudeRepeater.add(repeaterWidget);
+          });
+        }
+      }
+    });
   }
 
 }

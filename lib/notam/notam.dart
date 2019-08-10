@@ -1370,7 +1370,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   void _updateTimes(){
-    print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
+    //print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
     if (_myNotamList.isNotEmpty){
       setState(() {
         // This will trigger a refresh of weather times

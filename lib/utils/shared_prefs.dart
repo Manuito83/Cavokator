@@ -27,6 +27,8 @@ class SharedPreferencesModel {
   final String _kConditionModelPrefs = "condition_model";
   final String _kConditionInputPrefs = "condition_input";
 
+  final String _kTemperatureValuesPrefs = "temperature_values";
+
 
   /// ----------------------------
   /// Methods for app theme
@@ -205,7 +207,7 @@ class SharedPreferencesModel {
   }
 
   /// ----------------------------
-  /// Methods for notam requests
+  /// Methods for condition requests
   /// ----------------------------
   Future<String> getConditionModel() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -217,6 +219,7 @@ class SharedPreferencesModel {
     return prefs.setString(_kConditionModelPrefs, value);
   }
 
+  // ***********
   Future<String> getConditionInput() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(_kConditionInputPrefs) ?? "";
@@ -226,5 +229,20 @@ class SharedPreferencesModel {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString(_kConditionInputPrefs, value);
   }
+
+
+/// ----------------------------
+/// Methods for notam requests
+/// ----------------------------
+  Future<List<String>> getTemperatureValueList() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_kTemperatureValuesPrefs) ?? List<String>();
+  }
+
+  Future<bool> setTemperatureValueList(List<String> value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setStringList(_kTemperatureValuesPrefs, value);
+  }
+
 
 }

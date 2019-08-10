@@ -11,6 +11,9 @@ class TempRepeaterWidget extends StatefulWidget {
   final Stream elevationParentValueChange;
   final Stream temperatureParentValueChange;
   final Stream errorParentValueChange;
+  final int repeaterId;
+  final Function callbackValue;
+  final String presetValue;
 
   TempRepeaterWidget({
     @required this.currentError,
@@ -19,6 +22,9 @@ class TempRepeaterWidget extends StatefulWidget {
     @required this.elevationParentValueChange,
     @required this.temperatureParentValueChange,
     @required this.errorParentValueChange,
+    @required this.repeaterId,
+    @required this.callbackValue,
+    this.presetValue,
   });
 
   @override
@@ -32,28 +38,38 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
 
   final _myTextController = new TextEditingController();
   bool parentError;
+  bool altitudeError = false;
   int parentElevation;
   int parentTemperature;
-  int _myValue; // TODO: we need to initialize to null so that we can give error
+  int _myValue;
 
   @override
   void initState() {
     super.initState();
 
+    _myTextController.addListener(_onInputTextChange);
+
+    if (widget.presetValue != null) {
+      _myValue = int.parse(widget.presetValue);
+      _myTextController.text = _myValue.toString();
+    }
+
     if (_myValue == null) {
-      parentError = true;
+      altitudeError = true;
     }
 
     parentError = widget.currentError;
     parentElevation = widget.elevation;
     parentTemperature = widget.temperature;
+
     errorStreamSubscription =
-        widget.errorParentValueChange.listen((data) => onParentErrorChange(data));
+        widget.errorParentValueChange.listen((data) => _onParentErrorChange(data));
     elevationStreamSubscription =
-        widget.elevationParentValueChange.listen((data) => onParentElevationChange(data));
+        widget.elevationParentValueChange.listen((data) => _onParentElevationChange(data));
     temperatureStreamSubscription =
-        widget.temperatureParentValueChange.listen((data) => onParentTemperatureChange(data));
-    _myTextController.addListener(_onInputTextChange);
+        widget.temperatureParentValueChange.listen((data) => _onParentTemperatureChange(data));
+
+
   }
 
   @override
@@ -174,26 +190,21 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   void _onInputTextChange() {
     setState(() {
       _myValue = int.tryParse(_myTextController.text);
-      if (_myValue == null) {
-        parentError = true;     // TODO: USE SOMETHING DIFFERENT FROM PARENTERROR (TO INITIALIZE BLANK!)
+      if (_myValue == null || _myValue < -2000 || _myValue > 40000) {
+        altitudeError = true;
       } else {
-        parentError = false;
+        widget.callbackValue(widget.repeaterId, _myValue);
+        altitudeError = false;
       }
     });
   }
 
   Widget _correctedTextWidget () {
-    if (parentError) {
-      return Text(
-          "error",
-          style: TextStyle(
-            color: Colors.red,
-            fontSize: 15,
-          )
-      );
+    if (parentError || altitudeError) {
+      return Text("");
     } else {
       try {
-        String corrected = (_myValue * parentTemperature + parentElevation).toString();
+        String corrected = _calculateResult(parentElevation, parentTemperature, _myValue).toString();
         return Text(
             corrected,
             style: TextStyle(
@@ -211,12 +222,9 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
         );
       }
     }
-
-
-
   }
 
-  onParentErrorChange(int dataChanged) {
+  _onParentErrorChange(int dataChanged) {
     setState(() {
       if (dataChanged == 1) {
         parentError = true;
@@ -226,16 +234,27 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     });
   }
 
-  onParentElevationChange(int dataChanged) {
+  _onParentElevationChange(int dataChanged) {
     setState(() {
       parentElevation = dataChanged;
     });
   }
 
-  onParentTemperatureChange(int dataChanged) {
+  _onParentTemperatureChange(int dataChanged) {
     setState(() {
       parentTemperature = dataChanged;
     });
   }
+
+  int _calculateResult (int elevation, int temperature, int altitude) {
+    double correction =
+        (altitude-elevation)*((15-(temperature+0.00198*elevation))
+        /(273+(temperature+0.00198*elevation)
+        -(0.5*0.00198*((altitude-elevation)+elevation))));
+
+    return correction.round() + altitude;
+  }
+
+
 
 }
