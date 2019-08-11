@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:flutter/services.dart';
+import 'package:cavokator_flutter/temperature/temp_options_dialog.dart';
+import 'package:share/share.dart';
 
 
 class TemperaturePage extends StatefulWidget {
@@ -25,14 +27,21 @@ class _TemperaturePageState extends State<TemperaturePage> {
   bool _currentError = false;
   int _elevationInput;
   int _temperatureInput;
+
   List<Widget> _altitudeRepeater = List<Widget>();
+
   List<String> _repeaterValueList = List<String>();
+  List<String> _repeaterCorrectionList = List<String>();
+
   final _myElevationTextController = new TextEditingController();
   final _myTemperatureTextController = new TextEditingController();
+
   final elevationChangeNotifier = new StreamController.broadcast();
   final temperatureChangeNotifier = new StreamController.broadcast();
   final errorChangeNotifier = new StreamController.broadcast();
+  final roundChangeNotifier = new StreamController.broadcast();
 
+  bool _round = true;
 
   @override
   void initState() {
@@ -69,6 +78,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
   @override
   void dispose() {
+    roundChangeNotifier.close();
     errorChangeNotifier.close();
     elevationChangeNotifier.close();
     temperatureChangeNotifier.close();
@@ -94,7 +104,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
       ),
       title: Text(
-        "Temp. Corrections",
+        "TEMP Correction",
         style: TextStyle(
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
@@ -114,6 +124,29 @@ class _TemperaturePageState extends State<TemperaturePage> {
           ),
         ),
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.playlist_add_check),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            return _generateStandardList();
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.settings),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            return _showSettings();
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.share),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            Share.share(_generateShareString());
+          },
+        ),
+      ],
     );
   }
 
@@ -315,20 +348,24 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
+
   _addNewRepeater() {
 
     _repeaterValueList.add("");
+    _repeaterCorrectionList.add("");
 
     Widget repeaterWidget = TempRepeaterWidget(
       currentError: _currentError,
       elevation: _elevationInput,
       temperature: _temperatureInput,
+      round: _round,
       elevationParentValueChange: elevationChangeNotifier.stream,
       temperatureParentValueChange: temperatureChangeNotifier.stream,
       errorParentValueChange: errorChangeNotifier.stream,
+      roundParentValueChange: roundChangeNotifier.stream,
       repeaterId: _repeaterValueList.length - 1,
-      callbackValue: _repeaterWasUpdated,
-      // presetValue: // TODO: delete this, it's here just to remember this option when using the list
+      callbackValue: _repeaterValueUpdated,
+      callbackCorrection: _repeaterCorrectionUpdated,
     );
 
     setState(() {
@@ -344,15 +381,19 @@ class _TemperaturePageState extends State<TemperaturePage> {
     }
   }
 
+
   void _removeRepeater() {
     if (_altitudeRepeater.length > 0) {
       setState(() {
         _altitudeRepeater.removeLast();
       });
       _repeaterValueList.removeLast();
+      _repeaterCorrectionList.removeLast();
       SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
+      SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
     }
   }
+
 
   void _clearAll() {
     if (_altitudeRepeater.length > 1) {
@@ -360,47 +401,70 @@ class _TemperaturePageState extends State<TemperaturePage> {
         _altitudeRepeater.clear();
       });
       _repeaterValueList.clear();
+      _repeaterCorrectionList.clear();
       SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
+      SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
     }
   }
 
-  void _repeaterWasUpdated (int repeaterId, int newValue) {  // TODO: IMPLEMENT
+
+  void _repeaterValueUpdated (int repeaterId, int newValue) {
     _repeaterValueList[repeaterId] = newValue.toString();
     SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
   }
 
+
+  void _repeaterCorrectionUpdated (int repeaterId, int newCorrection) {
+    _repeaterCorrectionList[repeaterId] = newCorrection.toString();
+    SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
+  }
+
+
   void _onElevationInputTextChange() {
-    int myAltitude = int.tryParse(_myElevationTextController.text);
+    int inputElevation = int.tryParse(_myElevationTextController.text);
     if (_myElevationTextController.text.isEmpty
-        || myAltitude == null
-        || myAltitude < -2000 || myAltitude > 40000) {
+        || inputElevation == null
+        || inputElevation < -2000 || inputElevation > 40000) {
       _currentError = true;
       errorChangeNotifier.sink.add(1);
     } else {
       _currentError = false;
       errorChangeNotifier.sink.add(0);
-      elevationChangeNotifier.sink.add(int.parse(_myElevationTextController.text));
+      elevationChangeNotifier.sink.add(inputElevation);
+      SharedPreferencesModel().setTemperatureElev(inputElevation);
     }
   }
 
   void _onTemperatureInputTextChange() {
-    int myTemperature = int.tryParse(_myTemperatureTextController.text);
+    int inputTemperature = int.tryParse(_myTemperatureTextController.text);
     if (_myTemperatureTextController.text.isEmpty
-        || myTemperature == null
-        || myTemperature < -80 || myTemperature > 60) {
+        || inputTemperature == null
+        || inputTemperature < -80 || inputTemperature > 60) {
       _currentError = true;
       errorChangeNotifier.sink.add(1);
     } else {
       _currentError = false;
       errorChangeNotifier.sink.add(0);
-      temperatureChangeNotifier.sink.add(int.parse(_myTemperatureTextController.text));
+      temperatureChangeNotifier.sink.add(inputTemperature);
+      SharedPreferencesModel().setTemperatureTemp(inputTemperature);
     }
   }
 
-  void _restoreSharedPreferences() {  // TODO: IMPLEMENT!
+  void _restoreSharedPreferences() {
 
-    // TODO: elevation and temperature
+    SharedPreferencesModel().getTemperatureElev().then((onValue) {
+      _myElevationTextController.text = onValue.toString();
+    });
 
+    SharedPreferencesModel().getTemperatureTemp().then((onValue) {
+      _myTemperatureTextController.text = onValue.toString();
+    });
+
+    SharedPreferencesModel().getTemperatureCorrectionList().then((onValue) {
+      if (onValue.isNotEmpty) {
+        _repeaterCorrectionList = onValue;
+      }
+    });
 
     SharedPreferencesModel().getTemperatureValueList().then((onValue) {
       if (onValue.isNotEmpty) {
@@ -410,12 +474,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
             currentError: _currentError,
             elevation: _elevationInput,
             temperature: _temperatureInput,
+            round: _round,
             elevationParentValueChange: elevationChangeNotifier.stream,
             temperatureParentValueChange: temperatureChangeNotifier.stream,
             errorParentValueChange: errorChangeNotifier.stream,
+            roundParentValueChange: roundChangeNotifier.stream,
             repeaterId: _repeaterValueList.length - 1,
-            callbackValue: _repeaterWasUpdated,
+            callbackValue: _repeaterValueUpdated,
             presetValue: _repeaterValueList[i].toString(),
+            callbackCorrection: _repeaterCorrectionUpdated,
           );
           setState(() {
             _altitudeRepeater.add(repeaterWidget);
@@ -423,6 +490,94 @@ class _TemperaturePageState extends State<TemperaturePage> {
         }
       }
     });
+
+    SharedPreferencesModel().getTempRound().then((onValue) {
+      _round = onValue;
+    });
   }
+
+  Future<void> _showSettings() async {
+    return showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return TempOptionsDialog(
+            round: _round,
+            roundChangedCallback: _roundOptionHasChanged,
+          );
+        }
+    );
+  }
+
+  void _roundOptionHasChanged(bool newValue) {
+    _round = newValue;
+    roundChangeNotifier.sink.add(newValue);
+  }
+
+  String _generateShareString () {
+    String shareString = "";
+
+    shareString += "###";
+    shareString += "\n### CAVOKATOR TEMP CORRECTION ###";
+    shareString += "\n###";
+
+    shareString += "\n\n# Elevation: $_elevationInput";
+    shareString += "\n# Temperature: $_temperatureInput \n";
+
+    if (_repeaterValueList.isEmpty) {
+      shareString += "\nERROR: no altitudes inserted!";
+    } else {
+      for (var i = 0; i < _repeaterValueList.length; i++) {
+        shareString += "\nAltitude: ${_repeaterValueList[i]} "
+                       "is corrected to ${_repeaterCorrectionList[i]}";
+      }
+
+      if (_round) {
+        shareString += "\n\nNote: Corrected altitudes are being rounded to the higher 100";
+      }
+    }
+
+    shareString += "\n\n ### END CAVOKATOR REPORT ###";
+
+    return shareString;
+  }
+
+
+  void _generateStandardList () {
+
+    _altitudeRepeater.clear(); // TODO: NOT WORKING!
+    _repeaterValueList.clear();
+    _repeaterCorrectionList.clear();
+
+    int initialAltitude = _elevationInput + 500;
+    for (var i = 0; i < 2; ++i) {
+      _repeaterValueList.add("");
+      _repeaterCorrectionList.add("");
+
+      Widget repeaterWidget = TempRepeaterWidget(
+        currentError: _currentError,
+        elevation: _elevationInput,
+        temperature: _temperatureInput,
+        round: _round,
+        elevationParentValueChange: elevationChangeNotifier.stream,
+        temperatureParentValueChange: temperatureChangeNotifier.stream,
+        errorParentValueChange: errorChangeNotifier.stream,
+        roundParentValueChange: roundChangeNotifier.stream,
+        repeaterId: _repeaterValueList.length - 1,
+        callbackValue: _repeaterValueUpdated,
+        presetValue: initialAltitude.toString(),
+        callbackCorrection: _repeaterCorrectionUpdated,
+      );
+
+      _altitudeRepeater.add(repeaterWidget);
+      initialAltitude += 500;
+    }
+
+
+    // TODO: Altitudes change after exiting and reloading!!?!?!?!
+
+    setState(() {});
+  }
+
 
 }

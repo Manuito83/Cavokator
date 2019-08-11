@@ -28,6 +28,11 @@ class SharedPreferencesModel {
   final String _kConditionInputPrefs = "condition_input";
 
   final String _kTemperatureValuesPrefs = "temperature_values";
+  final String _kTemperatureCorrectionsPrefs = "temperature_corrections";
+  final String _kTemperatureTempPrefs = "temperature_temp";
+  final String _kTemperatureElevPrefs = "temperature_elev";
+  final String _kTemperatureRoundPrefs = "temperature_round";
+
 
 
   /// ----------------------------
@@ -206,9 +211,9 @@ class SharedPreferencesModel {
     return prefs.setBool(_kNotamCategorySortingPrefs, value);
   }
 
-  /// ----------------------------
+  /// -------------------------------
   /// Methods for condition requests
-  /// ----------------------------
+  /// -------------------------------
   Future<String> getConditionModel() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(_kConditionModelPrefs) ?? "";
@@ -231,9 +236,9 @@ class SharedPreferencesModel {
   }
 
 
-/// ----------------------------
-/// Methods for notam requests
-/// ----------------------------
+/// --------------------------------------------
+/// Methods for temperature corrections requests
+/// --------------------------------------------
   Future<List<String>> getTemperatureValueList() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(_kTemperatureValuesPrefs) ?? List<String>();
@@ -244,5 +249,48 @@ class SharedPreferencesModel {
     return prefs.setStringList(_kTemperatureValuesPrefs, value);
   }
 
+  // ***********
+  Future<List<String>> getTemperatureCorrectionList() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_kTemperatureCorrectionsPrefs) ?? List<String>();
+  }
+
+  Future<bool> setTemperatureCorrectionList(List<String> value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setStringList(_kTemperatureCorrectionsPrefs, value);
+  }
+
+  // ***********
+  Future<int> getTemperatureTemp() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kTemperatureTempPrefs) ?? 0;
+  }
+
+  Future<bool> setTemperatureTemp(int value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setInt(_kTemperatureTempPrefs, value);
+  }
+
+  // ***********
+  Future<int> getTemperatureElev() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kTemperatureElevPrefs) ?? 0;
+  }
+
+  Future<bool> setTemperatureElev(int value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setInt(_kTemperatureElevPrefs, value);
+  }
+
+  // ***********
+  Future<bool> getTempRound() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kTemperatureRoundPrefs) ?? true;
+  }
+
+  Future<bool> setTempRound(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(_kTemperatureRoundPrefs, value);
+  }
 
 }

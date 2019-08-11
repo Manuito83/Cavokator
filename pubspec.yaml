@@ -18,12 +18,12 @@ dependencies:
   http: ^0.12.0
   flutter_sticky_header: ^0.4.0
   shared_preferences: ^0.5.0
-  google_maps_flutter: ^0.5.15
+  google_maps_flutter: ^0.5.20+2
   scroll_to_index: any
-  flutter_speed_dial: ^1.1.2
+  flutter_speed_dial: ^1.2.1
   intl: ^0.15.8
   share: ^0.6.1+1
-  connectivity: ^0.4.3+4
+  connectivity: ^0.4.3+7
   url_launcher: ^5.0.5
 
 

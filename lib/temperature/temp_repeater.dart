@@ -8,22 +8,28 @@ class TempRepeaterWidget extends StatefulWidget {
   final bool currentError;
   final int elevation;
   final int temperature;
+  final bool round;
   final Stream elevationParentValueChange;
   final Stream temperatureParentValueChange;
   final Stream errorParentValueChange;
+  final Stream roundParentValueChange;
   final int repeaterId;
   final Function callbackValue;
+  final Function callbackCorrection;
   final String presetValue;
 
   TempRepeaterWidget({
     @required this.currentError,
     @required this.elevation,
     @required this.temperature,
+    @required this.round,
     @required this.elevationParentValueChange,
     @required this.temperatureParentValueChange,
     @required this.errorParentValueChange,
+    @required this.roundParentValueChange,
     @required this.repeaterId,
     @required this.callbackValue,
+    @required this.callbackCorrection,
     this.presetValue,
   });
 
@@ -35,13 +41,17 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   StreamSubscription errorStreamSubscription;
   StreamSubscription elevationStreamSubscription;
   StreamSubscription temperatureStreamSubscription;
+  StreamSubscription roundStreamSubscription;
 
   final _myTextController = new TextEditingController();
-  bool parentError;
-  bool altitudeError = false;
-  int parentElevation;
-  int parentTemperature;
+  bool _parentError;
+  bool _altitudeError = false;
+  int _parentElevation;
+  int _parentTemperature;
+  bool _parentRound;
+
   int _myValue;
+  int _myCorrection;
 
   @override
   void initState() {
@@ -50,17 +60,18 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     _myTextController.addListener(_onInputTextChange);
 
     if (widget.presetValue != null) {
-      _myValue = int.parse(widget.presetValue);
+      _myValue = int.tryParse(widget.presetValue);
       _myTextController.text = _myValue.toString();
     }
 
     if (_myValue == null) {
-      altitudeError = true;
+      _altitudeError = true;
     }
 
-    parentError = widget.currentError;
-    parentElevation = widget.elevation;
-    parentTemperature = widget.temperature;
+    _parentError = widget.currentError;
+    _parentElevation = widget.elevation;
+    _parentTemperature = widget.temperature;
+    _parentRound = widget.round;
 
     errorStreamSubscription =
         widget.errorParentValueChange.listen((data) => _onParentErrorChange(data));
@@ -68,6 +79,8 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
         widget.elevationParentValueChange.listen((data) => _onParentElevationChange(data));
     temperatureStreamSubscription =
         widget.temperatureParentValueChange.listen((data) => _onParentTemperatureChange(data));
+    roundStreamSubscription =
+        widget.roundParentValueChange.listen((data) => _onParentRoundChange(data));
 
 
   }
@@ -172,8 +185,6 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
               ),
             ],
           ),
-
-
         ],
       ),
     );
@@ -185,26 +196,29 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     errorStreamSubscription.cancel();
     elevationStreamSubscription.cancel();
     temperatureStreamSubscription.cancel();
+    roundStreamSubscription.cancel();
   }
 
   void _onInputTextChange() {
     setState(() {
       _myValue = int.tryParse(_myTextController.text);
       if (_myValue == null || _myValue < -2000 || _myValue > 40000) {
-        altitudeError = true;
+        _altitudeError = true;
       } else {
         widget.callbackValue(widget.repeaterId, _myValue);
-        altitudeError = false;
+        _altitudeError = false;
       }
     });
   }
 
   Widget _correctedTextWidget () {
-    if (parentError || altitudeError) {
+    if (_parentError || _altitudeError) {
       return Text("");
     } else {
       try {
-        String corrected = _calculateResult(parentElevation, parentTemperature, _myValue).toString();
+        _calculateResult(_parentElevation, _parentTemperature, _myValue);
+        String corrected = _myCorrection.toString();
+        widget.callbackCorrection(widget.repeaterId, _myCorrection);
         return Text(
             corrected,
             style: TextStyle(
@@ -227,34 +241,45 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   _onParentErrorChange(int dataChanged) {
     setState(() {
       if (dataChanged == 1) {
-        parentError = true;
+        _parentError = true;
       } else {
-        parentError = false;
+        _parentError = false;
       }
     });
   }
 
   _onParentElevationChange(int dataChanged) {
     setState(() {
-      parentElevation = dataChanged;
+      _parentElevation = dataChanged;
     });
   }
 
   _onParentTemperatureChange(int dataChanged) {
     setState(() {
-      parentTemperature = dataChanged;
+      _parentTemperature = dataChanged;
     });
   }
 
-  int _calculateResult (int elevation, int temperature, int altitude) {
+  _onParentRoundChange(bool dataChanged) {
+    setState(() {
+      _parentRound = dataChanged;
+    });
+  }
+
+  void _calculateResult (int elevation, int temperature, int altitude) {
     double correction =
         (altitude-elevation)*((15-(temperature+0.00198*elevation))
         /(273+(temperature+0.00198*elevation)
-        -(0.5*0.00198*((altitude-elevation)+elevation))));
+        -(0.5*0.00198*((altitude-elevation)+elevation)))
+    );
 
-    return correction.round() + altitude;
+    int exactResult = correction.round() + altitude;
+
+    if (_parentRound) {
+      _myCorrection = ((exactResult / 100).ceil())*100;
+    } else {
+      _myCorrection = exactResult;
+    }
   }
-
-
 
 }

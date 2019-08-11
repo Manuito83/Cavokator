@@ -255,9 +255,6 @@ class _WeatherPageState extends State<WeatherPage> {
         mySharedWeather += "\n### CAVOKATOR WEATHER ###";
         mySharedWeather += "\n###";
 
-
-
-
         for (var i = 0; i < wxModel.wxModelList.length; i++) {
           var airportName =
             wxModel.wxModelList[i].airportHeading == null ?
