@@ -19,6 +19,7 @@ class TempRepeaterWidget extends StatefulWidget {
   final String presetValue;
 
   TempRepeaterWidget({
+    @required Key key,
     @required this.currentError,
     @required this.elevation,
     @required this.temperature,
@@ -30,8 +31,8 @@ class TempRepeaterWidget extends StatefulWidget {
     @required this.repeaterId,
     @required this.callbackValue,
     @required this.callbackCorrection,
-    this.presetValue,
-  });
+    @required this.presetValue,
+  }) : super(key: key) ;
 
   @override
   _TempRepeaterWidget createState() => _TempRepeaterWidget();
@@ -46,6 +47,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   final _myTextController = new TextEditingController();
   bool _parentError;
   bool _altitudeError = false;
+  bool _altitudeNull = false;
   int _parentElevation;
   int _parentTemperature;
   bool _parentRound;
@@ -65,7 +67,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     }
 
     if (_myValue == null) {
-      _altitudeError = true;
+      _altitudeNull = true;
     }
 
     _parentError = widget.currentError;
@@ -97,7 +99,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text("Altitude",
+                  Text("Altitude (ft)",
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -120,7 +122,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text("Corrected",
+                  Text("Corrected (ft)",
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -192,28 +194,41 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
 
   @override
   dispose() {
-    super.dispose();
     errorStreamSubscription.cancel();
     elevationStreamSubscription.cancel();
     temperatureStreamSubscription.cancel();
     roundStreamSubscription.cancel();
+    super.dispose();
   }
 
   void _onInputTextChange() {
     setState(() {
       _myValue = int.tryParse(_myTextController.text);
-      if (_myValue == null || _myValue < -2000 || _myValue > 40000) {
+      if (_myValue == null) {
+        _altitudeNull = true;
+      } else if (_myValue < -2000 || _myValue > 15000) {
+        widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = true;
+        _altitudeNull = false;
       } else {
         widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = false;
+        _altitudeNull = false;
       }
     });
   }
 
   Widget _correctedTextWidget () {
-    if (_parentError || _altitudeError) {
+    if (_parentError || _altitudeNull) {
       return Text("");
+    } else if (_altitudeError) {
+      return Text(
+        "error",
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: 15,
+        ),
+      );
     } else {
       try {
         _calculateResult(_parentElevation, _parentTemperature, _myValue);
