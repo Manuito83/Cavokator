@@ -163,7 +163,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ),
-        // TODO: ADD LOW TEMPERATURE!
+        DropdownMenuItem(
+          value: "3",
+          child: Text(
+            "Open TEMP Corrections",
+            style: TextStyle (
+              fontSize: 14,
+            ),
+          ),
+        ),
       ],
       onChanged: (value) {
         SharedPreferencesModel().setSettingsOpenSpecificSection(value);

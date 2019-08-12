@@ -52,8 +52,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     _myElevationTextController.text = "0";
     _myTemperatureTextController.text = "0";
 
-    // TODO: ACTIVATE THIS!
-    // SharedPreferencesModel().setSettingsLastUsedSection("3");
+    SharedPreferencesModel().setSettingsLastUsedSection("3");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
@@ -595,109 +594,82 @@ class _TemperaturePageState extends State<TemperaturePage> {
         builder: (context) {
           return Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(15, 25, 15, 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    "WARNING",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(5, 30, 10, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          child: Text("TEMPERATURE CORRECTIONS",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(
-                            "This tool is not intended to be used during "
-                                "real flight operations. Please be aware that "
-                                "errors in low temperature corrections might "
-                                "lead to CFIT, GPWS warning or worse."
-                                "\n\n"
-                                "The calculations offered in CAVOKATOR are based "
-                                "on ICAO Doc 8168 Vol 1, Part III, 4.3.3 "
-                                '"Corrections for specific conditions", '
-                                "which can be used for aerodromes above sea level "
-                                "and produce results that are within 5 per cent "
-                                "of the accurate correction for altimeter "
-                                "setting sources up to 10 000 ft and with "
-                                "minimum heights up to 5 000 ft above that source. ",
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-
-                      ],
-                    ),
-                  ),
-                  Padding (
-                    padding: EdgeInsets.fromLTRB(5, 25, 30, 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible (
-                          child: Text(
-                            "For more information, please visit:",
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding (
-                    padding: EdgeInsets.fromLTRB(5, 0, 30, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible (
-                          child: Hyperlink(
-                              "https://www.skybrary.aero/index.php/Altimeter_Temperature_Error_Correction",
-                              "Skybrary's article on Altimeter Temperature Error Correction"),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 30),
-                    child: RaisedButton(
-                      child: Text(
-                        "I'll be careful!",
-                        style: TextStyle(
-                          fontSize: 15,
-                        ),
+            child: SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.fromLTRB(15, 25, 15, 15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      "WARNING",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(5, 30, 10, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Flexible(
+                            child: Text("TEMPERATURE CORRECTIONS",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              "This tool is not intended to be used during "
+                                  "real flight operations. Please be aware that "
+                                  "errors in low temperature corrections might "
+                                  "lead to CFIT, GPWS warning or worse."
+                                  "\n\n"
+                                  "The calculations offered in CAVOKATOR are based "
+                                  "on ICAO Doc 8168 Vol 1, Part III, 4.3.3 "
+                                  '"Corrections for specific conditions", '
+                                  "which can be used for aerodromes above sea level "
+                                  "and produce results that are within 5% "
+                                  "of the accurate correction for altimeter "
+                                  "setting sources up to 10000 ft and with "
+                                  "minimum heights up to 5000 ft above that source. ",
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 30),
+                      child: RaisedButton(
+                        child: Text(
+                          "I'll be careful!",
+                          style: TextStyle(
+                            fontSize: 15,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

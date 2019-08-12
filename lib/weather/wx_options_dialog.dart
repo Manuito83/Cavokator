@@ -41,7 +41,7 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
             Padding (
               padding: EdgeInsets.only (top: 40, bottom: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text("Fetch previous METAR?"),
                 ],
@@ -50,6 +50,7 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
             Padding(
               padding: EdgeInsets.only (bottom: 20),
               child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget> [
                     Slider(
                       value: _hoursBefore.toDouble(),

@@ -45,7 +45,7 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Flexible(
-                    child: Text("Round to the higher 100"),
+                    child: Text("Round up\n(100 feet)"),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 20),
