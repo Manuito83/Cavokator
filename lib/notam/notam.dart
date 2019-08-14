@@ -1112,6 +1112,10 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
     _userSubmitText = textEntered;
+
+    _myTextController.selection = TextSelection.collapsed(
+        offset: _myTextController.text.length
+    );
   }
 
   Future<List<NotamJson>> _callNotamApi() async {

@@ -737,7 +737,6 @@ class _WeatherPageState extends State<WeatherPage> {
     }
     _userSubmitText = textEntered;
 
-    // TODO: TRY!
     _myTextController.selection = TextSelection.collapsed(
         offset: _myTextController.text.length
     );
