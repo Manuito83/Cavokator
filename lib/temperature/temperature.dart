@@ -1,6 +1,5 @@
 import 'package:cavokator_flutter/temperature/temp_repeater.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
-import 'package:cavokator_flutter/utils/hyperlink.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/theme_me.dart';
@@ -25,7 +24,8 @@ class TemperaturePage extends StatefulWidget {
 
 class _TemperaturePageState extends State<TemperaturePage> {
 
-  bool _currentError = false;
+  bool _currentElevationError = false;
+  bool _currentTemperatureError = false;
   int _elevationInput;
   int _temperatureInput;
 
@@ -39,7 +39,10 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
   final elevationChangeNotifier = new StreamController.broadcast();
   final temperatureChangeNotifier = new StreamController.broadcast();
-  final errorChangeNotifier = new StreamController.broadcast();
+
+  final elevationErrorChangeNotifier = new StreamController.broadcast();
+  final temperatureErrorChangeNotifier = new StreamController.broadcast();
+
   final roundChangeNotifier = new StreamController.broadcast();
 
   bool _round = true;
@@ -79,7 +82,8 @@ class _TemperaturePageState extends State<TemperaturePage> {
   @override
   void dispose() {
     roundChangeNotifier.close();
-    errorChangeNotifier.close();
+    elevationErrorChangeNotifier.close();
+    temperatureErrorChangeNotifier.close();
     elevationChangeNotifier.close();
     temperatureChangeNotifier.close();
     super.dispose();
@@ -359,13 +363,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
     Widget repeaterWidget = TempRepeaterWidget(
       key: UniqueKey(),
-      currentError: _currentError,
+      currentElevationError: _currentElevationError,
+      currentTemperatureError: _currentTemperatureError,
       elevation: _elevationInput,
       temperature: _temperatureInput,
       round: _round,
       elevationParentValueChange: elevationChangeNotifier.stream,
       temperatureParentValueChange: temperatureChangeNotifier.stream,
-      errorParentValueChange: errorChangeNotifier.stream,
+      elevationErrorParentValueChange: elevationErrorChangeNotifier.stream,
+      temperatureErrorParentValueChange: temperatureErrorChangeNotifier.stream,
       roundParentValueChange: roundChangeNotifier.stream,
       repeaterId: _repeaterValueList.length - 1,
       callbackValue: _repeaterValueUpdated,
@@ -426,12 +432,12 @@ class _TemperaturePageState extends State<TemperaturePage> {
     if (_myElevationTextController.text.isEmpty
         || inputElevation == null
         || inputElevation < -2000 || inputElevation > 10000) {
-      _currentError = true;
-      errorChangeNotifier.sink.add(1);
+      _currentElevationError = true;
+      elevationErrorChangeNotifier.sink.add(1);
       SharedPreferencesModel().setTemperatureElev(inputElevation);
     } else {
-      _currentError = false;
-      errorChangeNotifier.sink.add(0);
+      _currentElevationError = false;
+      elevationErrorChangeNotifier.sink.add(0);
       elevationChangeNotifier.sink.add(inputElevation);
       SharedPreferencesModel().setTemperatureElev(inputElevation);
     }
@@ -442,12 +448,12 @@ class _TemperaturePageState extends State<TemperaturePage> {
     if (_myTemperatureTextController.text.isEmpty
         || inputTemperature == null
         || inputTemperature < -50 || inputTemperature > 50) {
-      _currentError = true;
-      errorChangeNotifier.sink.add(1);
+      _currentTemperatureError = true;
+      temperatureErrorChangeNotifier.sink.add(1);
       SharedPreferencesModel().setTemperatureTemp(inputTemperature);
     } else {
-      _currentError = false;
-      errorChangeNotifier.sink.add(0);
+      _currentTemperatureError = false;
+      temperatureErrorChangeNotifier.sink.add(0);
       temperatureChangeNotifier.sink.add(inputTemperature);
       SharedPreferencesModel().setTemperatureTemp(inputTemperature);
     }
@@ -481,13 +487,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
         for (var i = 0; i < _repeaterValueList.length; ++i) {
           Widget repeaterWidget = TempRepeaterWidget(
             key: UniqueKey(),
-            currentError: _currentError,
+            currentElevationError: _currentElevationError,
+            currentTemperatureError: _currentTemperatureError,
             elevation: _elevationInput,
             temperature: _temperatureInput,
             round: _round,
             elevationParentValueChange: elevationChangeNotifier.stream,
             temperatureParentValueChange: temperatureChangeNotifier.stream,
-            errorParentValueChange: errorChangeNotifier.stream,
+            elevationErrorParentValueChange: elevationErrorChangeNotifier.stream,
+            temperatureErrorParentValueChange: temperatureErrorChangeNotifier.stream,
             roundParentValueChange: roundChangeNotifier.stream,
             repeaterId: _repeaterValueList.length - 1,
             callbackValue: _repeaterValueUpdated,
@@ -691,13 +699,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
       Widget repeaterWidget = TempRepeaterWidget(
         key: UniqueKey(),
-        currentError: _currentError,
+        currentElevationError: _currentElevationError,
+        currentTemperatureError: _currentTemperatureError,
         elevation: _elevationInput,
         temperature: _temperatureInput,
         round: _round,
         elevationParentValueChange: elevationChangeNotifier.stream,
         temperatureParentValueChange: temperatureChangeNotifier.stream,
-        errorParentValueChange: errorChangeNotifier.stream,
+        elevationErrorParentValueChange: elevationErrorChangeNotifier.stream,
+        temperatureErrorParentValueChange: temperatureErrorChangeNotifier.stream,
         roundParentValueChange: roundChangeNotifier.stream,
         repeaterId: _repeaterValueList.length - 1,
         callbackValue: _repeaterValueUpdated,

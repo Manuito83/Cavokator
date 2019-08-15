@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 
 
 class TempRepeaterWidget extends StatefulWidget {
-  final bool currentError;
+  final bool currentElevationError;
+  final bool currentTemperatureError;
   final int elevation;
   final int temperature;
   final bool round;
   final Stream elevationParentValueChange;
   final Stream temperatureParentValueChange;
-  final Stream errorParentValueChange;
+  final Stream elevationErrorParentValueChange;
+  final Stream temperatureErrorParentValueChange;
   final Stream roundParentValueChange;
   final int repeaterId;
   final Function callbackValue;
@@ -20,13 +22,15 @@ class TempRepeaterWidget extends StatefulWidget {
 
   TempRepeaterWidget({
     @required Key key,
-    @required this.currentError,
+    @required this.currentElevationError,
+    @required this.currentTemperatureError,
     @required this.elevation,
     @required this.temperature,
     @required this.round,
     @required this.elevationParentValueChange,
     @required this.temperatureParentValueChange,
-    @required this.errorParentValueChange,
+    @required this.elevationErrorParentValueChange,
+    @required this.temperatureErrorParentValueChange,
     @required this.roundParentValueChange,
     @required this.repeaterId,
     @required this.callbackValue,
@@ -39,15 +43,18 @@ class TempRepeaterWidget extends StatefulWidget {
 }
 
 class _TempRepeaterWidget extends State<TempRepeaterWidget> {
-  StreamSubscription errorStreamSubscription;
+  StreamSubscription elevationErrorStreamSubscription;
+  StreamSubscription temperatureErrorStreamSubscription;
   StreamSubscription elevationStreamSubscription;
   StreamSubscription temperatureStreamSubscription;
   StreamSubscription roundStreamSubscription;
 
   final _myTextController = new TextEditingController();
-  bool _parentError;
+  bool _parentElevationError;
+  bool _parentTemperatureError;
   bool _altitudeError = false;
   bool _altitudeNull = false;
+  bool _altitudeLow = false;
   int _parentElevation;
   int _parentTemperature;
   bool _parentRound;
@@ -59,7 +66,8 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   void initState() {
     super.initState();
 
-    _parentError = widget.currentError;
+    _parentElevationError = widget.currentElevationError;
+    _parentTemperatureError = widget.currentTemperatureError;
     _parentElevation = widget.elevation;
     _parentTemperature = widget.temperature;
     _parentRound = widget.round;
@@ -75,8 +83,10 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
       _altitudeNull = true;
     }
 
-    errorStreamSubscription =
-        widget.errorParentValueChange.listen((data) => _onParentErrorChange(data));
+    elevationErrorStreamSubscription =
+        widget.elevationErrorParentValueChange.listen((data) => _onParentElevationErrorChange(data));
+    temperatureErrorStreamSubscription =
+        widget.temperatureErrorParentValueChange.listen((data) => _onParentTemperatureErrorChange(data));
     elevationStreamSubscription =
         widget.elevationParentValueChange.listen((data) => _onParentElevationChange(data));
     temperatureStreamSubscription =
@@ -197,7 +207,8 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
 
   @override
   dispose() {
-    errorStreamSubscription.cancel();
+    elevationErrorStreamSubscription.cancel();
+    temperatureErrorStreamSubscription.cancel();
     elevationStreamSubscription.cancel();
     temperatureStreamSubscription.cancel();
     roundStreamSubscription.cancel();
@@ -210,7 +221,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
       if (_myValue == null) {
         _altitudeNull = true;
       } else if (_myValue < _parentElevation) {
-        _altitudeNull = true;
+        _altitudeLow = true;
       } else if (_myValue < -2000 || _myValue > 15000) {
         widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = true;
@@ -219,14 +230,15 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
         widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = false;
         _altitudeNull = false;
+        _altitudeLow = false;
       }
     });
   }
 
   Widget _correctedTextWidget () {
-    if (_parentError || _altitudeNull) {
+    if (_parentElevationError || _parentTemperatureError || _altitudeNull) {
       return Text("");
-    } else if (_myValue < _parentElevation) {
+    } else if (_altitudeLow) {
       return Text("");
     } else if (_altitudeError) {
       return Text(
@@ -260,17 +272,34 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     }
   }
 
-  _onParentErrorChange(int dataChanged) {
+  _onParentElevationErrorChange(int dataChanged) {
     setState(() {
       if (dataChanged == 1) {
-        _parentError = true;
+        _parentElevationError = true;
       } else {
-        _parentError = false;
+        _parentElevationError = false;
+      }
+    });
+  }
+
+  _onParentTemperatureErrorChange(int dataChanged) {
+    setState(() {
+      if (dataChanged == 1) {
+        _parentTemperatureError = true;
+      } else {
+        _parentTemperatureError = false;
       }
     });
   }
 
   _onParentElevationChange(int dataChanged) {
+    if (!_altitudeNull) {
+      if ( _myValue < dataChanged) {
+        _altitudeLow = true;
+      } else {
+        _altitudeLow = false;
+      }
+    }
     setState(() {
       _parentElevation = dataChanged;
     });

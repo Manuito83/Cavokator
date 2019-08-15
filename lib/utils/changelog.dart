@@ -84,11 +84,11 @@ class ChangeLog extends StatelessWidget {
                   children: <Widget>[
                     Flexible(
                       child: Text(
-                        "WARNING: Cavokator was not certified for in-flight"
-                            " use, please do not it for real in-flight operations or"
-                            " do so under your own responsability.\n\n "
+                        "WARNING: Cavokator was not certified for in-flight "
+                            "use, please do not it for real in-flight operations or "
+                            "do so under your own responsability. "
                             "There might be errors and the information shown "
-                            "might not be completely up to date.",
+                            "might not be completely up to date. ",
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.red,
