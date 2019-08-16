@@ -18,6 +18,7 @@ import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
 import 'package:share/share.dart';
 import 'package:connectivity/connectivity.dart';
+import 'dart:io';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -1136,7 +1137,14 @@ class _NotamPageState extends State<NotamPage> {
 
     String server = PrivateVariables.apiURL;
     String api = "Notam/GetNotam?";
-    String source = "source=AppPro";
+    String source = "source=AppUnknown";
+    if (Platform.isAndroid) {
+      source = "source=AppAndroid";
+    } else if (Platform.isIOS) {
+      source = "source=AppIOS";
+    } else {
+      source = "source=AppOther";
+    }
     String airports = "&airports=$allAirports";
     String url = server + api + source + airports;
 

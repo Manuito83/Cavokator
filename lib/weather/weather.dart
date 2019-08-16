@@ -14,6 +14,7 @@ import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:share/share.dart';
+import 'dart:io';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -756,7 +757,14 @@ class _WeatherPageState extends State<WeatherPage> {
 
     String server = PrivateVariables.apiURL;
     String api = "Wx/GetWx?";
-    String source = "source=AppPro";
+    String source = "source=AppUnknown";
+    if (Platform.isAndroid) {
+      source = "source=AppAndroid";
+    } else if (Platform.isIOS) {
+      source = "source=AppIOS";
+    } else {
+      source = "source=AppOther";
+    }
     String airports = "&airports=$allAirports";
 
     int internalHoursBefore;

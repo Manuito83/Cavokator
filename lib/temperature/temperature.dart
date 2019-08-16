@@ -213,7 +213,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       style: TextStyle(
                         fontSize: 18,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(),
+                      keyboardType: TextInputType.numberWithOptions(signed:true),
                       maxLines: 1,
                       controller: _myElevationTextController,
                       autovalidate: true,
@@ -273,7 +273,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       style: TextStyle(
                         fontSize: 18,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(),
+                      keyboardType: TextInputType.numberWithOptions(signed: true),
                       autovalidate: true,
                       maxLines: 1,
                       controller: _myTemperatureTextController,
