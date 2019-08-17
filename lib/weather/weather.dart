@@ -738,9 +738,14 @@ class _WeatherPageState extends State<WeatherPage> {
     }
     _userSubmitText = textEntered;
 
-    _myTextController.selection = TextSelection.collapsed(
-        offset: _myTextController.text.length
-    );
+    // This causes a weird glitch with the keyboard if active on iOS.
+    // However, in Android it prevents the cursor from moving to the start
+    // if an additional space is added programmatically after an ICAO code
+    if (Platform.isAndroid) {
+      _myTextController.selection = TextSelection.collapsed(
+          offset: _myTextController.text.length
+      );
+    }
   }
 
   Future<List<WxJson>> _callWeatherApi() async {
