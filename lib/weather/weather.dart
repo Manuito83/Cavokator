@@ -49,6 +49,22 @@ class _WeatherPageState extends State<WeatherPage> {
   int _hoursBefore = 10;
   bool _mostRecent = true;
 
+  @override
+  void initState() {
+    super.initState();
+
+    _restoreSharedPreferences();
+    SharedPreferencesModel().setSettingsLastUsedSection("0");
+
+    // Delayed callback for FAB
+    Future.delayed(Duration.zero, () => fabCallback());
+
+    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
+
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -642,21 +658,7 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
 
-  @override
-  void initState() {
-    super.initState();
 
-    _restoreSharedPreferences();
-    SharedPreferencesModel().setSettingsLastUsedSection("0");
-
-    // Delayed callback for FAB
-    Future.delayed(Duration.zero, () => fabCallback());
-
-    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
-
-    _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onInputTextChange);
-  }
 
   Future<void> fabCallback() async {
     widget.callback(SizedBox.shrink());
@@ -691,6 +693,7 @@ class _WeatherPageState extends State<WeatherPage> {
   @override
   void dispose(){
     _ticker?.cancel();
+    _myTextController.dispose();
     super.dispose();
   }
 
@@ -723,29 +726,24 @@ class _WeatherPageState extends State<WeatherPage> {
         String lastFourChars =
             textEntered.substring(textEntered.length - 4, textEntered.length);
         // If there is at least a space, do nothing
-        bool spaceDetected = true;
+        bool spaceNeeded = true;
         for (String char in lastFourChars.split("")) {
           if (char == " ") {
-            spaceDetected = false;
+            spaceNeeded = false;
           }
         }
-        if (spaceDetected) {
-          _myTextController.text = textEntered + " ";
-          _myTextController.selection = TextSelection.fromPosition(
-              TextPosition(offset: _myTextController.text.length));
+        if (spaceNeeded) {
+          _myTextController.value = TextEditingValue(
+              text: textEntered + " ",
+              selection: TextSelection.fromPosition(
+                  TextPosition(
+                      offset: (textEntered + " ").length)
+              ),
+          );
         }
       }
     }
     _userSubmitText = textEntered;
-
-    // This causes a weird glitch with the keyboard if active on iOS.
-    // However, in Android it prevents the cursor from moving to the start
-    // if an additional space is added programmatically after an ICAO code
-    if (Platform.isAndroid) {
-      _myTextController.selection = TextSelection.collapsed(
-          offset: _myTextController.text.length
-      );
-    }
   }
 
   Future<List<WxJson>> _callWeatherApi() async {
