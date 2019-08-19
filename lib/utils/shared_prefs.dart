@@ -203,7 +203,7 @@ class SharedPreferencesModel {
   // ***********
   Future<bool> getNotamCategorySorting() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kNotamCategorySortingPrefs) ?? false;
+    return prefs.getBool(_kNotamCategorySortingPrefs) ?? true;
   }
 
   Future<bool> setNotamCategorySorting(bool value) async {
