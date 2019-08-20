@@ -157,7 +157,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
                         style: TextStyle(
                           fontSize: 15,
                         ),
-                        keyboardType: TextInputType.numberWithOptions(),
+                        keyboardType: TextInputType.numberWithOptions(signed: true),
                         maxLines: 1,
                         controller: _myTextController,
                         autovalidate: true,
@@ -170,10 +170,11 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
                             if (myAltitude == null) {
                               return "Error";
                             }
-                            if (myAltitude < -2000 || myAltitude > 40000) {
+                            if (myAltitude < -2000 || myAltitude > 15000) {
                               return "Error";
                             }
-                            if (myAltitude < _parentElevation) {
+                            if (myAltitude < _parentElevation
+                                && !(_parentElevationError || _parentTemperatureError)) {
                               return "Too low!";
                             }
                             return null;
@@ -221,11 +222,13 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
       if (_myValue == null) {
         _altitudeNull = true;
       } else if (_myValue < _parentElevation) {
+        _altitudeNull = false;
         _altitudeLow = true;
       } else if (_myValue < -2000 || _myValue > 15000) {
         widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = true;
         _altitudeNull = false;
+        _altitudeLow = false;
       } else {
         widget.callbackValue(widget.repeaterId, _myValue);
         _altitudeError = false;

@@ -652,7 +652,13 @@ class _TemperaturePageState extends State<TemperaturePage> {
                                   "and produce results that are within 5% "
                                   "of the accurate correction for altimeter "
                                   "setting sources up to 10000 ft and with "
-                                  "minimum heights up to 5000 ft above that source. ",
+                                  "minimum heights up to 5000 ft above that source. "
+                                  "\n\n"
+                                  "Although there are limitations on source "
+                                  "altitudes, temperature range and individual "
+                                  "correction altitudes, if you go beyond the limits "
+                                  "in the paragraph above, results might "
+                                  "fall outside of that 5% error margin!",
                               style: TextStyle(
                                 fontSize: 14,
                               ),
