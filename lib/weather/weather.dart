@@ -361,7 +361,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
                       if (item is AirportMetar) {
 
-                        // DEBUG HERE
+                        // DEBUG METAR HERE (not times)
                         //item.metars[0] = "LEZL 162030Z CAVOK "
                         //"R25R/123456 2000 0800 R23/M2000U";
 
@@ -500,6 +500,9 @@ class _WeatherPageState extends State<WeatherPage> {
                       if (item is MetarTimes){
                         PrettyTimeCombination metarTimeFinal;
                         Color clockIconColor;
+
+                        // DEBUG TIMES HERE
+                        // item.metarTimes[0] = DateTime.utc(2019, 8, 19, 19, 10);
 
                         if (!item.error) {
                           try {

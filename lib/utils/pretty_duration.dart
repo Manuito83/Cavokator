@@ -47,7 +47,6 @@ class PrettyDuration {
       _durationList[1] = hours;
     }
 
-    
     final int minutes = duration.inMinutes % 60;
     if (minutes > 0) {
       _durationList[2] = minutes;
@@ -79,6 +78,14 @@ class PrettyDuration {
     else if (_durationList[0] == 1 && _durationList[1] == 1)
     {
       myResult += "${_durationList[0]} day, ${_durationList[1]} hour $finish";
+    }
+    else if (_durationList[0] > 1 && _durationList[1] < 1)
+    {
+      myResult += "${_durationList[0]} days $finish";
+    }
+    else if (_durationList[0] == 1 && _durationList[1] < 1)
+    {
+      myResult += "${_durationList[0]} day $finish";
     }
     else if (_durationList[0] < 1 && _durationList[1] > 1 && _durationList[2] > 1)
     {
