@@ -9,7 +9,7 @@ class TempRepeaterWidget extends StatefulWidget {
   final bool currentTemperatureError;
   final int elevation;
   final int temperature;
-  final bool round;
+  final int round;
   final Stream elevationParentValueChange;
   final Stream temperatureParentValueChange;
   final Stream elevationErrorParentValueChange;
@@ -57,7 +57,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
   bool _altitudeLow = false;
   int _parentElevation;
   int _parentTemperature;
-  bool _parentRound;
+  int _parentRound;
 
   int _myValue;
   int _myCorrection;
@@ -314,7 +314,7 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
     });
   }
 
-  _onParentRoundChange(bool dataChanged) {
+  _onParentRoundChange(int dataChanged) {
     setState(() {
       _parentRound = dataChanged;
     });
@@ -329,10 +329,14 @@ class _TempRepeaterWidget extends State<TempRepeaterWidget> {
 
     int exactResult = correction.round() + altitude;
 
-    if (_parentRound) {
-      _myCorrection = ((exactResult / 100).ceil())*100;
-    } else {
+    if (_parentRound == 0) {
       _myCorrection = exactResult;
+    } else if (_parentRound == 10){
+      _myCorrection = ((exactResult / 10).ceil())*10;
+    } else if (_parentRound == 50){
+      _myCorrection = ((exactResult / 50).ceil())*50;
+    } else if (_parentRound == 100){
+      _myCorrection = ((exactResult / 100).ceil())*100;
     }
   }
 

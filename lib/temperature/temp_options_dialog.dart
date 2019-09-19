@@ -3,7 +3,7 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
 
 class TempOptionsDialog extends StatefulWidget {
-  final bool round;
+  final int round;
   final Function roundChangedCallback;
 
   TempOptionsDialog({@required this.round,
@@ -15,7 +15,7 @@ class TempOptionsDialog extends StatefulWidget {
 }
 
 class _TempOptionsDialog extends State<TempOptionsDialog> {
-  bool _round;
+  int _round;
 
   @override
   void initState() {
@@ -45,16 +45,54 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Flexible(
-                    child: Text("Round up\n(100 feet)"),
+                    child: Text("Round result?"),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 20),
                   ),
                   Flexible(
-                    child: Switch(
-                      value: _round,
-                      onChanged: (bool value) {
-                        _roundValueChanged(value);
+                    child: DropdownButton<String> (
+                      value: _round.toString(),
+                      items: [
+                        DropdownMenuItem(
+                          value: "0",
+                          child: Text(
+                            "No",
+                            style: TextStyle (
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: "10",
+                          child: Text(
+                            "Higher 10ft",
+                            style: TextStyle (
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: "50",
+                          child: Text(
+                            "Higher 50ft",
+                            style: TextStyle (
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: "100",
+                          child: Text(
+                            "Higher 100ft",
+                            style: TextStyle (
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        _roundValueChanged(int.parse(value));
                       },
                     ),
                   ),
@@ -81,7 +119,7 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
     );
   }
 
-  void _roundValueChanged(bool newValue) {
+  void _roundValueChanged(int newValue) {
     setState(() {
       _round = newValue;
     });

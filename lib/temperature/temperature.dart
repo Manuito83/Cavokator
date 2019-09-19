@@ -45,7 +45,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
 
   final roundChangeNotifier = new StreamController.broadcast();
 
-  bool _round = true;
+  int _round = 0;
 
   @override
   void initState() {
@@ -523,7 +523,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
-  void _roundOptionHasChanged(bool newValue) {
+  void _roundOptionHasChanged(int newValue) {
     _round = newValue;
     roundChangeNotifier.sink.add(newValue);
   }
@@ -546,8 +546,9 @@ class _TemperaturePageState extends State<TemperaturePage> {
                        "is corrected to ${_repeaterCorrectionList[i]}";
       }
 
-      if (_round) {
-        shareString += "\n\nNote: Corrected altitudes are being rounded to the higher 100";
+      // TODO: PUT THIS IN ORDER
+      if (_round != 0) {
+        shareString += "\n\nNote: Corrected altitudes are being rounded up to the higher ${_round}ft!";
       }
     }
 

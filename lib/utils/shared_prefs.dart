@@ -283,14 +283,14 @@ class SharedPreferencesModel {
   }
 
   // ***********
-  Future<bool> getTempRound() async {
+  Future<int> getTempRound() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kTemperatureRoundPrefs) ?? true;
+    return prefs.getInt(_kTemperatureRoundPrefs) ?? 0;
   }
 
-  Future<bool> setTempRound(bool value) async {
+  Future<bool> setTempRound(int value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setBool(_kTemperatureRoundPrefs, value);
+    return prefs.setInt(_kTemperatureRoundPrefs, value);
   }
 
 }

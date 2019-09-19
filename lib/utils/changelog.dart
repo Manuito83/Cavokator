@@ -49,15 +49,17 @@ class ChangeLog extends StatelessWidget {
                     Padding(padding: EdgeInsets.only(right: 8)),
                     Flexible(
                       child: Text(
-                        "New Temperature Corrections section",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        "Added option for rounding up altitudes in temperature "
+                            "corrections in 10, 50 and 100 feet increments.",
+                        //style: TextStyle(
+                        //  fontWeight: FontWeight.bold,
+                        //),
                       ),
                     ),
                   ],
                 ),
               ),
+              /*
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                 child: Row(
@@ -73,6 +75,7 @@ class ChangeLog extends StatelessWidget {
                   ],
                 ),
               ),
+              */
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
                 child: Divider(),

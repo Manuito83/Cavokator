@@ -17,7 +17,7 @@ class Cavokator extends StatefulWidget {
 }
 
 class _CavokatorState extends State<Cavokator> {
-  String _thisAppVersion = "2.1";
+  String _thisAppVersion = "2.2";
   Brightness _myBrightness = Brightness.light;
 
   @override
