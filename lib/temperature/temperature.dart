@@ -546,7 +546,6 @@ class _TemperaturePageState extends State<TemperaturePage> {
                        "is corrected to ${_repeaterCorrectionList[i]}";
       }
 
-      // TODO: PUT THIS IN ORDER
       if (_round != 0) {
         shareString += "\n\nNote: Corrected altitudes are being rounded up to the higher ${_round}ft!";
       }

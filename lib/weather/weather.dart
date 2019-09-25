@@ -1,3 +1,4 @@
+import 'package:cavokator_flutter/json_models/notam_json.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -17,15 +18,22 @@ import 'package:share/share.dart';
 import 'dart:io';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
-class WeatherPage extends StatefulWidget {
 
-  WeatherPage({@required this.isThemeDark, @required this.myFloat,
-               @required this.callback, @required this.showHeaders});
+class WeatherPage extends StatefulWidget {
 
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
+  final Function hideBottomSheet;
+  final double recalledScrollPosition;
+  final Function notifyScrollPosition;
+
+  WeatherPage({@required this.isThemeDark, @required this.myFloat,
+               @required this.callback, @required this.showHeaders,
+               @required this.hideBottomSheet,
+               @required this.recalledScrollPosition,
+               @required this.notifyScrollPosition});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -34,6 +42,8 @@ class WeatherPage extends StatefulWidget {
 class _WeatherPageState extends State<WeatherPage> {
   final _formKey = GlobalKey<FormState>();
   final _myTextController = new TextEditingController();
+
+  final _myMainScrollController = ScrollController();
 
   Timer _ticker;
 
@@ -63,8 +73,18 @@ class _WeatherPageState extends State<WeatherPage> {
 
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
-  }
 
+    _myMainScrollController.addListener(onMainScrolled);
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      _myMainScrollController.animateTo(
+        widget.recalledScrollPosition,
+        duration: Duration(milliseconds: 1500),
+        curve: Curves.easeInOut,
+      );
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +94,7 @@ class _WeatherPageState extends State<WeatherPage> {
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: CustomScrollView(
+            controller: _myMainScrollController,
             slivers: _buildSlivers(context),
           ),
         );
@@ -213,23 +234,58 @@ class _WeatherPageState extends State<WeatherPage> {
                       Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
-                      RaisedButton(
-                          child: Text('Fetch WX!'),
-                          onPressed: () {
-                            _fetchButtonPressed(context);
-                          }),
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child: RaisedButton(
+                          child: ImageIcon(
+                            AssetImage("assets/icons/drawer_wx.png"),
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                          ),
+                          onPressed: ()  {
+                            _fetchButtonPressed(context, true);
+                          },
+                        ),
+                      ),
                       Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                      RaisedButton(
-                        child: Text('Clear'),
-                        onPressed: () {
-                          setState(() {
-                            _apiCall = false;
-                            _myWeatherList.clear();
-                            SharedPreferencesModel().setWeatherUserInput("");
-                            SharedPreferencesModel().setWeatherInformation("");
-                            _myTextController.text = "";
-                          });
-                        },
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child: RaisedButton(
+                          child: Row(
+                            children: <Widget>[
+                              ImageIcon(
+                                AssetImage("assets/icons/drawer_wx.png"),
+                                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              ),
+                              Text(" + "),
+                              ImageIcon(
+                                AssetImage("assets/icons/drawer_notam.png"),
+                                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              ),
+                            ],
+                          ),
+                          onPressed: ()  {
+                            _fetchButtonPressed(context, false);
+                          },
+                        ),
+                      ),
+                      Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child: RaisedButton(
+                          child: Icon(Icons.delete),
+                          onPressed: ()  {
+                            setState(() {
+                              _apiCall = false;
+                              _myWeatherList.clear();
+                              SharedPreferencesModel().setWeatherUserInput("");
+                              SharedPreferencesModel().setWeatherInformation("");
+                              _myTextController.text = "";
+                            });
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -694,20 +750,21 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _ticker?.cancel();
     _myTextController.dispose();
+    _myMainScrollController.dispose();
     super.dispose();
   }
 
-  void _fetchButtonPressed(BuildContext context) {
+  void _fetchButtonPressed(BuildContext context, bool fetchBoth) {
     _myRequestedAirports.clear();
 
     if (_formKey.currentState.validate()) {
       setState(() {
         _apiCall = true;
       });
-      _callWeatherApi().then((weatherJson) {
+      _callWeatherApi(fetchBoth).then((weatherJson) {
         setState(() {
           _apiCall = false;
           if (weatherJson != null) {
@@ -749,7 +806,7 @@ class _WeatherPageState extends State<WeatherPage> {
     _userSubmitText = textEntered;
   }
 
-  Future<List<WxJson>> _callWeatherApi() async {
+  Future<List<WxJson>> _callWeatherApi(bool fetchBoth) async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
       for (var i = 0; i < _myRequestedAirports.length; i++) {
@@ -761,17 +818,17 @@ class _WeatherPageState extends State<WeatherPage> {
       }
     }
 
-    String server = PrivateVariables.apiURL;
-    String api = "Wx/GetWx?";
-    String source = "source=AppUnknown";
+    String wxServer = PrivateVariables.apiURL;
+    String wxApi = "Wx/GetWx?";
+    String wxSource = "source=AppUnknown";
     if (Platform.isAndroid) {
-      source = "source=AppAndroid";
+      wxSource = "source=AppAndroid";
     } else if (Platform.isIOS) {
-      source = "source=AppIOS";
+      wxSource = "source=AppIOS";
     } else {
-      source = "source=AppOther";
+      wxSource = "source=AppOther";
     }
-    String airports = "&airports=$allAirports";
+    String wxAirports = "&Airports=$allAirports";
 
     int internalHoursBefore;
     if (_hoursBefore == 0) {
@@ -785,13 +842,14 @@ class _WeatherPageState extends State<WeatherPage> {
     String mostRecent = "&mostRecent=$_mostRecent";
     String hoursBefore = "&hoursBefore=$internalHoursBefore";
 
-    String url = server + api + source + airports + mostRecent + hoursBefore;
+    String wxUrl = wxServer + wxApi + wxSource + wxAirports + mostRecent + hoursBefore; // TODO: "BOTH"??
 
-    List<WxJson> exportedJson;
+    List<WxJson> wxExportedJson;
 
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
+        widget.hideBottomSheet(5);
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -801,19 +859,31 @@ class _WeatherPageState extends State<WeatherPage> {
                 )
             ),
             backgroundColor: Colors.red[100],
+            duration: Duration(seconds: 4),
           ),
         );
         return null;
       } else {
 
+        String fetchText;
+        if (!fetchBoth) {
+          fetchText = "Fetching WEATHER, hold position!";
+        } else {
+          fetchText = "Fetching WEATHER and NOTAMs, hold position!";
+        }
+
+        widget.hideBottomSheet(5);
         Scaffold.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fetching weather, hold position!'),
+            content: Text(fetchText),
+            duration: Duration(seconds: 4),
           ),
         );
 
-        final response = await http.post(url).timeout(Duration(seconds: 60));
+        final response = await http.post(wxUrl).timeout(Duration(seconds: 60));
+
         if (response.statusCode != 200) {
+          widget.hideBottomSheet(5);
           Scaffold.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -823,18 +893,63 @@ class _WeatherPageState extends State<WeatherPage> {
                   )
               ),
               backgroundColor: Colors.red[100],
+              duration: Duration(seconds: 4),
             ),
           );
-          return null;
+          return null;  // TODO: RETURN NULL BOTH??? TEST!!!!
         }
 
-        exportedJson = wxJsonFromJson(response.body);
+        wxExportedJson = wxJsonFromJson(response.body);
         SharedPreferencesModel().setWeatherInformation(response.body);
         SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
         SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
       }
 
+      if (fetchBoth) {  // TODO: LIMIT HERE NUMBER OF NOTAMS??
+        String notamServer = PrivateVariables.apiURL;
+        String notamApi = "Notam/GetNotam?";
+        String notamSource = "source=AppUnknown";
+        if (Platform.isAndroid) {
+          notamSource = "source=AppAndroid";
+        } else if (Platform.isIOS) {
+          notamSource = "source=AppIOS";
+        } else {
+          notamSource = "source=AppOther";
+        }
+        String notamAirports = "&airports=$allAirports";
+        String notamUrl = notamServer + notamApi + notamSource + notamAirports;
+
+        int timeOut = 20 * _myRequestedAirports.length;
+        final response = await http.post(notamUrl).timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode != 200) {
+          widget.hideBottomSheet(5);
+          Scaffold.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Oops! There was connection error!',
+                  style: TextStyle(
+                    color: Colors.black,
+                  )
+              ),
+              backgroundColor: Colors.red[100],
+              duration: Duration(seconds: 4),
+            ),
+          );
+          return null; // TODO: RETURN NULL BOTH??? TEST!!!!
+        }
+
+        var timeNow = DateTime.now().toUtc();
+        String notamRequestedTime = timeNow.toIso8601String();
+
+        SharedPreferencesModel().setNotamInformation(response.body);
+        SharedPreferencesModel().setNotamUserInput(_userSubmitText);
+        SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
+        SharedPreferencesModel().setNotamRequestedTime(notamRequestedTime);
+      }
+
     } catch (Exception) {
+      widget.hideBottomSheet(5);
       Scaffold.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -844,11 +959,12 @@ class _WeatherPageState extends State<WeatherPage> {
             )
           ),
           backgroundColor: Colors.red[100],
+          duration: Duration(seconds: 4),
         ),
       );
       return null;
     }
-    return exportedJson;
+    return wxExportedJson;
   }
 
 
@@ -868,5 +984,9 @@ class _WeatherPageState extends State<WeatherPage> {
 
   void _hoursBeforeChanged(double newValue) {
       _hoursBefore = newValue.toInt();
+  }
+
+  void onMainScrolled() {
+    widget.notifyScrollPosition(_myMainScrollController.offset);
   }
 }

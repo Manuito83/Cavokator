@@ -8,6 +8,7 @@ enum DesiredColor
   HeaderUnpinned,
   BlueTempo,
   MagentaCategory,
+  Buttons,
   //RedTextWarning,
   //YellowText,
   //GreenText,
@@ -29,6 +30,7 @@ class ThemeMe {
     var _colorHeaderUnpinnedLIGHT = Colors.lightBlue;
     var _colorBlueTempoLIGHT = Colors.blue;
     var _colorMagentaCategoryLIGHT = Colors.deepPurple;
+    var _colorButtonsLIGHT = Colors.grey[400];
 
     // COLORS ##DARK##
     var _colorMainBackgroundDARK = Colors.grey[800];
@@ -37,6 +39,7 @@ class ThemeMe {
     var _colorHeaderUnpinnedDARK = Colors.lightBlue[800];
     var _colorBlueTempoDARK = Colors.blue[400];
     var _colorMagentaCategoryDARK = Colors.deepPurple[300];
+    var _colorButtonsDARK = Colors.grey[700];
 
     switch (desiredColor){
       case DesiredColor.MainBackground:
@@ -51,6 +54,8 @@ class ThemeMe {
         return themeDark ? _colorBlueTempoDARK : _colorBlueTempoLIGHT;
       case DesiredColor.MagentaCategory:
         return themeDark ? _colorMagentaCategoryDARK : _colorMagentaCategoryLIGHT;
+      case DesiredColor.Buttons:
+        return themeDark ? _colorButtonsDARK : _colorButtonsLIGHT;
       default:
         return Colors.red;
     }

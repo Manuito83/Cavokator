@@ -21,13 +21,20 @@ import 'package:connectivity/connectivity.dart';
 import 'dart:io';
 
 class NotamPage extends StatefulWidget {
+
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
+  final Function hideBottomSheet;
+  final double recalledScrollPosition;
+  final Function notifyScrollPosition;
 
   NotamPage({@required this.isThemeDark, @required this.myFloat,
-             @required this.callback, @required this.showHeaders});
+             @required this.callback, @required this.showHeaders,
+             @required this.hideBottomSheet,
+             @required this.recalledScrollPosition,
+             @required this.notifyScrollPosition});
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -61,7 +68,7 @@ class _NotamPageState extends State<NotamPage> {
   // Google Maps API - Not necessary??
   //GoogleMapController _mapController;
 
-  AutoScrollController _scrollController;
+  AutoScrollController _mainScrollController;
   final _scrollDirection = Axis.vertical;
   List<String> _scrollList = List<String>();
 
@@ -71,24 +78,35 @@ class _NotamPageState extends State<NotamPage> {
     _restoreSharedPreferences();
     SharedPreferencesModel().setSettingsLastUsedSection("1");
 
-    _ticker = new Timer.periodic(Duration(minutes:1), (Timer t) => _updateTimes());
+    _ticker = new Timer.periodic(Duration(minutes: 1), (Timer t) => _updateTimes());
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback(init: true));
 
-    _scrollController = AutoScrollController(
+    _userSubmitText = _myTextController.text;
+    _myTextController.addListener(onInputTextChange);
+
+    _mainScrollController = AutoScrollController(
       viewportBoundaryGetter: () => Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
       axis: _scrollDirection,
     );
 
-    _userSubmitText = _myTextController.text;
-    _myTextController.addListener(onInputTextChange);
+    _mainScrollController.addListener(onMainScrolled);
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      _mainScrollController.animateTo(
+        widget.recalledScrollPosition,
+        duration: Duration(milliseconds: 1500),
+        curve: Curves.decelerate,
+      );
+    });
   }
 
   @override
   Future dispose() async {
     _ticker?.cancel();
     _myTextController.dispose();
+    _mainScrollController.dispose();
     super.dispose();
   }
 
@@ -101,7 +119,7 @@ class _NotamPageState extends State<NotamPage> {
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
-            controller: _scrollController,
+            controller: _mainScrollController,
           ),
         );
       },
@@ -232,10 +250,12 @@ class _NotamPageState extends State<NotamPage> {
     _sortByCategories 
       ? mText = "Sorting by categories!" 
       : mText = "Sorting by NOTAM number & date!";
-    
+
+    widget.hideBottomSheet(5);
     Scaffold.of(context).showSnackBar(
       SnackBar(
         content: Text(mText),
+        duration: Duration(seconds: 4),
       ),
     );
 
@@ -993,7 +1013,7 @@ class _NotamPageState extends State<NotamPage> {
             padding: EdgeInsets.all(0),
             child: AutoScrollTag(
               key: ValueKey(j),
-              controller: _scrollController,
+              controller: _mainScrollController,
               index: j,
               highlightColor: Colors.green.withOpacity(1),
               child: Text(""),
@@ -1005,17 +1025,17 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  void _restoreSharedPreferences() {
+  void _restoreSharedPreferences() async {
     try {
       List<String> req = List<String>(); // Save correct order for later
-      SharedPreferencesModel().getNotamUserInput().then((onValue) {
+      await SharedPreferencesModel().getNotamUserInput().then((onValue) {
         req = onValue.split(" ");
         setState(() {
           _myTextController.text = onValue;
         });
       });
 
-      SharedPreferencesModel().getNotamInformation().then((onValue) {
+      await SharedPreferencesModel().getNotamInformation().then((onValue) {
         if (onValue.isNotEmpty){
           // We need to sort based on user request, as most probably the
           // order or airports in the NOTAM string is not correct
@@ -1034,15 +1054,15 @@ class _NotamPageState extends State<NotamPage> {
         }
       });
 
-      SharedPreferencesModel().getNotamRequestedAirports().then((onValue) {
+      await SharedPreferencesModel().getNotamRequestedAirports().then((onValue) {
         _myRequestedAirports = onValue;
       });
 
-      SharedPreferencesModel().getNotamRequestedTime().then((onValue) {
+      await SharedPreferencesModel().getNotamRequestedTime().then((onValue) {
         _requestedTime = onValue;
       });
 
-      SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
+      await SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
           _sortByCategories = onValue;
       });
 
@@ -1155,6 +1175,7 @@ class _NotamPageState extends State<NotamPage> {
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
+        widget.hideBottomSheet(5);
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -1164,18 +1185,17 @@ class _NotamPageState extends State<NotamPage> {
                 )
             ),
             backgroundColor: Colors.red[100],
+            duration: Duration(seconds: 4),
           ),
         );
         return null;
       } else {
 
-        String myFetchText = 'Fetching NOTAMS, hold position!';
-        if (_myRequestedAirports.length > 3){
-          myFetchText += "\n\nMany airports chosen, this might take a while!";
-        }
+        widget.hideBottomSheet(5);
         Scaffold.of(context).showSnackBar(
           SnackBar(
-            content: Text(myFetchText),
+            content: Text("Fetching NOTAMS, hold position!"),
+            duration: Duration(seconds: 4),
           ),
         );
 
@@ -1183,6 +1203,7 @@ class _NotamPageState extends State<NotamPage> {
         final response = await http.post(url).timeout(Duration(seconds: timeOut));
 
         if (response.statusCode != 200) {
+          widget.hideBottomSheet(5);
           Scaffold.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -1192,6 +1213,7 @@ class _NotamPageState extends State<NotamPage> {
                   )
               ),
               backgroundColor: Colors.red[100],
+              duration: Duration(seconds: 4),
             ),
           );
           return null;
@@ -1209,6 +1231,7 @@ class _NotamPageState extends State<NotamPage> {
       }
 
     } catch (Exception) {
+      widget.hideBottomSheet(5);
       Scaffold.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1218,6 +1241,7 @@ class _NotamPageState extends State<NotamPage> {
               )
           ),
           backgroundColor: Colors.red[100],
+          duration: Duration(seconds: 4),
         ),
       );
       return null;
@@ -1336,16 +1360,16 @@ class _NotamPageState extends State<NotamPage> {
     // We need to scroll first quickly pass the target so that
     // the header is shown on the screen (very quick). Otherwise, scrolling
     // directly to "begin" will not be precise.
-    await _scrollController.scrollToIndex(position + 2,
+    await _mainScrollController.scrollToIndex(position + 2,
         duration: Duration(milliseconds: 500),
         preferPosition: AutoScrollPosition.begin);
 
     // This is the actual item we want
-    await _scrollController.scrollToIndex(position,
+    await _mainScrollController.scrollToIndex(position,
         duration: Duration(seconds: 2),
         preferPosition: AutoScrollPosition.begin);
 
-    _scrollController.highlight(position);
+    _mainScrollController.highlight(position);
   }
 
   List<SpeedDialChild> _mySpeedDials() {
@@ -1374,7 +1398,7 @@ class _NotamPageState extends State<NotamPage> {
       labelStyle: TextStyle(
         color: Colors.black,
       ),
-      onTap: () => _scrollController.animateTo(0,
+      onTap: () => _mainScrollController.animateTo(0,
           duration: Duration(seconds: 2),
           curve: Curves.ease),
     );
@@ -1384,7 +1408,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   void _updateTimes(){
-    //print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
+    print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
     if (_myNotamList.isNotEmpty){
       setState(() {
         // This will trigger a refresh of weather times
@@ -1441,6 +1465,10 @@ class _NotamPageState extends State<NotamPage> {
     mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
     return mySharedNotam;
 
+  }
+
+  void onMainScrolled() {
+    widget.notifyScrollPosition(_mainScrollController.offset);
   }
 
   // END OF CLASS
