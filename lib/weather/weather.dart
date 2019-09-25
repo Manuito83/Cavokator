@@ -243,7 +243,7 @@ class _WeatherPageState extends State<WeatherPage> {
                             color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
                           ),
                           onPressed: ()  {
-                            _fetchButtonPressed(context, true);
+                            _fetchButtonPressed(context, false);
                           },
                         ),
                       ),
@@ -266,7 +266,7 @@ class _WeatherPageState extends State<WeatherPage> {
                             ],
                           ),
                           onPressed: ()  {
-                            _fetchButtonPressed(context, false);
+                            _fetchButtonPressed(context, true);
                           },
                         ),
                       ),
