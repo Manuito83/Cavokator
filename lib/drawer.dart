@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,12 +13,14 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/settings/settings.dart';
 import 'package:cavokator_flutter/about/about.dart';
 
+
 class DrawerItem {
   String title;
   String asset;
 
   DrawerItem(this.title, this.asset);
 }
+
 
 class DrawerPage extends StatefulWidget {
 
@@ -41,26 +42,28 @@ class DrawerPage extends StatefulWidget {
 
   @override
   _DrawerPageState createState() => _DrawerPageState();
-}
+  }
+
 
 class _DrawerPageState extends State<DrawerPage> {
   int _activeDrawerIndex = 0;
+  int _selected = 0;
+  bool _sharedPreferencesReady = false;
 
   bool _isThemeDark;
   bool _showHeaderImages = true;
   String _switchThemeString = "";
 
-  int _selected = 0;
-
   double _scrollPositionWeather = 0;
   double _scrollPositionNotam = 0;
 
   bool _hideBottomSheet = false;
-
-  // TODO: set-up a setting for this!
-  bool _swipeSections = true;
+  bool _bottomWeatherButtonDisabled = false;
+  bool _bottomNotamButtonDisabled = false;
+  bool _swipeSections = true;  // TODO (maybe?): setting to deactivate this?
 
   PageController _myPageController;
+
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -70,172 +73,33 @@ class _DrawerPageState extends State<DrawerPage> {
     visible: false,
   );
 
+
   void callbackFab(Widget fab) {
     setState(() {
       this.myFloat = fab;
     });
   }
 
-
-  _getDrawerItemWidget(int pos) {
-
-    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-        _showHeaderImages = onValue;
-    });
-
-    _myPageController = PageController (
-        initialPage: (_activeDrawerIndex == 0) ? 0 : 1,
-        keepPage: false,
-    );
-
-    switch (pos) {
-      case 0:
-        if (_swipeSections) {
-          return PageView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: _myPageController,
-            children: <Widget>[
-              WeatherPage(
-                isThemeDark: _isThemeDark,
-                myFloat: myFloat,
-                callback: callbackFab,
-                showHeaders: _showHeaderImages,
-                hideBottomSheet: _turnBottomSheetOff,
-                recalledScrollPosition: _scrollPositionWeather,
-                notifyScrollPosition: _setWeatherScrollPosition,
-              ),
-              NotamPage(
-                  isThemeDark: _isThemeDark,
-                  myFloat: myFloat,
-                  callback: callbackFab,
-                  showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  recalledScrollPosition: _scrollPositionNotam,
-                  notifyScrollPosition: _setNotamScrollPosition,
-              ),
-            ],
-          );
-        } else {
-          return WeatherPage(
-            isThemeDark: _isThemeDark,
-            myFloat: myFloat,
-            callback: callbackFab,
-            showHeaders: _showHeaderImages,
-            hideBottomSheet: _turnBottomSheetOff,
-            recalledScrollPosition: _scrollPositionWeather,
-            notifyScrollPosition: _setWeatherScrollPosition,
-          );
-        }
-        break;
-      case 1:
-        if (_swipeSections) {
-          return PageView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: _myPageController,
-            children: <Widget>[
-              WeatherPage(
-                isThemeDark: _isThemeDark,
-                myFloat: myFloat,
-                callback: callbackFab,
-                showHeaders: _showHeaderImages,
-                hideBottomSheet: _turnBottomSheetOff,
-                recalledScrollPosition: _scrollPositionWeather,
-                notifyScrollPosition: _setWeatherScrollPosition,
-              ),
-              NotamPage(
-                  isThemeDark: _isThemeDark,
-                  myFloat: myFloat,
-                  callback: callbackFab,
-                  showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  recalledScrollPosition: _scrollPositionNotam,
-                  notifyScrollPosition: _setNotamScrollPosition,
-              ),
-            ],
-          );
-        } else {
-          return NotamPage(
-              isThemeDark: _isThemeDark,
-              myFloat: myFloat,
-              callback: callbackFab,
-              showHeaders: _showHeaderImages,
-              hideBottomSheet: _turnBottomSheetOff,
-              recalledScrollPosition: _scrollPositionNotam,
-              notifyScrollPosition: _setNotamScrollPosition,
-          );
-        }
-        break;
-      case 2:
-        return ConditionPage(
-          isThemeDark: _isThemeDark,
-          myFloat: myFloat,
-          callback: callbackFab,
-          showHeaders: _showHeaderImages,
-        );
-      case 3:
-        return TemperaturePage(
-          isThemeDark: _isThemeDark,
-          myFloat: myFloat,
-          callback: callbackFab,
-          showHeaders: _showHeaderImages,
-        );
-      case 4:
-        return SettingsPage(
-          isThemeDark: _isThemeDark,
-          myFloat: myFloat,
-          callback: callbackFab,
-          showHeaders: _showHeaderImages,
-        );
-      case 5:
-        return AboutPage(
-          isThemeDark: _isThemeDark,
-          myFloat: myFloat,
-          callback: callbackFab,
-          thisAppVersion: widget.thisAppVersion,
-        );
-      default:
-        return new Text("Error");
-    }
-  }
-
-  _onSelectItem(int index) {
-    if (index == 1 && _selected == 0) {
-      _myPageController.animateToPage(
-          1,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeInOut);
-    } else if (index == 0 && _selected == 1) {
-      _myPageController.animateToPage(
-          0,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeInOut);
-    } else {
-      setState(() => _activeDrawerIndex = index);
-    }
-    _selected = index;
-    Navigator.of(context).pop();
-  }
-
-  _handleThemeChanged(bool newValue) {
-    setState(() {
-      _isThemeDark = newValue;
-      _switchThemeString = (newValue == true) ? "DARK" : "LIGHT";
-      if (newValue == true) {
-        widget.changeBrightness(Brightness.dark);
-        SharedPreferencesModel().setAppTheme("DARK");
-      } else {
-        widget.changeBrightness(Brightness.light);
-        SharedPreferencesModel().setAppTheme("LIGHT");
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    _restoreSharedPreferences();
+
     _handleVersionNumber();
+
+    _restoreSharedPreferences().then((value) {
+      setState(() {
+        _sharedPreferencesReady = true;
+      });
+    });
   }
+
+
+  @override
+  void dispose() {
+    _myPageController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -257,18 +121,18 @@ class _DrawerPageState extends State<DrawerPage> {
 
       drawerOptions.add(
         ListTileTheme(
-          selectedColor: Colors.red,
-          iconColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
-          textColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
-          child: Ink(
-            color: myBackgroundColor,
-            child: ListTile(
-              leading: ImageIcon(AssetImage(myItem.asset)),
-              title: Text(myItem.title),
-              selected: i == _selected,
-              onTap: () => _onSelectItem(i),
-            ),
-          )
+            selectedColor: Colors.red,
+            iconColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+            textColor: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+            child: Ink(
+              color: myBackgroundColor,
+              child: ListTile(
+                leading: ImageIcon(AssetImage(myItem.asset)),
+                title: Text(myItem.title),
+                selected: i == _selected,
+                onTap: () => _onSelectItem(i),
+              ),
+            )
         ),
       );
     }
@@ -333,9 +197,173 @@ class _DrawerPageState extends State<DrawerPage> {
           ],
         ),
       ),
-      body: _getDrawerItemWidget(_activeDrawerIndex),
+      body: _getDrawerItemWidget(),
       bottomSheet: _bottomSheet(),
     );
+  }
+
+
+  Widget _getDrawerItemWidget() {
+    if (_sharedPreferencesReady) {
+
+      _myPageController = PageController (
+        initialPage: (_activeDrawerIndex == 0) ? 0 : 1,
+        keepPage: false,
+      );
+
+      switch (_activeDrawerIndex) {
+        case 0:
+          if (_swipeSections) {
+            return PageView(
+              physics: NeverScrollableScrollPhysics(),
+              controller: _myPageController,
+              children: <Widget>[
+                WeatherPage(
+                  isThemeDark: _isThemeDark,
+                  myFloat: myFloat,
+                  callback: callbackFab,
+                  showHeaders: _showHeaderImages,
+                  hideBottomSheet: _turnBottomSheetOff,
+                  showBottomSheet: _turnBottomSheetOn,
+                  recalledScrollPosition: _scrollPositionWeather,
+                  notifyScrollPosition: _setWeatherScrollPosition,
+                ),
+                NotamPage(
+                  isThemeDark: _isThemeDark,
+                  myFloat: myFloat,
+                  callback: callbackFab,
+                  showHeaders: _showHeaderImages,
+                  hideBottomSheet: _turnBottomSheetOff,
+                  showBottomSheet: _turnBottomSheetOn,
+                  recalledScrollPosition: _scrollPositionNotam,
+                  notifyScrollPosition: _setNotamScrollPosition,
+                ),
+              ],
+            );
+          } else {
+            return WeatherPage(
+              isThemeDark: _isThemeDark,
+              myFloat: myFloat,
+              callback: callbackFab,
+              showHeaders: _showHeaderImages,
+              hideBottomSheet: _turnBottomSheetOff,
+              showBottomSheet: _turnBottomSheetOn,
+              recalledScrollPosition: _scrollPositionWeather,
+              notifyScrollPosition: _setWeatherScrollPosition,
+            );
+          }
+          break;
+        case 1:
+          if (_swipeSections) {
+            return PageView(
+              physics: NeverScrollableScrollPhysics(),
+              controller: _myPageController,
+              children: <Widget>[
+                WeatherPage(
+                  isThemeDark: _isThemeDark,
+                  myFloat: myFloat,
+                  callback: callbackFab,
+                  showHeaders: _showHeaderImages,
+                  hideBottomSheet: _turnBottomSheetOff,
+                  showBottomSheet: _turnBottomSheetOn,
+                  recalledScrollPosition: _scrollPositionWeather,
+                  notifyScrollPosition: _setWeatherScrollPosition,
+                ),
+                NotamPage(
+                  isThemeDark: _isThemeDark,
+                  myFloat: myFloat,
+                  callback: callbackFab,
+                  showHeaders: _showHeaderImages,
+                  hideBottomSheet: _turnBottomSheetOff,
+                  showBottomSheet: _turnBottomSheetOn,
+                  recalledScrollPosition: _scrollPositionNotam,
+                  notifyScrollPosition: _setNotamScrollPosition,
+                ),
+              ],
+            );
+          } else {
+            return NotamPage(
+              isThemeDark: _isThemeDark,
+              myFloat: myFloat,
+              callback: callbackFab,
+              showHeaders: _showHeaderImages,
+              hideBottomSheet: _turnBottomSheetOff,
+              showBottomSheet: _turnBottomSheetOn,
+              recalledScrollPosition: _scrollPositionNotam,
+              notifyScrollPosition: _setNotamScrollPosition,
+            );
+          }
+          break;
+        case 2:
+          return ConditionPage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+            showHeaders: _showHeaderImages,
+          );
+        case 3:
+          return TemperaturePage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+            showHeaders: _showHeaderImages,
+          );
+        case 4:
+          return SettingsPage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+            showHeaders: _showHeaderImages,
+          );
+        case 5:
+          return AboutPage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+            thisAppVersion: widget.thisAppVersion,
+          );
+        default:
+          return new Text("Error");
+      }
+    }
+    return null;
+  }
+
+
+  _onSelectItem(int index) {
+    if (index == 1 && _selected == 0) {
+      _myPageController.animateToPage(
+          1,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOut);
+    } else if (index == 0 && _selected == 1) {
+      _myPageController.animateToPage(
+          0,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOut);
+    }
+
+    setState(() {
+      _activeDrawerIndex = index;
+      _selected = index;
+    });
+
+    Navigator.of(context).pop();
+  }
+
+
+  _handleThemeChanged(bool newValue) {
+    setState(() {
+      _isThemeDark = newValue;
+      _switchThemeString = (newValue == true) ? "DARK" : "LIGHT";
+      if (newValue == true) {
+        widget.changeBrightness(Brightness.dark);
+        SharedPreferencesModel().setAppTheme("DARK");
+      } else {
+        widget.changeBrightness(Brightness.light);
+        SharedPreferencesModel().setAppTheme("LIGHT");
+      }
+    });
   }
 
 
@@ -367,13 +395,21 @@ class _DrawerPageState extends State<DrawerPage> {
                     : ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
               ),
               onPressed: ()  {
-                _myPageController.animateToPage(
-                    0,
-                    duration: Duration(milliseconds: 500),
-                    curve: Curves.easeInOut);
-                setState(() {
-                  _selected = 0;
-                });
+                if (!_bottomWeatherButtonDisabled) {
+                  _bottomNotamButtonDisabled = true;
+                  _bottomWeatherButtonDisabled = true;
+                  _myPageController.animateToPage(
+                      0,
+                      duration: Duration(milliseconds: 500),
+                      curve: Curves.easeInOut);
+                  setState(() {
+                    _selected = 0;
+                  });
+                  Future.delayed(Duration(milliseconds: 750), () {
+                    _bottomNotamButtonDisabled = false;
+                    _bottomWeatherButtonDisabled = false;
+                  });
+                }
               },
             ),
             IconButton(
@@ -384,14 +420,22 @@ class _DrawerPageState extends State<DrawerPage> {
                     : ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
               ),
               onPressed: ()  {
-                _myPageController.animateToPage(
-                    1,
-                    duration: Duration(milliseconds: 500),
-                    curve: Curves.easeInOut
-                );
-                setState(() {
-                  _selected = 1;
-                });
+                if (!_bottomNotamButtonDisabled) {
+                  _bottomNotamButtonDisabled = true;
+                  _bottomWeatherButtonDisabled = true;
+                  _myPageController.animateToPage(
+                      1,
+                      duration: Duration(milliseconds: 500),
+                      curve: Curves.easeInOut
+                  );
+                  setState(() {
+                    _selected = 1;
+                  });
+                  Future.delayed(Duration(milliseconds: 750), () {
+                    _bottomNotamButtonDisabled = false;
+                    _bottomWeatherButtonDisabled = false;
+                  });
+                }
               },
             ),
           ],
@@ -403,7 +447,10 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
 
-  void _restoreSharedPreferences() async {
+  Future<Null> _restoreSharedPreferences() async {
+    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+      _showHeaderImages = onValue;
+    });
 
     var lastUsed;
     await SharedPreferencesModel().getSettingsLastUsedSection().then((onLastUsedValue) {
@@ -413,15 +460,15 @@ class _DrawerPageState extends State<DrawerPage> {
     await SharedPreferencesModel().getSettingsOpenSpecificSection().then((onValue) async {
       var savedSelection = int.parse(onValue);
       if (savedSelection == 99) {
-        // Open last selection
+        // Open last-recalled page
         _activeDrawerIndex = _selected = lastUsed;
-        _selected = lastUsed;
       } else {
-        // Open specific selection
+        // Open specific (user chosen) page
         _activeDrawerIndex = _selected = int.parse(onValue);
       }
     });
   }
+
 
   void _handleVersionNumber () {
     String savedAppVersion;
@@ -433,6 +480,7 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
+
   void _showChangeLogDialog(BuildContext context) {
     showDialog (
       context: context,
@@ -443,16 +491,17 @@ class _DrawerPageState extends State<DrawerPage> {
     );
   }
 
-  void _turnBottomSheetOff(int secondsDelay) {
 
+  void _turnBottomSheetOff() {
     setState(() {
       _hideBottomSheet = true;
     });
+  }
 
-    Timer(Duration(seconds: secondsDelay), () {
-      setState(() {
-        _hideBottomSheet = false;
-      });
+
+  void _turnBottomSheetOn() {
+    setState(() {
+      _hideBottomSheet = false;
     });
   }
 
@@ -467,5 +516,3 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
 }
-
-// TODO: DISPOSE CONTROLLER!!!!!

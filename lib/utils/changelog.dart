@@ -49,8 +49,8 @@ class ChangeLog extends StatelessWidget {
                     Padding(padding: EdgeInsets.only(right: 8)),
                     Flexible(
                       child: Text(
-                        "Added option for rounding up altitudes in temperature "
-                            "corrections in 10, 50 and 100 feet increments.",
+                        "Added an option to get both WX and NOTAM information"
+                            " at the same time from both sections!",
                         //style: TextStyle(
                         //  fontWeight: FontWeight.bold,
                         //),
@@ -59,7 +59,6 @@ class ChangeLog extends StatelessWidget {
                   ],
                 ),
               ),
-              /*
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                 child: Row(
@@ -69,13 +68,35 @@ class ChangeLog extends StatelessWidget {
                     Padding(padding: EdgeInsets.only(right: 8)),
                     Flexible(
                       child: Text(
-                          "General bug fixes"
+                        "Added a bottom bar to quickly move between WX and"
+                            " NOTAM sections without using the main the menu!",
+                        //style: TextStyle(
+                        //  fontWeight: FontWeight.bold,
+                        //),
                       ),
                     ),
                   ],
                 ),
               ),
-              */
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(Icons.local_airport, size: 20),
+                    Padding(padding: EdgeInsets.only(right: 8)),
+                    Flexible(
+                      child: Text(
+                        "Now the scroll position is recorded when moving between"
+                            " the WX and NOTAM sections!",
+                        //style: TextStyle(
+                        //  fontWeight: FontWeight.bold,
+                        //),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
                 child: Divider(),

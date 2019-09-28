@@ -27,12 +27,13 @@ class NotamPage extends StatefulWidget {
   final Function callback;
   final bool showHeaders;
   final Function hideBottomSheet;
+  final Function showBottomSheet;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
 
   NotamPage({@required this.isThemeDark, @required this.myFloat,
              @required this.callback, @required this.showHeaders,
-             @required this.hideBottomSheet,
+             @required this.hideBottomSheet, @required this.showBottomSheet,
              @required this.recalledScrollPosition,
              @required this.notifyScrollPosition});
 
@@ -75,6 +76,7 @@ class _NotamPageState extends State<NotamPage> {
   @override
   void initState() {
     super.initState();
+
     _restoreSharedPreferences();
     SharedPreferencesModel().setSettingsLastUsedSection("1");
 
@@ -93,6 +95,7 @@ class _NotamPageState extends State<NotamPage> {
 
     _mainScrollController.addListener(onMainScrolled);
 
+    // TODO (maybe?): setting to deactivate this?
     Future.delayed(Duration(milliseconds: 500), () {
       _mainScrollController.animateTo(
         widget.recalledScrollPosition,
@@ -321,9 +324,11 @@ class _NotamPageState extends State<NotamPage> {
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
                             }
+                            /*
                             if (_myRequestedAirports.length > 6) {
                               return "Too many airports (max is 6)!";
                             }
+                            */
                             return null;
                           },
                         ),
@@ -339,25 +344,60 @@ class _NotamPageState extends State<NotamPage> {
                       Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
-                      RaisedButton(
-                          child: Text('Fetch NOTAM!'),
-                          onPressed: () {
-                            _fetchButtonPressed(context);
-                          }),
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child: RaisedButton(
+                          child: ImageIcon(
+                              AssetImage("assets/icons/drawer_notam.png"),
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                          ),
+                          onPressed: ()  {
+                            _fetchButtonPressed(context, false);
+                          },
+                        ),
+                      ),
                       Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                      RaisedButton(
-                        child: Text('Clear'),
-                        onPressed: () {
-                          setState(() {
-                            _apiCall = false;
-                            _myNotamList.clear();
-                            _scrollList.clear();
-                            fabCallback();
-                            SharedPreferencesModel().setNotamUserInput("");
-                            SharedPreferencesModel().setNotamInformation("");
-                            _myTextController.text = "";
-                          });
-                        },
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child: RaisedButton(
+                          child: Row(
+                            children: <Widget>[
+                              ImageIcon(
+                                AssetImage("assets/icons/drawer_notam.png"),
+                                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              ),
+                              Text(" + "),
+                              ImageIcon(
+                                AssetImage("assets/icons/drawer_wx.png"),
+                                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              ),
+                            ],
+                          ),
+                          onPressed: ()  {
+                            _fetchButtonPressed(context, true);
+                          },
+                        ),
+                      ),
+                      Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
+                      ButtonTheme(
+                        minWidth: 1.0,
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                        child:  RaisedButton(
+                          child: Icon(Icons.delete),
+                          onPressed: () {
+                            setState(() {
+                              _apiCall = false;
+                              _myNotamList.clear();
+                              _scrollList.clear();
+                              fabCallback();
+                              SharedPreferencesModel().setNotamUserInput("");
+                              SharedPreferencesModel().setNotamInformation("");
+                              _myTextController.text = "";
+                            });
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -1071,7 +1111,7 @@ class _NotamPageState extends State<NotamPage> {
     }
   }
 
-  void _fetchButtonPressed(BuildContext context) {
+  void _fetchButtonPressed(BuildContext context, bool fetchBoth) {
     // We clear _myRequestedAirports will be dealt with from here
     // through the form validator. We clear it here so that we don't get
     // any repetitions later
@@ -1083,7 +1123,7 @@ class _NotamPageState extends State<NotamPage> {
         _apiCall = true;
       });
 
-      _callNotamApi().then((weatherJson) {
+      _callNotamApi(fetchBoth).then((weatherJson) {
         setState(() {
           _apiCall = false;
           if (weatherJson != null) {
@@ -1141,7 +1181,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
 
-  Future<List<NotamJson>> _callNotamApi() async {
+  Future<List<NotamJson>> _callNotamApi(bool fetchBoth) async {
     String allAirports = "";
 
     _scrollList.clear();
@@ -1157,25 +1197,18 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
 
-    String server = PrivateVariables.apiURL;
-    String api = "Notam/GetNotam?";
-    String source = "source=AppUnknown";
-    if (Platform.isAndroid) {
-      source = "source=AppAndroid";
-    } else if (Platform.isIOS) {
-      source = "source=AppIOS";
-    } else {
-      source = "source=AppOther";
-    }
-    String airports = "&airports=$allAirports";
-    String url = server + api + source + airports;
+    List<NotamJson> notamExportedJson;
 
-    List<NotamJson> exportedJson;
+    bool wxFailed = false;
+    bool notamFailed = false;
+
+    DateTime startRequest = DateTime.now();
+    int firstSnackTimeNeeded = 5;
 
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
-        widget.hideBottomSheet(5);
+        widget.hideBottomSheet();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -1185,17 +1218,46 @@ class _NotamPageState extends State<NotamPage> {
                 )
             ),
             backgroundColor: Colors.red[100],
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: firstSnackTimeNeeded),
           ),
         );
+
+        Timer(Duration(seconds: 6), () => widget.showBottomSheet());
         return null;
+
       } else {
 
-        widget.hideBottomSheet(5);
+        String notamServer = PrivateVariables.apiURL;
+        String notamApi = "Notam/GetNotam?";
+        String notamSource = "source=AppUnknown";
+        if (Platform.isAndroid) {
+          notamSource = "source=AppAndroid";
+        } else if (Platform.isIOS) {
+          notamSource = "source=AppIOS";
+        } else {
+          notamSource = "source=AppOther";
+        }
+        String notamAirports = "&airports=$allAirports";
+
+        String url = notamServer + notamApi + notamSource + notamAirports;
+
+        String fetchText;
+        if (!fetchBoth) {
+          fetchText = "Fetching NOTAM, hold position!";
+        } else {
+          fetchText = "Fetching NOTAM and WEATHER, hold position!";
+
+          if (_myRequestedAirports.length > 6) {
+            fetchText += "\n\nToo many NOTAM requested, this might take time! If it fails, "
+                "please try with less next time!";
+            firstSnackTimeNeeded = 8;
+          }
+        }
+        widget.hideBottomSheet();
         Scaffold.of(context).showSnackBar(
           SnackBar(
-            content: Text("Fetching NOTAMS, hold position!"),
-            duration: Duration(seconds: 4),
+            content: Text(fetchText),
+            duration: Duration(seconds: firstSnackTimeNeeded),
           ),
         );
 
@@ -1203,51 +1265,141 @@ class _NotamPageState extends State<NotamPage> {
         final response = await http.post(url).timeout(Duration(seconds: timeOut));
 
         if (response.statusCode != 200) {
-          widget.hideBottomSheet(5);
-          Scaffold.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Oops! There was connection error!',
-                  style: TextStyle(
-                    color: Colors.black,
-                  )
-              ),
-              backgroundColor: Colors.red[100],
-              duration: Duration(seconds: 4),
-            ),
-          );
-          return null;
+          notamFailed = true;
+
+        } else {
+          notamExportedJson = notamJsonFromJson(response.body);
+
+          var timeNow = DateTime.now().toUtc();
+          _requestedTime = timeNow.toIso8601String();
+
+          SharedPreferencesModel().setNotamInformation(response.body);
+          SharedPreferencesModel().setNotamUserInput(_userSubmitText);
+          SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
+          SharedPreferencesModel().setNotamRequestedTime(_requestedTime);
         }
 
-        exportedJson = notamJsonFromJson(response.body);
+        if (fetchBoth) {
+          String wxServer = PrivateVariables.apiURL;
+          String wxApi = "Wx/GetWx?";
+          String wxSource = "source=AppUnknown";
+          if (Platform.isAndroid) {
+            wxSource = "source=AppAndroid";
+          } else if (Platform.isIOS) {
+            wxSource = "source=AppIOS";
+          } else {
+            wxSource = "source=AppOther";
+          }
+          String wxAirports = "&Airports=$allAirports";
 
-        var timeNow = DateTime.now().toUtc();
-        _requestedTime = timeNow.toIso8601String();
+          int savedHoursBefore;
+          bool mostRecent;
 
-        SharedPreferencesModel().setNotamInformation(response.body);
-        SharedPreferencesModel().setNotamUserInput(_userSubmitText);
-        SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
-        SharedPreferencesModel().setNotamRequestedTime(_requestedTime);
-      }
+          await SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
+            savedHoursBefore = onValue;
+          });
+
+          int internalHoursBefore;
+          if (savedHoursBefore == 0) {
+            mostRecent = true;
+            internalHoursBefore = 10;
+          } else {
+            mostRecent = false;
+            internalHoursBefore = savedHoursBefore;
+          }
+
+          String mostRecentString = "&mostRecent=$mostRecent";
+          String hoursBefore = "&hoursBefore=$internalHoursBefore";
+
+          String wxUrl = wxServer + wxApi + wxSource + wxAirports + mostRecentString + hoursBefore;
+
+          int timeOut = 20 * _myRequestedAirports.length;
+          final response = await http.post(wxUrl).timeout(Duration(seconds: timeOut));
+
+          if (response.statusCode != 200) {
+            wxFailed = true;
+
+          } else {
+            SharedPreferencesModel().setWeatherInformation(response.body);
+            SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
+            SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
+          }
+
+        }
+
+        if (wxFailed || notamFailed) {
+          throw "error";
+        }
+
+      } // TODO: HASTA AQUI
 
     } catch (Exception) {
-      widget.hideBottomSheet(5);
+
+      String expString = "";
+      if (fetchBoth) {
+        if (wxFailed && notamFailed) {
+          expString = "Fetching failed both for NOTAM and WX, please try again later!";
+        } else if (wxFailed) {
+          expString = "NOTAM were proccessed, but fetching failed for WEATHER!";
+        } else if (notamFailed) {
+          expString = "Fetching failed for NOTAM, but WEATHER was proccessed!";
+        } else {
+          expString = "There was an error with the server or the Internet connection!";
+        }
+      } else {
+        if (wxFailed) {
+          expString = "Failed fetching NOTAM, please try again later!";
+        } else {
+          expString = "There was an error with the server or the Internet connection!";
+        }
+      }
+
+      widget.hideBottomSheet();
       Scaffold.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Oops! There was connection error!',
+              expString,
               style: TextStyle(
                 color: Colors.black,
               )
           ),
           backgroundColor: Colors.red[100],
-          duration: Duration(seconds: 4),
+          duration: Duration(seconds: 6),
         ),
       );
+
+      // This handles when we show the BottomSheet again
+      // This ensures that we wait for the first SnackBar (normally 4 + 1) seconds
+      // and then we add another 6 + 1 for the error, but we check
+      // previously if the wait has to be increased as the first one has not
+      // yet been on screen for 5 seconds
+      DateTime finishRequest = DateTime.now();
+      int diffTime = finishRequest.difference(startRequest).inSeconds;
+      int myWait;
+      if (diffTime <= firstSnackTimeNeeded) {
+        myWait = firstSnackTimeNeeded - diffTime + 7;   // First SnackBar - time until now + time for the second one
+      } else {
+        myWait = 7;  // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
+      }
+      Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+
       return null;
     }
-    return exportedJson;
+
+    // This handles when we show the BottomSheet again
+    // and tries to decrease the time if elapse time has already counted
+    // for more than 5 seconds (in which case we just show it again)
+    DateTime finishRequest = DateTime.now();
+    int diffTime = finishRequest.difference(startRequest).inSeconds;
+    int myWait = 0;
+    if (diffTime < firstSnackTimeNeeded) {
+      myWait = (firstSnackTimeNeeded - diffTime).round();
+    }
+    Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+
+    return notamExportedJson;
   }
+
 
   Future<void> _showMap({notamId, latitude, longitude, radius}) async {
     LatLng _center = LatLng(latitude, longitude);
@@ -1408,7 +1560,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   void _updateTimes(){
-    print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
+    //print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
     if (_myNotamList.isNotEmpty){
       setState(() {
         // This will trigger a refresh of weather times

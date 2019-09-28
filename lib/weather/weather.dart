@@ -1,4 +1,3 @@
-import 'package:cavokator_flutter/json_models/notam_json.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -26,12 +25,13 @@ class WeatherPage extends StatefulWidget {
   final Function callback;
   final bool showHeaders;
   final Function hideBottomSheet;
+  final Function showBottomSheet;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
 
   WeatherPage({@required this.isThemeDark, @required this.myFloat,
                @required this.callback, @required this.showHeaders,
-               @required this.hideBottomSheet,
+               @required this.hideBottomSheet, @required this.showBottomSheet,
                @required this.recalledScrollPosition,
                @required this.notifyScrollPosition});
 
@@ -76,6 +76,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
     _myMainScrollController.addListener(onMainScrolled);
 
+    // TODO (maybe?): setting to deactivate this?
     Future.delayed(Duration(milliseconds: 500), () {
       _myMainScrollController.animateTo(
         widget.recalledScrollPosition,
@@ -806,6 +807,7 @@ class _WeatherPageState extends State<WeatherPage> {
     _userSubmitText = textEntered;
   }
 
+
   Future<List<WxJson>> _callWeatherApi(bool fetchBoth) async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
@@ -818,38 +820,18 @@ class _WeatherPageState extends State<WeatherPage> {
       }
     }
 
-    String wxServer = PrivateVariables.apiURL;
-    String wxApi = "Wx/GetWx?";
-    String wxSource = "source=AppUnknown";
-    if (Platform.isAndroid) {
-      wxSource = "source=AppAndroid";
-    } else if (Platform.isIOS) {
-      wxSource = "source=AppIOS";
-    } else {
-      wxSource = "source=AppOther";
-    }
-    String wxAirports = "&Airports=$allAirports";
-
-    int internalHoursBefore;
-    if (_hoursBefore == 0) {
-      _mostRecent = true;
-      internalHoursBefore = 10;
-    } else {
-      _mostRecent = false;
-      internalHoursBefore = _hoursBefore;
-    }
-
-    String mostRecent = "&mostRecent=$_mostRecent";
-    String hoursBefore = "&hoursBefore=$internalHoursBefore";
-
-    String wxUrl = wxServer + wxApi + wxSource + wxAirports + mostRecent + hoursBefore; // TODO: "BOTH"??
-
     List<WxJson> wxExportedJson;
+
+    bool wxFailed = false;
+    bool notamFailed = false;
+
+    DateTime startRequest = DateTime.now();
+    int firstSnackTimeNeeded = 5;
 
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
-        widget.hideBottomSheet(5);
+        widget.hideBottomSheet();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -859,111 +841,173 @@ class _WeatherPageState extends State<WeatherPage> {
                 )
             ),
             backgroundColor: Colors.red[100],
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: firstSnackTimeNeeded),
           ),
         );
+
+        Timer(Duration(seconds: 6), () => widget.showBottomSheet());
         return null;
+
       } else {
+
+        String wxServer = PrivateVariables.apiURL;
+        String wxApi = "Wx/GetWx?";
+        String wxSource = "source=AppUnknown";
+        if (Platform.isAndroid) {
+          wxSource = "source=AppAndroid";
+        } else if (Platform.isIOS) {
+          wxSource = "source=AppIOS";
+        } else {
+          wxSource = "source=AppOther";
+        }
+        String wxAirports = "&Airports=$allAirports";
+
+        int internalHoursBefore;
+        if (_hoursBefore == 0) {
+          _mostRecent = true;
+          internalHoursBefore = 10;
+        } else {
+          _mostRecent = false;
+          internalHoursBefore = _hoursBefore;
+        }
+
+        String mostRecent = "&mostRecent=$_mostRecent";
+        String hoursBefore = "&hoursBefore=$internalHoursBefore";
+
+        String wxUrl = wxServer + wxApi + wxSource + wxAirports + mostRecent + hoursBefore;
 
         String fetchText;
         if (!fetchBoth) {
           fetchText = "Fetching WEATHER, hold position!";
         } else {
-          fetchText = "Fetching WEATHER and NOTAMs, hold position!";
-        }
+          fetchText = "Fetching WEATHER and NOTAM, hold position!";
 
-        widget.hideBottomSheet(5);
+          if (_myRequestedAirports.length > 6) {
+            fetchText += "\n\nToo many NOTAM requested, this might take time! If it fails, "
+                "please try with less next time!";
+            firstSnackTimeNeeded = 8;
+          }
+        }
+        widget.hideBottomSheet();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(fetchText),
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: firstSnackTimeNeeded),
           ),
         );
 
         final response = await http.post(wxUrl).timeout(Duration(seconds: 60));
 
         if (response.statusCode != 200) {
-          widget.hideBottomSheet(5);
-          Scaffold.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Oops! There was connection error!',
-                  style: TextStyle(
-                    color: Colors.black,
-                  )
-              ),
-              backgroundColor: Colors.red[100],
-              duration: Duration(seconds: 4),
-            ),
-          );
-          return null;  // TODO: RETURN NULL BOTH??? TEST!!!!
+          wxFailed = true;
+
+        } else {
+          wxExportedJson = wxJsonFromJson(response.body);
+          SharedPreferencesModel().setWeatherInformation(response.body);
+          SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
+          SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
         }
 
-        wxExportedJson = wxJsonFromJson(response.body);
-        SharedPreferencesModel().setWeatherInformation(response.body);
-        SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
-        SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
+        if (fetchBoth) {
+          String notamServer = PrivateVariables.apiURL;
+          String notamApi = "Notam/GetNotam?";
+          String notamSource = "source=AppUnknown";
+          if (Platform.isAndroid) {
+            notamSource = "source=AppAndroid";
+          } else if (Platform.isIOS) {
+            notamSource = "source=AppIOS";
+          } else {
+            notamSource = "source=AppOther";
+          }
+          String notamAirports = "&airports=$allAirports";
+          String notamUrl = notamServer + notamApi + notamSource + notamAirports;
+
+          int timeOut = 20 * _myRequestedAirports.length;
+          final response = await http.post(notamUrl).timeout(Duration(seconds: timeOut));
+
+          if (response.statusCode != 200) {
+            notamFailed = true;
+
+          } else {
+            var timeNow = DateTime.now().toUtc();
+            String notamRequestedTime = timeNow.toIso8601String();
+
+            SharedPreferencesModel().setNotamInformation(response.body);
+            SharedPreferencesModel().setNotamUserInput(_userSubmitText);
+            SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
+            SharedPreferencesModel().setNotamRequestedTime(notamRequestedTime);
+          }
+        }
       }
 
-      if (fetchBoth) {  // TODO: LIMIT HERE NUMBER OF NOTAMS??
-        String notamServer = PrivateVariables.apiURL;
-        String notamApi = "Notam/GetNotam?";
-        String notamSource = "source=AppUnknown";
-        if (Platform.isAndroid) {
-          notamSource = "source=AppAndroid";
-        } else if (Platform.isIOS) {
-          notamSource = "source=AppIOS";
-        } else {
-          notamSource = "source=AppOther";
-        }
-        String notamAirports = "&airports=$allAirports";
-        String notamUrl = notamServer + notamApi + notamSource + notamAirports;
-
-        int timeOut = 20 * _myRequestedAirports.length;
-        final response = await http.post(notamUrl).timeout(Duration(seconds: timeOut));
-
-        if (response.statusCode != 200) {
-          widget.hideBottomSheet(5);
-          Scaffold.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Oops! There was connection error!',
-                  style: TextStyle(
-                    color: Colors.black,
-                  )
-              ),
-              backgroundColor: Colors.red[100],
-              duration: Duration(seconds: 4),
-            ),
-          );
-          return null; // TODO: RETURN NULL BOTH??? TEST!!!!
-        }
-
-        var timeNow = DateTime.now().toUtc();
-        String notamRequestedTime = timeNow.toIso8601String();
-
-        SharedPreferencesModel().setNotamInformation(response.body);
-        SharedPreferencesModel().setNotamUserInput(_userSubmitText);
-        SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
-        SharedPreferencesModel().setNotamRequestedTime(notamRequestedTime);
+      if (wxFailed || notamFailed) {
+        throw "error";
       }
 
     } catch (Exception) {
-      widget.hideBottomSheet(5);
+
+      String expString = "";
+      if (fetchBoth) {
+        if (wxFailed && notamFailed) {
+          expString = "Fetching failed both for WX and NOTAM, please try again later!";
+        } else if (wxFailed) {
+          expString = "Fetching failed for WX, but NOTAM were proccessed!";
+        } else if (notamFailed) {
+          expString = "WEATHER was proceessed, but fetching failed for NOTAM!";
+        } else {
+          expString = "There was an error with the server or the Internet connection!";
+        }
+      } else {
+        if (wxFailed) {
+          expString = "Failed fetching WEATHER, please try again later!";
+        } else {
+          expString = "There was an error with the server or the Internet connection!";
+        }
+      }
+
+      widget.hideBottomSheet();
       Scaffold.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Oops! There was connection error!',
+            expString,
             style: TextStyle(
               color: Colors.black,
             )
           ),
           backgroundColor: Colors.red[100],
-          duration: Duration(seconds: 4),
+          duration: Duration(seconds: 6),
         ),
       );
+
+      // This handles when we show the BottomSheet again
+      // This ensures that we wait for the first SnackBar (normally 4 + 1) seconds
+      // and then we add another 6 + 1 for the error, but we check
+      // previously if the wait has to be increased as the first one has not
+      // yet been on screen for 5 seconds
+      DateTime finishRequest = DateTime.now();
+      int diffTime = finishRequest.difference(startRequest).inSeconds;
+      int myWait;
+      if (diffTime <= firstSnackTimeNeeded) {
+        myWait = firstSnackTimeNeeded - diffTime + 7;   // First SnackBar - time until now + time for the second one
+      } else {
+        myWait = 7;  // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
+      }
+      Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+
       return null;
     }
+
+    // This handles when we show the BottomSheet again
+    // and tries to decrease the time if elapse time has already counted
+    // for more than 5 seconds (in which case we just show it again)
+    DateTime finishRequest = DateTime.now();
+    int diffTime = finishRequest.difference(startRequest).inSeconds;
+    int myWait = 0;
+    if (diffTime < firstSnackTimeNeeded) {
+      myWait = (firstSnackTimeNeeded - diffTime).round();
+    }
+    Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+
     return wxExportedJson;
   }
 
