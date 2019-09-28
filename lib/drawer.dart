@@ -206,6 +206,12 @@ class _DrawerPageState extends State<DrawerPage> {
   Widget _getDrawerItemWidget() {
     if (_sharedPreferencesReady) {
 
+      // This shared pref. needs to go here or else won't update
+      // live if we change the configuration in Settings
+      SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
+        _showHeaderImages = onValue;
+      });
+
       _myPageController = PageController (
         initialPage: (_activeDrawerIndex == 0) ? 0 : 1,
         keepPage: false,
@@ -448,10 +454,6 @@ class _DrawerPageState extends State<DrawerPage> {
 
 
   Future<Null> _restoreSharedPreferences() async {
-    SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
-      _showHeaderImages = onValue;
-    });
-
     var lastUsed;
     await SharedPreferencesModel().getSettingsLastUsedSection().then((onLastUsedValue) {
       lastUsed = int.parse(onLastUsedValue);
