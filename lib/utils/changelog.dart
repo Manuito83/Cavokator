@@ -69,7 +69,7 @@ class ChangeLog extends StatelessWidget {
                     Flexible(
                       child: Text(
                         "Added a bottom bar to quickly move between WX and"
-                            " NOTAM sections without using the main the menu!",
+                            " NOTAM sections without using the main menu!",
                         //style: TextStyle(
                         //  fontWeight: FontWeight.bold,
                         //),
