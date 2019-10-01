@@ -32,6 +32,7 @@ class _CavokatorState extends State<Cavokator> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Cavokator",
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
         brightness: _myBrightness,
