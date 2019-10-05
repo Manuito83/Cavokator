@@ -936,6 +936,7 @@ class _WeatherPageState extends State<WeatherPage> {
             SharedPreferencesModel().setNotamUserInput(_userSubmitText);
             SharedPreferencesModel().setNotamRequestedAirports(_myRequestedAirports);
             SharedPreferencesModel().setNotamRequestedTime(notamRequestedTime);
+            SharedPreferencesModel().setNotamScrollList(_myRequestedAirports);
           }
         }
       }
