@@ -140,6 +140,7 @@ class _DrawerPageState extends State<DrawerPage> {
     return Scaffold(
       floatingActionButton: myFloat,
       drawer: Drawer(
+        elevation: 2, // This avoids shadow over bottomSheet
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
