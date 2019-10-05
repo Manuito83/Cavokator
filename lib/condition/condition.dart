@@ -246,6 +246,7 @@ class _ConditionPageState extends State<ConditionPage> {
       _saveSharedPreferences();
       _decodeCondition();
     }
+    FocusScope.of(context).requestFocus(new FocusNode());
   }
 
 
@@ -505,7 +506,7 @@ class _ConditionPageState extends State<ConditionPage> {
   }
 
   void _saveSharedPreferences() {
-    SharedPreferencesModel().setConditionInput(_userConditionInput);
+    SharedPreferencesModel().setConditionModel(_userConditionInput);
     SharedPreferencesModel().setConditionInput(_myTextController.text);
   }
 
