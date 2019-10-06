@@ -24,14 +24,14 @@ class WeatherPage extends StatefulWidget {
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
-  final Function hideBottomSheet;
-  final Function showBottomSheet;
+  final Function hideBottomNavBar;
+  final Function showBottomNavBar;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
 
   WeatherPage({@required this.isThemeDark, @required this.myFloat,
                @required this.callback, @required this.showHeaders,
-               @required this.hideBottomSheet, @required this.showBottomSheet,
+               @required this.hideBottomNavBar, @required this.showBottomNavBar,
                @required this.recalledScrollPosition,
                @required this.notifyScrollPosition});
 
@@ -831,7 +831,7 @@ class _WeatherPageState extends State<WeatherPage> {
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
-        widget.hideBottomSheet();
+        widget.hideBottomNavBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -845,7 +845,7 @@ class _WeatherPageState extends State<WeatherPage> {
           ),
         );
 
-        Timer(Duration(seconds: 6), () => widget.showBottomSheet());
+        Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
         return null;
 
       } else {
@@ -888,7 +888,7 @@ class _WeatherPageState extends State<WeatherPage> {
             firstSnackTimeNeeded = 8;
           }
         }
-        widget.hideBottomSheet();
+        widget.hideBottomNavBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(fetchText),
@@ -966,7 +966,7 @@ class _WeatherPageState extends State<WeatherPage> {
         }
       }
 
-      widget.hideBottomSheet();
+      widget.hideBottomNavBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -980,7 +980,7 @@ class _WeatherPageState extends State<WeatherPage> {
         ),
       );
 
-      // This handles when we show the BottomSheet again
+      // This handles when we show the BottomNavBar again
       // This ensures that we wait for the first SnackBar (normally 4 + 1) seconds
       // and then we add another 6 + 1 for the error, but we check
       // previously if the wait has to be increased as the first one has not
@@ -993,12 +993,12 @@ class _WeatherPageState extends State<WeatherPage> {
       } else {
         myWait = 7;  // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
       }
-      Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+      Timer(Duration(seconds: myWait), () => widget.showBottomNavBar());
 
       return null;
     }
 
-    // This handles when we show the BottomSheet again
+    // This handles when we show the BottomNavBar again
     // and tries to decrease the time if elapse time has already counted
     // for more than 5 seconds (in which case we just show it again)
     DateTime finishRequest = DateTime.now();
@@ -1007,7 +1007,7 @@ class _WeatherPageState extends State<WeatherPage> {
     if (diffTime < firstSnackTimeNeeded) {
       myWait = (firstSnackTimeNeeded - diffTime).round();
     }
-    Timer(Duration(seconds: myWait), () => widget.showBottomSheet());
+    Timer(Duration(seconds: myWait), () => widget.showBottomNavBar());
 
     return wxExportedJson;
   }

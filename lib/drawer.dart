@@ -57,7 +57,7 @@ class _DrawerPageState extends State<DrawerPage> {
   double _scrollPositionWeather = 0;
   double _scrollPositionNotam = 0;
 
-  bool _hideBottomSheet = false;
+  bool _hideBottomNavBar = false;
   bool _bottomWeatherButtonDisabled = false;
   bool _bottomNotamButtonDisabled = false;
   bool _swipeSections = true;  // TODO (maybe?): setting to deactivate this?
@@ -140,7 +140,7 @@ class _DrawerPageState extends State<DrawerPage> {
     return Scaffold(
       floatingActionButton: myFloat,
       drawer: Drawer(
-        elevation: 2, // This avoids shadow over bottomSheet
+        elevation: 2, // This avoids shadow over SafeArea
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -199,7 +199,7 @@ class _DrawerPageState extends State<DrawerPage> {
         ),
       ),
       body: _getDrawerItemWidget(),
-      bottomSheet: _bottomSheet(),
+      bottomNavigationBar: _bottomNavBar(),
     );
   }
 
@@ -230,8 +230,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   myFloat: myFloat,
                   callback: callbackFab,
                   showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  showBottomSheet: _turnBottomSheetOn,
+                  hideBottomNavBar: _turnBottomNavBarOff,
+                  showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
                 ),
@@ -240,8 +240,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   myFloat: myFloat,
                   callback: callbackFab,
                   showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  showBottomSheet: _turnBottomSheetOn,
+                  hideBottomNavBar: _turnBottomNavBarOff,
+                  showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionNotam,
                   notifyScrollPosition: _setNotamScrollPosition,
                 ),
@@ -253,8 +253,8 @@ class _DrawerPageState extends State<DrawerPage> {
               myFloat: myFloat,
               callback: callbackFab,
               showHeaders: _showHeaderImages,
-              hideBottomSheet: _turnBottomSheetOff,
-              showBottomSheet: _turnBottomSheetOn,
+              hideBottomNavBar: _turnBottomNavBarOff,
+              showBottomNavBar: _turnBottomNavBarOn,
               recalledScrollPosition: _scrollPositionWeather,
               notifyScrollPosition: _setWeatherScrollPosition,
             );
@@ -271,8 +271,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   myFloat: myFloat,
                   callback: callbackFab,
                   showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  showBottomSheet: _turnBottomSheetOn,
+                  hideBottomNavBar: _turnBottomNavBarOff,
+                  showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
                 ),
@@ -281,8 +281,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   myFloat: myFloat,
                   callback: callbackFab,
                   showHeaders: _showHeaderImages,
-                  hideBottomSheet: _turnBottomSheetOff,
-                  showBottomSheet: _turnBottomSheetOn,
+                  hideBottomNavBar: _turnBottomNavBarOff,
+                  showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionNotam,
                   notifyScrollPosition: _setNotamScrollPosition,
                 ),
@@ -294,8 +294,8 @@ class _DrawerPageState extends State<DrawerPage> {
               myFloat: myFloat,
               callback: callbackFab,
               showHeaders: _showHeaderImages,
-              hideBottomSheet: _turnBottomSheetOff,
-              showBottomSheet: _turnBottomSheetOn,
+              hideBottomNavBar: _turnBottomNavBarOff,
+              showBottomNavBar: _turnBottomNavBarOn,
               recalledScrollPosition: _scrollPositionNotam,
               notifyScrollPosition: _setNotamScrollPosition,
             );
@@ -374,9 +374,9 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
 
-  Widget _bottomSheet () {
+  Widget _bottomNavBar () {
 
-    if (_hideBottomSheet) {
+    if (_hideBottomNavBar) {
       return null;
     }
 
@@ -495,16 +495,16 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
 
-  void _turnBottomSheetOff() {
+  void _turnBottomNavBarOff() {
     setState(() {
-      _hideBottomSheet = true;
+      _hideBottomNavBar = true;
     });
   }
 
 
-  void _turnBottomSheetOn() {
+  void _turnBottomNavBarOn() {
     setState(() {
-      _hideBottomSheet = false;
+      _hideBottomNavBar = false;
     });
   }
 
