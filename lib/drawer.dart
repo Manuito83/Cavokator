@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:flutter/cupertino.dart';
@@ -36,6 +37,7 @@ class DrawerPage extends StatefulWidget {
     new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
     new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
     new DrawerItem("TEMP Corrections", "assets/icons/drawer_temperature.png"),
+    new DrawerItem("Favourites", "assets/icons/drawer_favourites.png"),
     new DrawerItem("Settings", "assets/icons/drawer_settings.png"),
     new DrawerItem("About", "assets/icons/drawer_about.png"),
   ];
@@ -114,8 +116,8 @@ class _DrawerPageState extends State<DrawerPage> {
         myBackgroundColor = Colors.grey[200];
       }
 
-      // Adding divider just before SETTINGS and ABOUT (2 before end)
-      if (i == widget.drawerItems.length - 2) {
+      // Adding divider just before FAVOURITES (3 before end)
+      if (i == widget.drawerItems.length - 3) {
         drawerOptions.add(Divider());
       }
 
@@ -316,13 +318,19 @@ class _DrawerPageState extends State<DrawerPage> {
             showHeaders: _showHeaderImages,
           );
         case 4:
+          return FavouritesPage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+          );
+        case 5:
           return SettingsPage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
             callback: callbackFab,
             showHeaders: _showHeaderImages,
           );
-        case 5:
+        case 6:
           return AboutPage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
