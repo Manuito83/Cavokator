@@ -33,6 +33,8 @@ class SharedPreferencesModel {
   final String _kTemperatureElevPrefs = "temperature_elev";
   final String _kTemperatureRoundPrefs = "temperature_round";
 
+  final String _kFavouritePrefs = "favourites_list";
+
 
 
   /// ----------------------------
@@ -292,5 +294,22 @@ class SharedPreferencesModel {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setInt(_kTemperatureRoundPrefs, value);
   }
+
+
+
+  /// --------------------------------------------
+  /// Methods for favourites
+  /// --------------------------------------------
+
+  Future<List<String>> getFavourites() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_kFavouritePrefs) ?? List<String>();
+  }
+
+  Future<bool> setFavourites(List<String> value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setStringList(_kFavouritePrefs, value);
+  }
+
 
 }

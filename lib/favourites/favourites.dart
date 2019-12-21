@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
+import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
@@ -22,8 +25,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
   final _airportsInputController = new TextEditingController();
   String _userSubmittedAirports = "";
 
-  String _favouriteTitle = "";
-  List<String> _favouriteAirportsList = List<String>();
+  String _thisInputTitle = "";
+  List<String> _thisInputAirportsList = List<String>();
 
   List<Favourite> _favouritesList = List<Favourite>();
 
@@ -86,9 +89,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   Widget _mainBody () {
     return CustomSliverSection(
-      child: Container (
         child: Column (
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          //crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Padding (
               padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
@@ -114,8 +117,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     fillColor: Colors.grey,
                     child: Icon(Icons.add),
                     onPressed: () {
-                      _favouriteTitle = "";
-                      _favouriteAirportsList.clear();
+                      _thisInputTitle = "";
+                      _thisInputAirportsList.clear();
                       _airportsInputController.text = "";
                       _showAddDialog();
                     },
@@ -123,9 +126,80 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 ],
               ),
             ),
+            Flexible(
+              child: ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: _favouritesList.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                    elevation: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                       Flexible(
+                         child: Column(
+                           children: <Widget>[
+                             Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: <Widget>[
+                                 Padding(
+                                   padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
+                                   child: RichText(
+                                     text: TextSpan(
+                                       text: _favouritesList[index].title,
+                                       style: TextStyle(
+                                           color: Colors.black,
+                                           fontWeight: FontWeight.bold,
+                                           fontSize: 18
+                                       ),
+                                     ),
+                                   ),
+                                 ),
+                                 Padding(
+                                   padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
+                                   child: RichText(
+                                     text: TextSpan(
+                                       text: _favouritesList[index].airports.join(', '),
+                                       style: TextStyle(color: Colors.red),
+                                     ),
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ],
+                         ),
+                       ),
+                        Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                              child: IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: null,
+                              )
+                            ),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                              child:  IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+
+                  );
+                }
+              ),
+            )
           ],
         ),
-      ),
     );
   }
 
@@ -168,49 +242,56 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min, // To make the card compact
                       children: <Widget>[
-                        TextFormField(
-                          maxLength: 50,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            counterText: "",
-                            border: OutlineInputBorder(),
-                            labelText: 'Favourite title',
+                        Flexible(
+                          child: TextFormField(
+                            maxLength: 50,
+                            minLines: 1,
+                            maxLines: 2,
+                            decoration: InputDecoration(
+                              counterText: "",
+                              border: OutlineInputBorder(),
+                              labelText: 'Favourite title',
+                            ),
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return "Title cannot be empty!";
+                              }
+                              _thisInputTitle = value;
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return "Title cannot be empty!";
-                            }
-                            _favouriteTitle = value;
-                            return null;
-                          },
                         ),
                         SizedBox(height: 16.0),
-                        TextFormField(
-                          controller: _airportsInputController,
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.characters,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'ICAO/IATA airports',
+                        Flexible(
+                          child: TextFormField(
+                            controller: _airportsInputController,
+                            minLines: 1,
+                            maxLines: 4,
+                            keyboardType: TextInputType.text,
+                            textCapitalization: TextCapitalization.characters,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'ICAO/IATA airports',
+                            ),
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return "Please enter at least one valid airport!";
+                              }
+                              // Try to parse some airports
+                              // Split the input to suit or needs
+                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
+                              matches.forEach((m) => _thisInputAirportsList.add(m.group(0)));
+                              if (_thisInputAirportsList.isEmpty) {
+                                return "Could not identify a valid airport!";   // TODO: if doesn't meet, later does not meet either if corrected!
+                              }
+                              if (_thisInputAirportsList.length > 10) {
+                                // TODO: limit this with option and warning?
+                                return "Too many airports (max is 10)!";
+                              }
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return "Please enter at least one valid airport!";
-                            }
-                            // Try to parse some airports
-                            // Split the input to suit or needs
-                            RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-                            Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
-                            matches.forEach((m) => _favouriteAirportsList.add(m.group(0)));
-                            if (_favouriteAirportsList.isEmpty) {
-                              return "Could not identify a valid airport!";
-                            }
-                            if (_favouriteAirportsList.length > 10) {
-                              // TODO: limit this with option and warning?
-                              return "Too many airports (max is 10)!";
-                            }
-                            return null;
-                          },
                         ),
                         SizedBox(height: 24.0),
                         Row(
@@ -260,18 +341,26 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   void _addNewFavourite() {
     var myNewFavourite = Favourite(
-      title: _favouriteTitle,
-      airports: List<String>.from(_favouriteAirportsList.map((x) => x)),
+      title: _thisInputTitle,
+      airports: List<String>.from(_thisInputAirportsList.map((x) => x)),
     );
-    _favouritesList.add(myNewFavourite);
+    setState(() {
+      _favouritesList.add(myNewFavourite);
+    });
+
+    List<String> favouritesToSave = List<String>();
+    for (var fav in _favouritesList) {
+      favouritesToSave.add(favouriteToJson(fav));
+    }
+    SharedPreferencesModel().setFavourites(favouritesToSave);
 
     Scaffold.of(context).showSnackBar(
       SnackBar(
         duration: Duration(seconds: 8),
         content: Text(
-          'Added "$_favouriteTitle" to favourites, '
+          'Added "$_thisInputTitle" to favourites, '
               'with the following airports: '
-              '${_favouriteAirportsList.join(', ')}',
+              '${_thisInputAirportsList.join(', ')}',
         ),
       ),
     );
@@ -310,10 +399,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
 
   void _restoreSharedPreferences() async {
-    await SharedPreferencesModel().getSettingsOpenSpecificSection().then((onValue) {
-      setState(() {
-        // TODO
-      });
+    await SharedPreferencesModel().getFavourites().then((onValue) {
+      List<String> favStrings = onValue;
+      for (var fav in favStrings) {
+        _favouritesList.add(favouriteFromJson(fav));
+      }
+      setState(() { });
+
     });
 
   }
