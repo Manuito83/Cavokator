@@ -750,7 +750,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   void _restoreSharedPreferences() async {
     await SharedPreferencesModel().getFavourites().then((onValue) {
-      _favouritesList = favouriteListFromJson(onValue);
+      if (onValue != "") {
+        _favouritesList = favouriteListFromJson(onValue);
+      }
       setState(() { });
     });
   }
@@ -789,7 +791,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
+    //final directory = await getApplicationDocumentsDirectory();
+    final directory = await getExternalStorageDirectory();
     return directory.path;
   }
 
