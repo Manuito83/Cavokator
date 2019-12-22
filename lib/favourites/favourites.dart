@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
@@ -22,6 +21,8 @@ class FavouritesPage extends StatefulWidget {
 
 class _FavouritesPageState extends State<FavouritesPage> {
   final _formKey = GlobalKey<FormState>();
+
+  final _titleInputController = new TextEditingController();
   final _airportsInputController = new TextEditingController();
   String _userSubmittedAirports = "";
 
@@ -29,6 +30,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
   List<String> _thisInputAirportsList = List<String>();
 
   List<Favourite> _favouritesList = List<Favourite>();
+
+  final _searchController = new TextEditingController();
+  String _userSearch = "";
 
   @override
   void initState() {
@@ -40,6 +44,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     Future.delayed(Duration.zero, () => fabCallback());
 
     _airportsInputController.addListener(onAirportsInputTextChange);
+    _searchController.addListener(onSearchInputTextChange);
   }
 
 
@@ -62,6 +67,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
   @override
   Future dispose() async {
     _airportsInputController.dispose();
+    _titleInputController.dispose();
+    _searchController.dispose();
     // TODO: ??? >>> _mainScrollController.dispose();
     super.dispose();
   }
@@ -91,23 +98,33 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return CustomSliverSection(
         child: Column (
           mainAxisSize: MainAxisSize.min,
-          //crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Padding (
-              padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
+              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
               child: Row(
                 children: <Widget>[
                   Flexible(
-                    child: Text (
-                      "SEARCH BAR",
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        onChanged: (value) {
+
+                        },
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                            labelText: "Search",
+                            //hintText: "Search by title",
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(12.0)))),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(),
             Padding(
-              padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+              padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -119,6 +136,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     onPressed: () {
                       _thisInputTitle = "";
                       _thisInputAirportsList.clear();
+                      _titleInputController.text = "";
                       _airportsInputController.text = "";
                       _showAddDialog();
                     },
@@ -133,78 +151,107 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 scrollDirection: Axis.vertical,
                 itemCount: _favouritesList.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                    elevation: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                       Flexible(
-                         child: Column(
-                           children: <Widget>[
-                             Column(
-                               crossAxisAlignment: CrossAxisAlignment.start,
-                               children: <Widget>[
-                                 Padding(
-                                   padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
-                                   child: RichText(
-                                     text: TextSpan(
-                                       text: _favouritesList[index].title,
-                                       style: TextStyle(
-                                           color: Colors.black,
-                                           fontWeight: FontWeight.bold,
-                                           fontSize: 18
-                                       ),
-                                     ),
-                                   ),
-                                 ),
-                                 Padding(
-                                   padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
-                                   child: RichText(
-                                     text: TextSpan(
-                                       text: _favouritesList[index].airports.join(', '),
-                                       style: TextStyle(color: Colors.red),
-                                     ),
-                                   ),
-                                 ),
-                               ],
-                             ),
-                           ],
-                         ),
-                       ),
-                        Column(
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
-                              child: IconButton(
-                                icon: Icon(Icons.edit),
-                                onPressed: null,
-                              )
-                            ),
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
-                              child:  IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-
-                  );
+                  if (_userSearch == "") {
+                    return _favouriteCard(index);
+                  } else {
+                    if (_favouritesList[index].title.contains(_userSearch)) {
+                      return _favouriteCard(index);
+                    } else {
+                      return SizedBox.shrink();
+                    }
+                  }
                 }
               ),
-            )
+            ),
+            SizedBox(height: 60.0),
           ],
         ),
     );
   }
 
 
-  Future<void> _showAddDialog() async {
+  Widget _favouriteCard(int index) {
+    return Card(
+      margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+      elevation: 2,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Flexible(
+            child: Column(
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
+                      child: RichText(
+                        text: TextSpan(
+                          text: _favouritesList[index].title,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
+                      child: RichText(
+                        text: TextSpan(
+                          text: _favouritesList[index].airports.join(', '),
+                          style: TextStyle(
+                              color: Colors.black
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: <Widget>[
+              Padding(
+                  padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                  child: IconButton(
+                    icon: Icon(Icons.edit),
+                    color: Colors.black45,
+                    onPressed: () {
+                      _showAddDialog(
+                        existingFav: true,
+                        favIndex: index,
+                        favTitle: _favouritesList[index].title,
+                        favAirports: _favouritesList[index].airports
+                      );
+                    },
+                  )
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                child:  IconButton(
+                    icon: Icon(Icons.delete),
+                    color: Colors.black45,
+                    onPressed: () {
+                      _deleteSingleFavDialog(index);
+                    }
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
+    if (existingFav) {
+      _titleInputController.text = favTitle;
+      _airportsInputController.text = favAirports.join(", ");
+    }
     return showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -244,6 +291,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       children: <Widget>[
                         Flexible(
                           child: TextFormField(
+                            controller: _titleInputController,
                             maxLength: 50,
                             minLines: 1,
                             maxLines: 2,
@@ -283,10 +331,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
                               matches.forEach((m) => _thisInputAirportsList.add(m.group(0)));
                               if (_thisInputAirportsList.isEmpty) {
-                                return "Could not identify a valid airport!";   // TODO: if doesn't meet, later does not meet either if corrected!
+                                return "Could not identify a valid airport!";
                               }
                               if (_thisInputAirportsList.length > 10) {
                                 // TODO: limit this with option and warning?
+                                _thisInputAirportsList.clear();
                                 return "Too many airports (max is 10)!";
                               }
                               return null;
@@ -306,11 +355,17 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             FlatButton(
                               onPressed: () {
                                 if (_formKey.currentState.validate()) {
-                                  _addNewFavourite();
+                                  if (existingFav) {
+                                    _modifyFavourite(favIndex);
+                                  } else {
+                                    _addNewFavourite();
+                                  }
                                   Navigator.of(context).pop();
                                 }
                               },
-                              child: Text("Add"),
+                              child: existingFav
+                                  ? Text("Modify")
+                                  : Text("Add"),
                             ),
                           ],
                         )
@@ -339,6 +394,123 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
 
+  Future<void> _deleteSingleFavDialog(int removeIndex) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 42,
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                  ),
+                  margin: EdgeInsets.only(top: 22),
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: const Offset(0.0, 10.0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // To make the card compact
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child: Text(
+                          'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
+                              'and all its associated airports? \n\n This cannot be undone!'
+                        )
+                      ),
+                      SizedBox(height: 12.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          FlatButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Oh no!"),
+                          ),
+                          FlatButton(
+                            onPressed: () {
+                              setState(() {
+                                _favouritesList.removeAt(removeIndex);
+                              });
+                              _saveFavPrefs();
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Do it!"),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey[400],
+                    radius: 22,
+                    child: Icon(
+                      Icons.warning,
+                      color: Colors.red[800],
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+
+  void _modifyFavourite(int favIndex) {
+    var myModifiedFavourite = Favourite(
+      title: _thisInputTitle,
+      airports: List<String>.from(_thisInputAirportsList.map((x) => x)),
+    );
+    setState(() {
+      _favouritesList[favIndex] = myModifiedFavourite;
+    });
+
+    _saveFavPrefs();
+
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 8),
+        content: Text(
+          'Updated "$_thisInputTitle" '
+              'with the following airports: '
+              '${_thisInputAirportsList.join(', ')}',
+        ),
+      ),
+    );
+
+    _thisInputTitle = "";
+    _thisInputAirportsList.clear();
+  }
+
+
   void _addNewFavourite() {
     var myNewFavourite = Favourite(
       title: _thisInputTitle,
@@ -348,11 +520,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
       _favouritesList.add(myNewFavourite);
     });
 
-    List<String> favouritesToSave = List<String>();
-    for (var fav in _favouritesList) {
-      favouritesToSave.add(favouriteToJson(fav));
-    }
-    SharedPreferencesModel().setFavourites(favouritesToSave);
+    _saveFavPrefs();
 
     Scaffold.of(context).showSnackBar(
       SnackBar(
@@ -364,6 +532,17 @@ class _FavouritesPageState extends State<FavouritesPage> {
         ),
       ),
     );
+
+    _thisInputTitle = "";
+    _thisInputAirportsList.clear();
+  }
+
+  void _saveFavPrefs() {
+    List<String> favouritesToSave = List<String>();
+    for (var fav in _favouritesList) {
+      favouritesToSave.add(favouriteToJson(fav));
+    }
+    SharedPreferencesModel().setFavourites(favouritesToSave);
   }
 
 
@@ -395,6 +574,14 @@ class _FavouritesPageState extends State<FavouritesPage> {
       }
     }
     _userSubmittedAirports = textEntered;
+  }
+
+
+  void onSearchInputTextChange() {
+    setState(() {
+      _userSearch = _searchController.text;
+      print(_userSearch);
+    });
   }
 
 
