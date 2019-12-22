@@ -301,14 +301,14 @@ class SharedPreferencesModel {
   /// Methods for favourites
   /// --------------------------------------------
 
-  Future<List<String>> getFavourites() async {
+  Future<String> getFavourites() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kFavouritePrefs) ?? List<String>();
+    return prefs.getString(_kFavouritePrefs) ?? "";
   }
 
-  Future<bool> setFavourites(List<String> value) async {
+  Future<bool> setFavourites(String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setStringList(_kFavouritePrefs, value);
+    return prefs.setString(_kFavouritePrefs, value);
   }
 
 

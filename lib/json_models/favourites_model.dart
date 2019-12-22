@@ -4,9 +4,8 @@
 
 import 'dart:convert';
 
-Favourite favouriteFromJson(String str) => Favourite.fromJson(json.decode(str));
-
-String favouriteToJson(Favourite data) => json.encode(data.toJson());
+List<Favourite> favouriteListFromJson(String str) => List<Favourite>.from(json.decode(str).map((x) => Favourite.fromJson(x)));
+String favouriteListToJson(List<Favourite> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Favourite {
   String title;

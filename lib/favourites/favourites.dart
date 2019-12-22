@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,11 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
+import 'package:path_provider/path_provider.dart';
 
 class FavouritesPage extends StatefulWidget {
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
+  // TODO: pass theme and theme it!
 
   FavouritesPage({@required this.isThemeDark, @required this.myFloat,
                 @required this.callback});
@@ -33,6 +38,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   final _searchController = new TextEditingController();
   String _userSearch = "";
+
 
   @override
   void initState() {
@@ -91,6 +97,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return SliverAppBar(
       title: Text("Favourites"),
       pinned: true,
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.save),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            _loadSaveDialog();
+          },
+        ),
+      ],
     );
   }
 
@@ -154,7 +169,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   if (_userSearch == "") {
                     return _favouriteCard(index);
                   } else {
-                    if (_favouritesList[index].title.contains(_userSearch)) {
+                    if (_favouritesList[index].title.contains(_userSearch)) {  // TODO: añadir "toUpper" para pillarlo todo
                       return _favouriteCard(index);
                     } else {
                       return SizedBox.shrink();
@@ -435,7 +450,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         child: Text(
                           'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
                               'and all its associated airports? \n\n This cannot be undone!'
-                        )
+                        ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
                       ),
                       SizedBox(height: 12.0),
                       Row(
@@ -477,6 +492,158 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   ),
                 ),
               ],
+            ),
+          );
+        }
+    );
+  }
+
+
+  Future<void> _loadSaveDialog() async {
+    final file = await _localFile;
+    return showDialog<void>(
+        context: context,
+        //barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          String status = "";
+          Color statusColor = Colors.black;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Center(
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        //alignment: Alignment.center,
+                        padding: EdgeInsets.only(
+                          top: 42,
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
+                        ),
+                        margin: EdgeInsets.only(top: 22),
+                        decoration: new BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10.0,
+                              offset: const Offset(0.0, 10.0),
+                            ),
+                          ],
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min, // To make the card compact
+                            children: <Widget>[
+                              Flexible(
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 15),
+                                  child: Text(
+                                    "Export and imports file: ${file.path}",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                  child: RaisedButton.icon(
+                                    icon: Icon(Icons.file_upload),
+                                    label: Text("Export favourites"),
+                                    onPressed: ()  {
+                                      _saveJsonFile(file).then((onValue) {
+                                        if (onValue == true) {
+                                          setState(() {
+                                            status = "File saved!";
+                                            statusColor = Colors.green;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            status = "Error saving!";
+                                            statusColor = Colors.red;
+                                          });
+                                        }
+                                      });
+                                    },
+                                  )
+                              ),
+                              Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                  child: RaisedButton.icon(
+                                    icon: Icon(Icons.file_download),
+                                    label: Text("Import favourites"),
+                                    onPressed: ()  {
+                                      _loadJsonFile(file).then((onValue) {
+                                        if (onValue > 0) {
+                                          setState(() {
+                                            status = "$onValue favourites imported!";
+                                            statusColor = Colors.green;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            status = "Error importing! "
+                                                "Did you place the "
+                                                "file in the right place?";
+                                            statusColor = Colors.red;
+                                          });
+                                        }
+                                      });
+                                    },
+                                  )
+                              ),
+                              Flexible(
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 5),
+                                  child: Text(
+                                    status,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: statusColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                child: FlatButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Close"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 16,
+                        right: 16,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.grey[400],
+                          radius: 22,
+                          child: Icon(
+                            Icons.save,
+                            color: Colors.red[800],
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
             ),
           );
         }
@@ -538,13 +705,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   void _saveFavPrefs() {
-    List<String> favouritesToSave = List<String>();
-    for (var fav in _favouritesList) {
-      favouritesToSave.add(favouriteToJson(fav));
-    }
-    SharedPreferencesModel().setFavourites(favouritesToSave);
+    String favouriteToJson = json.encode(List<dynamic>.from(_favouritesList.map((x) => x.toJson())));
+    SharedPreferencesModel().setFavourites(favouriteToJson);
   }
-
 
   void onAirportsInputTextChange() {
     // Ensure that submitted airports are split correctly
@@ -587,14 +750,49 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   void _restoreSharedPreferences() async {
     await SharedPreferencesModel().getFavourites().then((onValue) {
-      List<String> favStrings = onValue;
-      for (var fav in favStrings) {
-        _favouritesList.add(favouriteFromJson(fav));
-      }
+      _favouritesList = favouriteListFromJson(onValue);
       setState(() { });
-
     });
-
   }
+
+
+  Future<bool> _saveJsonFile(File file) async {
+    try {
+      //file.writeAsString(jsonEncode(_favouritesList));
+
+      String favouriteListToJson = json.encode(List<dynamic>.from(_favouritesList.map((x) => x.toJson())));
+      file.writeAsString(favouriteListToJson);
+      return true;
+    } catch (e ){
+      return false;
+    }
+  }
+
+  Future<int> _loadJsonFile(File file) async {
+    try {
+      final file = await _localFile;
+      var contents = await file.readAsString();
+
+
+      final favourites = favouriteListFromJson(contents);
+      // TODO: add to main list!!!!!
+
+      return favourites.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/cavokatorFavs.json');
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+
 
 }
