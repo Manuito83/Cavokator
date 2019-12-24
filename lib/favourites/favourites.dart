@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cavokator_flutter/favourites/favourites_backups.dart';
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,12 +15,10 @@ import 'package:path_provider/path_provider.dart';
 
 class FavouritesPage extends StatefulWidget {
   final bool isThemeDark;
-  final Widget myFloat;
   final Function callback;
   // TODO: pass theme and theme it!
 
-  FavouritesPage({@required this.isThemeDark, @required this.myFloat,
-                @required this.callback});
+  FavouritesPage({@required this.isThemeDark, @required this.callback});
 
   @override
   _FavouritesPageState createState() => _FavouritesPageState();
@@ -106,7 +105,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
           icon: Icon(Icons.save),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
-            _loadSaveDialog();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FavouritesBackupsPage()),
+            );
+            //_loadSaveDialog();
           },
         ),
       ],
@@ -502,7 +505,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-
+  // TODO: THIS HAS TO GO!
   Future<void> _loadSaveDialog() async {
     final file = await _localFile;
     return showDialog<void>(

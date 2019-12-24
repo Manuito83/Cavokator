@@ -320,7 +320,6 @@ class _DrawerPageState extends State<DrawerPage> {
         case 4:
           return FavouritesPage(
             isThemeDark: _isThemeDark,
-            myFloat: myFloat,
             callback: callbackFab,
           );
         case 5:
