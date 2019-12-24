@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FavouritesPage extends StatefulWidget {
@@ -25,10 +26,12 @@ class FavouritesPage extends StatefulWidget {
 }
 
 class _FavouritesPageState extends State<FavouritesPage> {
-  final _formKey = GlobalKey<FormState>();
+  final _mainFormKey = GlobalKey<FormState>();
+  final _importFormKey = GlobalKey<FormState>();
 
   final _titleInputController = new TextEditingController();
   final _airportsInputController = new TextEditingController();
+  final _importInputController = new TextEditingController();
   String _userSubmittedAirports = "";
 
   String _thisInputTitle = "";
@@ -75,6 +78,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _airportsInputController.dispose();
     _titleInputController.dispose();
     _searchController.dispose();
+    _importInputController.dispose();
     // TODO: ??? >>> _mainScrollController.dispose();
     super.dispose();
   }
@@ -300,7 +304,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     ],
                   ),
                   child: Form(
-                    key: _formKey,
+                    key: _mainFormKey,
                     child: Column(
                       mainAxisSize: MainAxisSize.min, // To make the card compact
                       children: <Widget>[
@@ -369,7 +373,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             ),
                             FlatButton(
                               onPressed: () {
-                                if (_formKey.currentState.validate()) {
+                                if (_mainFormKey.currentState.validate()) {
                                   if (existingFav) {
                                     _modifyFavourite(favIndex);
                                   } else {
@@ -503,7 +507,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
     final file = await _localFile;
     return showDialog<void>(
         context: context,
-        //barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           String status = "";
           Color statusColor = Colors.black;
@@ -519,7 +522,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   child: Stack(
                     children: <Widget>[
                       Container(
-                        //alignment: Alignment.center,
                         padding: EdgeInsets.only(
                           top: 42,
                           bottom: 16,
@@ -547,7 +549,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 child: Padding(
                                   padding: EdgeInsets.fromLTRB(10, 10, 10, 15),
                                   child: Text(
-                                    "Export and imports file: ${file.path}",
+                                    "LALALA",
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontStyle: FontStyle.italic,
@@ -555,45 +557,73 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   ),
                                 ),
                               ),
+
+                              Form(
+                                key: _importFormKey,
+                                child: Column(
+                                  children: <Widget>[
+                                    TextFormField(
+                                      controller: _importInputController,
+                                      maxLines: 5,
+                                      style: TextStyle(fontSize: 12),
+                                      decoration: InputDecoration(
+                                        counterText: "",
+                                        border: OutlineInputBorder(),
+                                        hintText: 'Paste here previously exported data',
+                                      ),
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return "Cannot be empty!";
+                                        }
+                                        _importFromForm();
+                                        return null;
+                                      },
+                                    ),
+                                    Padding(
+                                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                        child: RaisedButton.icon(
+                                          icon: Icon(Icons.file_download),
+                                          label: Text("Import favourites"),
+                                          onPressed: ()  {
+                                            if (_importFormKey.currentState.validate()) {
+                                              _importFromForm().then((onValue) {
+                                                if (onValue > 0) {
+                                                  setState(() {
+                                                    status = "$onValue favourites imported!";
+                                                    statusColor = Colors.green;
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    status = "Error importing! "
+                                                        "Did you place the "
+                                                        "file in the right place?";
+                                                    statusColor = Colors.red;
+                                                  });
+                                                }
+                                              });
+                                            }
+                                          },
+                                        )
+                                    ),
+                                  ],
+                                ),
+                              ),
                               Padding(
                                   padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                                   child: RaisedButton.icon(
                                     icon: Icon(Icons.file_upload),
                                     label: Text("Export favourites"),
-                                    onPressed: ()  {
-                                      _saveJsonFile(file).then((onValue) {
+                                    onPressed: () async {
+
+                                      _saveClipboard(file).then((onValue) {
                                         if (onValue == true) {
                                           setState(() {
-                                            status = "File saved!";
+                                            status = "Copied to clipboard!";
                                             statusColor = Colors.green;
                                           });
                                         } else {
                                           setState(() {
                                             status = "Error saving!";
-                                            statusColor = Colors.red;
-                                          });
-                                        }
-                                      });
-                                    },
-                                  )
-                              ),
-                              Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                  child: RaisedButton.icon(
-                                    icon: Icon(Icons.file_download),
-                                    label: Text("Import favourites"),
-                                    onPressed: ()  {
-                                      _loadJsonFile(file).then((onValue) {
-                                        if (onValue > 0) {
-                                          setState(() {
-                                            status = "$onValue favourites imported!";
-                                            statusColor = Colors.green;
-                                          });
-                                        } else {
-                                          setState(() {
-                                            status = "Error importing! "
-                                                "Did you place the "
-                                                "file in the right place?";
                                             statusColor = Colors.red;
                                           });
                                         }
@@ -758,25 +788,28 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
 
-  Future<bool> _saveJsonFile(File file) async {
+  Future<bool> _saveClipboard(File file) async {
     try {
-      //file.writeAsString(jsonEncode(_favouritesList));
-
-      String favouriteListToJson = json.encode(List<dynamic>.from(_favouritesList.map((x) => x.toJson())));
-      file.writeAsString(favouriteListToJson);
+      JsonEncoder encoder = new JsonEncoder.withIndent('  ');
+      String favouriteListToJson = encoder.convert((List<dynamic>.from(_favouritesList.map((x) => x.toJson()))));
+      ClipboardData jsonFav = ClipboardData(
+        text: favouriteListToJson,
+      );
+      Clipboard.setData(jsonFav);
       return true;
     } catch (e ){
       return false;
     }
   }
 
-  Future<int> _loadJsonFile(File file) async {
+  Future<int> _importFromForm() async {
     try {
-      final file = await _localFile;
-      var contents = await file.readAsString();
-
-
+      String contents = _importInputController.text;
       final favourites = favouriteListFromJson(contents);
+
+      for (var fav in favourites) {
+        print(fav.airports);
+      }
       // TODO: add to main list!!!!!
 
       return favourites.length;
@@ -796,6 +829,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return directory.path;
   }
 
+
+  static Future<ClipboardData> getClipboardData(String format) async {
+    final Map<String, dynamic> result = await SystemChannels.platform.invokeMethod(
+      'Clipboard.getData',
+      format,
+    );
+    if (result == null)
+      return null;
+    return ClipboardData(text: result['text']);
+  }
 
 
 }
