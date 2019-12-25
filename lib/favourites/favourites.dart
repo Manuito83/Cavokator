@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:cavokator_flutter/favourites/favourites_backups.dart';
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
@@ -11,7 +9,7 @@ import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+
 
 class FavouritesPage extends StatefulWidget {
   final bool isThemeDark;
@@ -26,7 +24,7 @@ class FavouritesPage extends StatefulWidget {
 
 class _FavouritesPageState extends State<FavouritesPage> {
   final _mainFormKey = GlobalKey<FormState>();
-  final _importFormKey = GlobalKey<FormState>();
+
 
   final _titleInputController = new TextEditingController();
   final _airportsInputController = new TextEditingController();
@@ -55,7 +53,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _searchController.addListener(onSearchInputTextChange);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Builder(
@@ -71,17 +68,14 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-
   @override
   Future dispose() async {
     _airportsInputController.dispose();
     _titleInputController.dispose();
     _searchController.dispose();
     _importInputController.dispose();
-    // TODO: ??? >>> _mainScrollController.dispose();
     super.dispose();
   }
-
 
   Future<void> fabCallback() async {
     widget.callback(SizedBox.shrink());
@@ -102,14 +96,27 @@ class _FavouritesPageState extends State<FavouritesPage> {
       pinned: true,
       actions: <Widget>[
         IconButton(
+          icon: Icon(Icons.delete_forever),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            _deleteAllFavsDialog();
+          },
+        ),
+        IconButton(
           icon: Icon(Icons.save),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FavouritesBackupsPage()),
+              MaterialPageRoute(
+                builder: (context) =>
+                FavouritesBackupsPage(
+                  isThemeDark: widget.isThemeDark,
+                  currentFavList: _favouritesList,
+                  updateCallback: _updateFromImport,
+                ),
+              ),
             );
-            //_loadSaveDialog();
           },
         ),
       ],
@@ -129,16 +136,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
-                        onChanged: (value) {
-
-                        },
                         controller: _searchController,
                         decoration: InputDecoration(
-                            labelText: "Search",
-                            //hintText: "Search by title",
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(12.0)))),
+                          labelText: "Search",
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(12.0))),
+                        ),
                       ),
                     ),
                   ),
@@ -176,7 +180,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   if (_userSearch == "") {
                     return _favouriteCard(index);
                   } else {
-                    if (_favouritesList[index].title.contains(_userSearch)) {  // TODO: añadir "toUpper" para pillarlo todo
+                    if (_favouritesList[index].title.toUpperCase()
+                        .contains(_userSearch.toUpperCase())) {
                       return _favouriteCard(index);
                     } else {
                       return SizedBox.shrink();
@@ -191,7 +196,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-
   Widget _favouriteCard(int index) {
     return Card(
       margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -199,60 +203,61 @@ class _FavouritesPageState extends State<FavouritesPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Flexible(
-            child: Column(
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
-                      child: RichText(
-                        text: TextSpan(
-                          text: _favouritesList[index].title,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18
-                          ),
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _getInfoDialog,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
+                    child: RichText(
+                      text: TextSpan(
+                        text: _favouritesList[index].title,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
-                      child: RichText(
-                        text: TextSpan(
-                          text: _favouritesList[index].airports.join(', '),
-                          style: TextStyle(
-                              color: Colors.black
-                          ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
+                    child: RichText(
+                      text: TextSpan(
+                        text: _favouritesList[index].airports.join(', '),
+                        style: TextStyle(
+                            color: Colors.black
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
+          Container(height: 80, child: VerticalDivider(color: Colors.black)),
           Column(
             children: <Widget>[
               Padding(
-                  padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                  padding: EdgeInsets.fromLTRB(0, 5, 5, 0),
                   child: IconButton(
                     icon: Icon(Icons.edit),
                     color: Colors.black45,
                     onPressed: () {
                       _showAddDialog(
-                        existingFav: true,
-                        favIndex: index,
-                        favTitle: _favouritesList[index].title,
-                        favAirports: _favouritesList[index].airports
+                          existingFav: true,
+                          favIndex: index,
+                          favTitle: _favouritesList[index].title,
+                          favAirports: _favouritesList[index].airports
                       );
                     },
                   )
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                padding: EdgeInsets.fromLTRB(0, 0, 5, 5),
                 child:  IconButton(
                     icon: Icon(Icons.delete),
                     color: Colors.black45,
@@ -263,11 +268,82 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ),
             ],
           ),
+
+
         ],
       ),
     );
   }
 
+  Future<void> _getInfoDialog() async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 42,
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                  ),
+                  margin: EdgeInsets.only(top: 22),
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: const Offset(0.0, 10.0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // To make the card compact
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                          child: RaisedButton.icon(
+                            icon: Icon(Icons.share),
+                            label: Text("TODO!"),
+                            onPressed: () {
+                              // TODO!
+                            },
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey[400],
+                    radius: 22,
+                    child: ImageIcon(
+                      AssetImage("assets/icons/drawer_notam.png"),
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      size: 25,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
 
   Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
     if (existingFav) {
@@ -326,7 +402,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               if (value.isEmpty) {
                                 return "Title cannot be empty!";
                               }
-                              _thisInputTitle = value;
+                              _thisInputTitle = value.trim();
                               return null;
                             },
                           ),
@@ -414,7 +490,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
         }
     );
   }
-
 
   Future<void> _deleteSingleFavDialog(int removeIndex) async {
     return showDialog<void>(
@@ -505,192 +580,102 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-  // TODO: THIS HAS TO GO!
-  Future<void> _loadSaveDialog() async {
-    final file = await _localFile;
+  Future<void> _deleteAllFavsDialog() async {
     return showDialog<void>(
         context: context,
+        barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          String status = "";
-          Color statusColor = Colors.black;
-          return AlertDialog(
+          return Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            content: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return Center(
-                  child: Stack(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(
-                          top: 42,
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
-                        ),
-                        margin: EdgeInsets.only(top: 22),
-                        decoration: new BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10.0,
-                              offset: const Offset(0.0, 10.0),
-                            ),
-                          ],
-                        ),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, // To make the card compact
-                            children: <Widget>[
-                              Flexible(
-                                child: Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 15),
-                                  child: Text(
-                                    "LALALA",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Form(
-                                key: _importFormKey,
-                                child: Column(
-                                  children: <Widget>[
-                                    TextFormField(
-                                      controller: _importInputController,
-                                      maxLines: 5,
-                                      style: TextStyle(fontSize: 12),
-                                      decoration: InputDecoration(
-                                        counterText: "",
-                                        border: OutlineInputBorder(),
-                                        hintText: 'Paste here previously exported data',
-                                      ),
-                                      validator: (value) {
-                                        if (value.isEmpty) {
-                                          return "Cannot be empty!";
-                                        }
-                                        _importFromForm();
-                                        return null;
-                                      },
-                                    ),
-                                    Padding(
-                                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                        child: RaisedButton.icon(
-                                          icon: Icon(Icons.file_download),
-                                          label: Text("Import favourites"),
-                                          onPressed: ()  {
-                                            if (_importFormKey.currentState.validate()) {
-                                              _importFromForm().then((onValue) {
-                                                if (onValue > 0) {
-                                                  setState(() {
-                                                    status = "$onValue favourites imported!";
-                                                    statusColor = Colors.green;
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    status = "Error importing! "
-                                                        "Did you place the "
-                                                        "file in the right place?";
-                                                    statusColor = Colors.red;
-                                                  });
-                                                }
-                                              });
-                                            }
-                                          },
-                                        )
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                  child: RaisedButton.icon(
-                                    icon: Icon(Icons.file_upload),
-                                    label: Text("Export favourites"),
-                                    onPressed: () async {
-
-                                      _saveClipboard(file).then((onValue) {
-                                        if (onValue == true) {
-                                          setState(() {
-                                            status = "Copied to clipboard!";
-                                            statusColor = Colors.green;
-                                          });
-                                        } else {
-                                          setState(() {
-                                            status = "Error saving!";
-                                            statusColor = Colors.red;
-                                          });
-                                        }
-                                      });
-                                    },
-                                  )
-                              ),
-                              Flexible(
-                                child: Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 5),
-                                  child: Text(
-                                    status,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: statusColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
-                                child: FlatButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Close"),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 16,
-                        right: 16,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.grey[400],
-                          radius: 22,
-                          child: Icon(
-                            Icons.save,
-                            color: Colors.red[800],
-                            size: 20,
-                          ),
-                        ),
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 42,
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                  ),
+                  margin: EdgeInsets.only(top: 22),
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: const Offset(0.0, 10.0),
                       ),
                     ],
                   ),
-                );
-              }
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // To make the card compact
+                    children: <Widget>[
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          child: Text(
+                              'Are you sure you want to remove ALL your favourites and '
+                                  'all associated airports? \n\n This cannot be undone!'
+                          ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
+                      ),
+                      SizedBox(height: 12.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          FlatButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Oh no!"),
+                          ),
+                          FlatButton(
+                            onPressed: () {
+                              setState(() {
+                                _favouritesList.clear();
+                              });
+                              _saveFavPrefs();
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Do it!"),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey[400],
+                    radius: 22,
+                    child: Icon(
+                      Icons.warning,
+                      color: Colors.red[800],
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }
     );
   }
 
-
   void _modifyFavourite(int favIndex) {
     var myModifiedFavourite = Favourite(
       title: _thisInputTitle,
-      airports: List<String>.from(_thisInputAirportsList.map((x) => x)),
+      airports: List<String>.from(_thisInputAirportsList.map((x) => x.trim())),
     );
     setState(() {
       _favouritesList[favIndex] = myModifiedFavourite;
+      _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
     });
 
     _saveFavPrefs();
@@ -710,7 +695,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _thisInputAirportsList.clear();
   }
 
-
   void _addNewFavourite() {
     var myNewFavourite = Favourite(
       title: _thisInputTitle,
@@ -718,6 +702,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
     setState(() {
       _favouritesList.add(myNewFavourite);
+      _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
     });
 
     _saveFavPrefs();
@@ -772,14 +757,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _userSubmittedAirports = textEntered;
   }
 
-
   void onSearchInputTextChange() {
     setState(() {
       _userSearch = _searchController.text;
       print(_userSearch);
     });
   }
-
 
   void _restoreSharedPreferences() async {
     await SharedPreferencesModel().getFavourites().then((onValue) {
@@ -790,57 +773,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
     });
   }
 
-
-  Future<bool> _saveClipboard(File file) async {
-    try {
-      JsonEncoder encoder = new JsonEncoder.withIndent('  ');
-      String favouriteListToJson = encoder.convert((List<dynamic>.from(_favouritesList.map((x) => x.toJson()))));
-      ClipboardData jsonFav = ClipboardData(
-        text: favouriteListToJson,
-      );
-      Clipboard.setData(jsonFav);
-      return true;
-    } catch (e ){
-      return false;
-    }
-  }
-
-  Future<int> _importFromForm() async {
-    try {
-      String contents = _importInputController.text;
-      final favourites = favouriteListFromJson(contents);
-
-      for (var fav in favourites) {
-        print(fav.airports);
+  void _updateFromImport (List<Favourite> tentativeList, bool overwrite) {
+    if (overwrite) {
+      setState(() {
+        _favouritesList = List<Favourite>.from(tentativeList);
+        _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
+      });
+    } else {
+      for (var fav in tentativeList) {
+        _favouritesList.add(fav);
+        _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
       }
-      // TODO: add to main list!!!!!
-
-      return favourites.length;
-    } catch (e) {
-      return 0;
     }
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/cavokatorFavs.json');
-  }
-
-  Future<String> get _localPath async {
-    //final directory = await getApplicationDocumentsDirectory();
-    final directory = await getExternalStorageDirectory();
-    return directory.path;
-  }
-
-
-  static Future<ClipboardData> getClipboardData(String format) async {
-    final Map<String, dynamic> result = await SystemChannels.platform.invokeMethod(
-      'Clipboard.getData',
-      format,
-    );
-    if (result == null)
-      return null;
-    return ClipboardData(text: result['text']);
+    _saveFavPrefs();
   }
 
 

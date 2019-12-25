@@ -138,7 +138,6 @@ class _DrawerPageState extends State<DrawerPage> {
         ),
       );
     }
-
     return Scaffold(
       floatingActionButton: myFloat,
       drawer: Drawer(

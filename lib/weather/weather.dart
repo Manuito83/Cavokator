@@ -718,8 +718,6 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
 
-
-
   Future<void> fabCallback() async {
     widget.callback(SizedBox.shrink());
   }
