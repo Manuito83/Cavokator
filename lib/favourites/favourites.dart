@@ -13,10 +13,12 @@ import 'package:flutter/services.dart';
 
 class FavouritesPage extends StatefulWidget {
   final bool isThemeDark;
-  final Function callback;
+  final Function callbackFab;
+  final Function callbackPage;
   // TODO: pass theme and theme it!
 
-  FavouritesPage({@required this.isThemeDark, @required this.callback});
+  FavouritesPage({@required this.isThemeDark, @required this.callbackFab,
+                  @required this.callbackPage});
 
   @override
   _FavouritesPageState createState() => _FavouritesPageState();
@@ -78,7 +80,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   Future<void> fabCallback() async {
-    widget.callback(SizedBox.shrink());
+    widget.callbackFab(SizedBox.shrink());
   }
 
   List<Widget> _buildSlivers(BuildContext context) {
@@ -206,7 +208,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: _getInfoDialog,
+              // onTap: // In case we want to do something on card tap
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -238,36 +240,71 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ),
             ),
           ),
-          Container(height: 80, child: VerticalDivider(color: Colors.black)),
-          Column(
+          Row(
             children: <Widget>[
-              Padding(
-                  padding: EdgeInsets.fromLTRB(0, 5, 5, 0),
-                  child: IconButton(
-                    icon: Icon(Icons.edit),
-                    color: Colors.black45,
-                    onPressed: () {
-                      _showAddDialog(
-                          existingFav: true,
-                          favIndex: index,
-                          favTitle: _favouritesList[index].title,
-                          favAirports: _favouritesList[index].airports
-                      );
-                    },
-                  )
+              Column(
+                children: <Widget>[
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(10, 5, 5, 0),
+                      child: IconButton(
+                        icon: ImageIcon(
+                          AssetImage("assets/icons/drawer_wx.png"),
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        ),
+                        onPressed: () {
+                          widget.callbackPage();
+                        },
+                      )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 0, 5, 5),
+                    child:  IconButton(
+                        icon: ImageIcon(
+                          AssetImage("assets/icons/drawer_notam.png"),
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        ),
+                        onPressed: () {
+                         // TODO:
+                        }
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 0, 5, 5),
-                child:  IconButton(
-                    icon: Icon(Icons.delete),
-                    color: Colors.black45,
-                    onPressed: () {
-                      _deleteSingleFavDialog(index);
-                    }
-                ),
+              Container(height: 80, child: VerticalDivider(color: Colors.black)),
+              Column(
+                children: <Widget>[
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(0, 5, 5, 0),
+                      child: IconButton(
+                        icon: Icon(Icons.edit),
+                        color: Colors.black45,
+                        onPressed: () {
+                          _showAddDialog(
+                              existingFav: true,
+                              favIndex: index,
+                              favTitle: _favouritesList[index].title,
+                              favAirports: _favouritesList[index].airports
+                          );
+                        },
+                      )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 5, 5),
+                    child:  IconButton(
+                        icon: Icon(Icons.delete),
+                        color: Colors.black45,
+                        onPressed: () {
+                          _deleteSingleFavDialog(index);
+                        }
+                    ),
+                  ),
+                ],
               ),
             ],
-          ),
+          )
+
+
+
 
 
         ],
@@ -275,6 +312,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
+  // TODO: DELETE
+  /*
   Future<void> _getInfoDialog() async {
     return showDialog<void>(
         context: context,
@@ -344,6 +383,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
         }
     );
   }
+  */
 
   Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
     if (existingFav) {

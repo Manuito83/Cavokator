@@ -66,6 +66,7 @@ class _DrawerPageState extends State<DrawerPage> {
 
   PageController _myPageController;
 
+  bool _autoFetch = false;
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -74,7 +75,6 @@ class _DrawerPageState extends State<DrawerPage> {
     shape: CircleBorder(),
     visible: false,
   );
-
 
   void callbackFab(Widget fab) {
     setState(() {
@@ -95,13 +95,11 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-
   @override
   void dispose() {
     _myPageController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -204,10 +202,8 @@ class _DrawerPageState extends State<DrawerPage> {
     );
   }
 
-
   Widget _getDrawerItemWidget() {
     if (_sharedPreferencesReady) {
-
       // This shared pref. needs to go here or else won't update
       // live if we change the configuration in Settings
       SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
@@ -235,6 +231,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
+                  autoFetch: _autoFetch,
+                  cancelAutoFetch: _cancelAutoFetch,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -258,6 +256,8 @@ class _DrawerPageState extends State<DrawerPage> {
               showBottomNavBar: _turnBottomNavBarOn,
               recalledScrollPosition: _scrollPositionWeather,
               notifyScrollPosition: _setWeatherScrollPosition,
+              autoFetch: _autoFetch,
+              cancelAutoFetch: _cancelAutoFetch,
             );
           }
           break;
@@ -276,6 +276,8 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
+                  autoFetch: _autoFetch,
+                  cancelAutoFetch: _cancelAutoFetch,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -319,7 +321,8 @@ class _DrawerPageState extends State<DrawerPage> {
         case 4:
           return FavouritesPage(
             isThemeDark: _isThemeDark,
-            callback: callbackFab,
+            callbackFab: callbackFab,
+            callbackPage: _callbackFavourites,
           );
         case 5:
           return SettingsPage(
@@ -342,7 +345,6 @@ class _DrawerPageState extends State<DrawerPage> {
     return null;
   }
 
-
   _onSelectItem(int index) {
     if (index == 1 && _selected == 0) {
       _myPageController.animateToPage(
@@ -364,7 +366,6 @@ class _DrawerPageState extends State<DrawerPage> {
     Navigator.of(context).pop();
   }
 
-
   _handleThemeChanged(bool newValue) {
     setState(() {
       _isThemeDark = newValue;
@@ -378,7 +379,6 @@ class _DrawerPageState extends State<DrawerPage> {
       }
     });
   }
-
 
   Widget _bottomNavBar () {
 
@@ -459,7 +459,6 @@ class _DrawerPageState extends State<DrawerPage> {
     }
   }
 
-
   Future<Null> _restoreSharedPreferences() async {
     var lastUsed;
     await SharedPreferencesModel().getSettingsLastUsedSection().then((onLastUsedValue) {
@@ -478,7 +477,6 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-
   void _handleVersionNumber () {
     String savedAppVersion;
     SharedPreferencesModel().getAppVersion().then((onValue) {
@@ -488,7 +486,6 @@ class _DrawerPageState extends State<DrawerPage> {
       }
     });
   }
-
 
   void _showChangeLogDialog(BuildContext context) {
     showDialog (
@@ -500,13 +497,11 @@ class _DrawerPageState extends State<DrawerPage> {
     );
   }
 
-
   void _turnBottomNavBarOff() {
     setState(() {
       _hideBottomNavBar = true;
     });
   }
-
 
   void _turnBottomNavBarOn() {
     setState(() {
@@ -514,14 +509,24 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-
   void _setWeatherScrollPosition(double position){
     _scrollPositionWeather = position;
   }
 
-
   void _setNotamScrollPosition(double position){
     _scrollPositionNotam = position;
+  }
+
+  void _callbackFavourites () {
+    setState(() {
+      _autoFetch = true;
+      _activeDrawerIndex = 0;
+      _selected = 0;
+    });
+  }
+
+  void _cancelAutoFetch () {
+    _autoFetch = false;
   }
 
 }

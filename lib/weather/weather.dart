@@ -1,5 +1,6 @@
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -28,12 +29,15 @@ class WeatherPage extends StatefulWidget {
   final Function showBottomNavBar;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
+  final bool autoFetch;
+  final Function cancelAutoFetch;
 
   WeatherPage({@required this.isThemeDark, @required this.myFloat,
                @required this.callback, @required this.showHeaders,
                @required this.hideBottomNavBar, @required this.showBottomNavBar,
                @required this.recalledScrollPosition,
-               @required this.notifyScrollPosition});
+               @required this.notifyScrollPosition, @required this.autoFetch,
+               @required this.cancelAutoFetch});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -59,11 +63,20 @@ class _WeatherPageState extends State<WeatherPage> {
   int _hoursBefore = 10;
   bool _mostRecent = true;
 
+  bool _autoFetch = false;
+
   @override
   void initState() {
     super.initState();
 
-    _restoreSharedPreferences();
+    _autoFetch = widget.autoFetch;
+    // If we get all, both request will interfere,
+    // so we just get the basics
+    if (_autoFetch) {
+      _restoreHoursBefore();
+    } else {
+      _restoreSharedPreferences();
+    }
     SharedPreferencesModel().setSettingsLastUsedSection("0");
 
     // Delayed callback for FAB
@@ -85,7 +98,17 @@ class _WeatherPageState extends State<WeatherPage> {
       );
     });
 
+    if (_autoFetch) {
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        Future.delayed(Duration(milliseconds: 500), () {
+          _myTextController.text = "SVQ"; // TODO: add airports!
+          _fetchButtonPressed(context, true);
+          widget.cancelAutoFetch();
+        });
+      });
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -722,7 +745,6 @@ class _WeatherPageState extends State<WeatherPage> {
     widget.callback(SizedBox.shrink());
   }
 
-
   void _restoreSharedPreferences() async {
     SharedPreferencesModel().getWeatherUserInput().then((onValue) {
       setState(() {
@@ -745,7 +767,12 @@ class _WeatherPageState extends State<WeatherPage> {
     SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
       _hoursBefore = onValue;
     });
+  }
 
+  void _restoreHoursBefore() async {
+    SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
+      _hoursBefore = onValue;
+    });
   }
 
   @override
