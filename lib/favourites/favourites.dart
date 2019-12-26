@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:cavokator_flutter/favourites/favourites_backups.dart';
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
@@ -11,14 +12,24 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:flutter/services.dart';
 
 
+enum FavFrom {
+  drawer,
+  weather,
+  notam,
+}
+
 class FavouritesPage extends StatefulWidget {
+  final FavFrom favFrom;
   final bool isThemeDark;
   final Function callbackFab;
+  final Function callbackFromFav;
+  final List<String> importedAirports;
   final Function callbackPage;
   // TODO: pass theme and theme it!
 
   FavouritesPage({@required this.isThemeDark, @required this.callbackFab,
-                  @required this.callbackPage});
+                  @required this.callbackFromFav, @required this.favFrom,
+                  @required this.importedAirports, @required this.callbackPage});
 
   @override
   _FavouritesPageState createState() => _FavouritesPageState();
@@ -26,7 +37,6 @@ class FavouritesPage extends StatefulWidget {
 
 class _FavouritesPageState extends State<FavouritesPage> {
   final _mainFormKey = GlobalKey<FormState>();
-
 
   final _titleInputController = new TextEditingController();
   final _airportsInputController = new TextEditingController();
@@ -50,6 +60,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
+
+    BackButtonInterceptor.add(myInterceptor);
 
     _airportsInputController.addListener(onAirportsInputTextChange);
     _searchController.addListener(onSearchInputTextChange);
@@ -76,6 +88,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _titleInputController.dispose();
     _searchController.dispose();
     _importInputController.dispose();
+    BackButtonInterceptor.remove(myInterceptor);
     super.dispose();
   }
 
@@ -93,10 +106,31 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   Widget _myAppBar() {
+    Widget returnArrow;
+    if (widget.favFrom == FavFrom.weather) {
+      returnArrow = IconButton(
+        icon: Icon(Icons.arrow_back),
+        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        onPressed: () {
+          widget.callbackPage(0);
+        },
+      );
+    } else if (widget.favFrom == FavFrom.notam) {
+      returnArrow = IconButton(
+        icon: Icon(Icons.arrow_back),
+        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        onPressed: () {
+          widget.callbackPage(1);
+        },
+      );
+    } else {
+      returnArrow = SizedBox.shrink();
+    }
     return SliverAppBar(
       title: Text("Favourites"),
       pinned: true,
       actions: <Widget>[
+        returnArrow,
         IconButton(
           icon: Icon(Icons.delete_forever),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
@@ -153,24 +187,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  RawMaterialButton (
-                    shape: new CircleBorder(),
-                    elevation: 2.0,
-                    fillColor: Colors.grey,
-                    child: Icon(Icons.add),
-                    onPressed: () {
-                      _thisInputTitle = "";
-                      _thisInputAirportsList.clear();
-                      _titleInputController.text = "";
-                      _airportsInputController.text = "";
-                      _showAddDialog();
-                    },
-                  ),
-                ],
-              ),
+              child: _addButtons(),
             ),
             Flexible(
               child: ListView.builder(
@@ -196,6 +213,115 @@ class _FavouritesPageState extends State<FavouritesPage> {
           ],
         ),
     );
+  }
+
+  Widget _addButtons () {
+    if (widget.favFrom == FavFrom.drawer) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ButtonTheme(
+            minWidth: 1.0,
+            buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+            child: RaisedButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(18.0),
+                side: BorderSide(
+                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                ),
+              ),
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.add,
+                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                  ),
+                  Text(" Add new"),
+                ],
+              ),
+              onPressed: ()  {
+                _thisInputTitle = "";
+                _thisInputAirportsList.clear();
+                _titleInputController.text = "";
+                _airportsInputController.text = "";
+                _showAddDialog();
+              },
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ButtonTheme(
+                minWidth: 1.0,
+                buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(12.0),
+                    side: BorderSide(
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory),
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      ImageIcon(
+                        AssetImage("assets/icons/drawer_wx.png"),
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      ),
+                      Text("  Import"),
+                    ],
+                  ),
+                  onPressed: ()  {
+                    _thisInputTitle = "";
+                    _thisInputAirportsList.clear();
+                    _titleInputController.text = "";
+                    _airportsInputController.text = "";
+                    _showAddDialog();
+                  },
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ButtonTheme(
+                minWidth: 1.0,
+                buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(12.0),
+                    side: BorderSide(
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.add,
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      ),
+                      Text(" Add new"),
+                    ],
+                  ),
+                  onPressed: ()  {
+                    _thisInputTitle = "";
+                    _thisInputAirportsList.clear();
+                    _titleInputController.text = "";
+                    _airportsInputController.text = "";
+                    _showAddDialog();
+                  },
+                ),
+              ),
+            ],
+          )
+        ],
+      );
+    }
   }
 
   Widget _favouriteCard(int index) {
@@ -252,7 +378,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                         ),
                         onPressed: () {
-                          widget.callbackPage();
+                          // Call weather
+                          List<String> airportsToWxNotam = List<String>();
+                          for (var fav in _favouritesList[index].airports) {
+                            airportsToWxNotam.add(fav);
+                          }
+                          widget.callbackFromFav(0, airportsToWxNotam, true);
                         },
                       )
                   ),
@@ -312,83 +443,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-  // TODO: DELETE
-  /*
-  Future<void> _getInfoDialog() async {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0.0,
-            backgroundColor: Colors.transparent,
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 42,
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                  ),
-                  margin: EdgeInsets.only(top: 22),
-                  decoration: new BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        offset: const Offset(0.0, 10.0),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // To make the card compact
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                          child: RaisedButton.icon(
-                            icon: Icon(Icons.share),
-                            label: Text("TODO!"),
-                            onPressed: () {
-                              // TODO!
-                            },
-                          )
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.grey[400],
-                    radius: 22,
-                    child: ImageIcon(
-                      AssetImage("assets/icons/drawer_notam.png"),
-                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                      size: 25,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-    );
-  }
-  */
-
   Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
     if (existingFav) {
       _titleInputController.text = favTitle;
       _airportsInputController.text = favAirports.join(", ");
+    }
+    if (widget.favFrom != FavFrom.drawer && widget.importedAirports.length > 0) {
+      _airportsInputController.text = widget.importedAirports.join(", ");
     }
     return showDialog<void>(
         context: context,
@@ -471,10 +532,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               if (_thisInputAirportsList.isEmpty) {
                                 return "Could not identify a valid airport!";
                               }
-                              if (_thisInputAirportsList.length > 10) {
-                                // TODO: limit this with option and warning?
+                              if (_thisInputAirportsList.length > 8) {
+                                // TODO: limit also in Wx + NOTAM??
                                 _thisInputAirportsList.clear();
-                                return "Too many airports (max is 10)!";
+                                return "Too many airports (max is 8)!";
                               }
                               return null;
                             },
@@ -828,5 +889,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _saveFavPrefs();
   }
 
+  bool myInterceptor(bool stopDefaultButtonEvent) {
+    if (widget.favFrom == FavFrom.weather){
+      widget.callbackPage(0);
+      return true;
+    } else if (widget.favFrom == FavFrom.notam) {
+      widget.callbackPage(1);
+      return true;
+    } else {
+      return false;
+    }
+  }
 
 }

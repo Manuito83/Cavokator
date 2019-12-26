@@ -26,6 +26,7 @@ dependencies:
   connectivity:
   url_launcher:
   path_provider:
+  back_button_interceptor:
 
 
   # The following adds the Cupertino Icons font to your application.

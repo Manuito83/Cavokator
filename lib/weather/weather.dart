@@ -1,6 +1,7 @@
+import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -29,15 +30,19 @@ class WeatherPage extends StatefulWidget {
   final Function showBottomNavBar;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
+  final List<String> airportsFromFav;
   final bool autoFetch;
   final Function cancelAutoFetch;
+  final Function callbackToFav;
+
 
   WeatherPage({@required this.isThemeDark, @required this.myFloat,
                @required this.callback, @required this.showHeaders,
                @required this.hideBottomNavBar, @required this.showBottomNavBar,
                @required this.recalledScrollPosition,
                @required this.notifyScrollPosition, @required this.autoFetch,
-               @required this.cancelAutoFetch});
+               @required this.cancelAutoFetch, @required this.callbackToFav,
+               @required this.airportsFromFav});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -101,7 +106,7 @@ class _WeatherPageState extends State<WeatherPage> {
     if (_autoFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_){
         Future.delayed(Duration(milliseconds: 500), () {
-          _myTextController.text = "SVQ"; // TODO: add airports!
+          _myTextController.text = widget.airportsFromFav.join(", ");
           _fetchButtonPressed(context, true);
           widget.cancelAutoFetch();
         });
@@ -205,16 +210,18 @@ class _WeatherPageState extends State<WeatherPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
-                      ImageIcon(
-                        AssetImage("assets/icons/drawer_wx.png"),
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                      ),
+
                       Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                        padding: EdgeInsets.fromLTRB(0, 0, 20, 10),
+                        child: ImageIcon(
+                          AssetImage("assets/icons/drawer_wx.png"),
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        ),
                       ),
                       Expanded(
                         child: TextFormField(
@@ -235,16 +242,41 @@ class _WeatherPageState extends State<WeatherPage> {
                               // Try to parse some airports
                               // Split the input to suit or needs
                               RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-                              Iterable<Match> matches =
-                                  exp.allMatches(_userSubmitText);
-                              matches.forEach(
-                                  (m) => _myRequestedAirports.add(m.group(0)));
+                              Iterable<Match> matches = exp.allMatches(_userSubmitText);
+                              matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
                             }
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
                             }
                             return null;
                           },
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                        child: ButtonTheme(
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          minWidth: 1.0,
+                          buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
+                          child: RaisedButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(18.0),
+                                side: BorderSide(
+                                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                                )
+                            ),
+                            child: Icon(
+                              Icons.favorite_border,
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                            ),
+                            onPressed: ()  {
+                              var favAirports = List<String>();
+                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              Iterable<Match> matches = exp.allMatches(_myTextController.text);
+                              matches.forEach((m) => favAirports.add(m.group(0)));
+                              widget.callbackToFav(4, FavFrom.weather, favAirports);
+                            },
+                          ),
                         ),
                       ),
                     ],

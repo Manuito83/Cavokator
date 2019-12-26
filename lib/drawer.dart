@@ -66,7 +66,11 @@ class _DrawerPageState extends State<DrawerPage> {
 
   PageController _myPageController;
 
+  // Parameters for Favourites
   bool _autoFetch = false;
+  List<String> _favToWxNotam = List<String>();
+  FavFrom _favFrom = FavFrom.drawer;
+  List<String> _importedToFavourites = List<String> ();
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -231,8 +235,10 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
+                  airportsFromFav: _favToWxNotam,
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
+                  callbackToFav: _callbackToFav,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -256,8 +262,10 @@ class _DrawerPageState extends State<DrawerPage> {
               showBottomNavBar: _turnBottomNavBarOn,
               recalledScrollPosition: _scrollPositionWeather,
               notifyScrollPosition: _setWeatherScrollPosition,
+              airportsFromFav: _favToWxNotam,
               autoFetch: _autoFetch,
               cancelAutoFetch: _cancelAutoFetch,
+              callbackToFav: _callbackToFav,
             );
           }
           break;
@@ -276,8 +284,10 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionWeather,
                   notifyScrollPosition: _setWeatherScrollPosition,
+                  airportsFromFav: _favToWxNotam,
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
+                  callbackToFav: _callbackToFav,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -322,7 +332,10 @@ class _DrawerPageState extends State<DrawerPage> {
           return FavouritesPage(
             isThemeDark: _isThemeDark,
             callbackFab: callbackFab,
-            callbackPage: _callbackFavourites,
+            callbackFromFav: _callbackFromFav,
+            favFrom: _favFrom,
+            importedAirports: _importedToFavourites,
+            callbackPage: _callbackPage,
           );
         case 5:
           return SettingsPage(
@@ -361,6 +374,7 @@ class _DrawerPageState extends State<DrawerPage> {
     setState(() {
       _activeDrawerIndex = index;
       _selected = index;
+      _favFrom = FavFrom.drawer;
     });
 
     Navigator.of(context).pop();
@@ -517,16 +531,35 @@ class _DrawerPageState extends State<DrawerPage> {
     _scrollPositionNotam = position;
   }
 
-  void _callbackFavourites () {
+  void _callbackFromFav (
+      int whatPage, List<String> favToWxNotam, bool autoFetch) {
     setState(() {
-      _autoFetch = true;
-      _activeDrawerIndex = 0;
-      _selected = 0;
+      _activeDrawerIndex = whatPage;
+      _selected = whatPage;
+      _favToWxNotam = favToWxNotam;
+      _autoFetch = autoFetch;
+    });
+  }
+
+  void _callbackToFav (
+      int whatPage, FavFrom favFrom, List<String> importedToFavourites) {
+    setState(() {
+      _activeDrawerIndex = whatPage;
+      _selected = whatPage;
+      _favFrom = favFrom;
+      _importedToFavourites = importedToFavourites;
     });
   }
 
   void _cancelAutoFetch () {
     _autoFetch = false;
+  }
+
+  void _callbackPage (int whatPage) {
+    setState(() {
+      _activeDrawerIndex = whatPage;
+      _selected = whatPage;
+    });
   }
 
 }

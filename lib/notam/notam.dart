@@ -316,10 +316,8 @@ class _NotamPageState extends State<NotamPage> {
                               // Try to parse some airports
                               // Split the input to suit or needs
                               RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-                              Iterable<Match> matches =
-                                exp.allMatches(_userSubmitText);
-                              matches.forEach(
-                                (m) => _myRequestedAirports.add(m.group(0)));
+                              Iterable<Match> matches = exp.allMatches(_userSubmitText);
+                              matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
                             }
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
@@ -1082,6 +1080,7 @@ class _NotamPageState extends State<NotamPage> {
           var newList = List<NotamJson>();
           var savedJson = notamJsonFromJson(onValue);
           for (var i = 0; i < req.length; i++) {
+            req[i] = req[i].replaceAll(RegExp(r','), '');
             for (var n in savedJson) {
               if ((req[i].length == 3 && req[i].toUpperCase() == n.airportIdIata) ||
                   (req[i].length == 4 && req[i].toUpperCase() == n.airportIdIcao)) {
