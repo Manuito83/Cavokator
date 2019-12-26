@@ -51,6 +51,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
   final _searchController = new TextEditingController();
   String _userSearch = "";
 
+  bool _importing = false;
+
 
   @override
   void initState() {
@@ -280,6 +282,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     _thisInputAirportsList.clear();
                     _titleInputController.text = "";
                     _airportsInputController.text = "";
+                    _importing = true;
                     _showAddDialog();
                   },
                 ),
@@ -448,8 +451,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
       _titleInputController.text = favTitle;
       _airportsInputController.text = favAirports.join(", ");
     }
-    if (widget.favFrom != FavFrom.drawer && widget.importedAirports.length > 0) {
+    if (_importing // Make sure the "add new" button does not trigger an import
+        && widget.favFrom != FavFrom.drawer
+        && widget.importedAirports.length > 0) {
       _airportsInputController.text = widget.importedAirports.join(", ");
+      _importing = false;
     }
     return showDialog<void>(
         context: context,

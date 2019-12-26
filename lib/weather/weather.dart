@@ -106,7 +106,9 @@ class _WeatherPageState extends State<WeatherPage> {
     if (_autoFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_){
         Future.delayed(Duration(milliseconds: 500), () {
-          _myTextController.text = widget.airportsFromFav.join(", ");
+          // If joining with commas in the future, make sure that
+          // all sections work as expected (Lists are correctly in sharedPrefs)
+          _myTextController.text = widget.airportsFromFav.join(" ");
           _fetchButtonPressed(context, true);
           widget.cancelAutoFetch();
         });

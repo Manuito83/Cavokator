@@ -1080,6 +1080,8 @@ class _NotamPageState extends State<NotamPage> {
           var newList = List<NotamJson>();
           var savedJson = notamJsonFromJson(onValue);
           for (var i = 0; i < req.length; i++) {
+            // Just in case there are ',' imported from Favourites
+            // It might happen if we decide to join the imported string with commas
             req[i] = req[i].replaceAll(RegExp(r','), '');
             for (var n in savedJson) {
               if ((req[i].length == 3 && req[i].toUpperCase() == n.airportIdIata) ||
