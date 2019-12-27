@@ -30,12 +30,18 @@ class NotamPage extends StatefulWidget {
   final Function showBottomNavBar;
   final double recalledScrollPosition;
   final Function notifyScrollPosition;
+  final List<String> airportsFromFav;
+  final bool autoFetch;
+  final Function cancelAutoFetch;
+  final Function callbackToFav;
 
   NotamPage({@required this.isThemeDark, @required this.myFloat,
              @required this.callback, @required this.showHeaders,
              @required this.hideBottomNavBar, @required this.showBottomNavBar,
              @required this.recalledScrollPosition,
-             @required this.notifyScrollPosition});
+             @required this.notifyScrollPosition, @required this.autoFetch,
+             @required this.cancelAutoFetch, @required this.callbackToFav,
+             @required this.airportsFromFav});
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -73,10 +79,15 @@ class _NotamPageState extends State<NotamPage> {
   final _scrollDirection = Axis.vertical;
   List<String> _scrollList = List<String>();
 
+  bool _autoFetch = false;
+
   @override
   void initState() {
     super.initState();
 
+    _autoFetch = widget.autoFetch;
+    // If we get all, both request will interfere,
+    // so we just get the basics
     _restoreSharedPreferences();
     SharedPreferencesModel().setSettingsLastUsedSection("1");
 
@@ -103,6 +114,18 @@ class _NotamPageState extends State<NotamPage> {
         curve: Curves.decelerate,
       );
     });
+
+    if (_autoFetch) {
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        Future.delayed(Duration(milliseconds: 500), () {
+          // If joining with commas in the future, make sure that
+          // all sections work as expected (Lists are correctly in sharedPrefs)
+          _myTextController.text = widget.airportsFromFav.join(" ");
+          _fetchButtonPressed(context, true);
+          widget.cancelAutoFetch();
+        });
+      });
+    }
   }
 
   @override

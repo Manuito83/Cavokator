@@ -249,6 +249,10 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionNotam,
                   notifyScrollPosition: _setNotamScrollPosition,
+                  airportsFromFav: _favToWxNotam,
+                  autoFetch: _autoFetch,
+                  cancelAutoFetch: _cancelAutoFetch,
+                  callbackToFav: _callbackToFav,
                 ),
               ],
             );
@@ -298,6 +302,10 @@ class _DrawerPageState extends State<DrawerPage> {
                   showBottomNavBar: _turnBottomNavBarOn,
                   recalledScrollPosition: _scrollPositionNotam,
                   notifyScrollPosition: _setNotamScrollPosition,
+                  airportsFromFav: _favToWxNotam,
+                  autoFetch: _autoFetch,
+                  cancelAutoFetch: _cancelAutoFetch,
+                  callbackToFav: _callbackToFav,
                 ),
               ],
             );
@@ -311,6 +319,10 @@ class _DrawerPageState extends State<DrawerPage> {
               showBottomNavBar: _turnBottomNavBarOn,
               recalledScrollPosition: _scrollPositionNotam,
               notifyScrollPosition: _setNotamScrollPosition,
+              airportsFromFav: _favToWxNotam,
+              autoFetch: _autoFetch,
+              cancelAutoFetch: _cancelAutoFetch,
+              callbackToFav: _callbackToFav,
             );
           }
           break;

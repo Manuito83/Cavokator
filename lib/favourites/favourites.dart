@@ -157,6 +157,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
             );
           },
         ),
+        IconButton(
+          icon: Icon(Icons.settings),
+          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          onPressed: () {
+            _settingsDialog();
+          },
+        ),
       ],
     );
   }
@@ -382,11 +389,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         ),
                         onPressed: () {
                           // Call weather
-                          List<String> airportsToWxNotam = List<String>();
+                          List<String> airportsToWx = List<String>();
                           for (var fav in _favouritesList[index].airports) {
-                            airportsToWxNotam.add(fav);
+                            airportsToWx.add(fav);
                           }
-                          widget.callbackFromFav(0, airportsToWxNotam, true);
+                          widget.callbackFromFav(0, airportsToWx, true);
                         },
                       )
                   ),
@@ -398,7 +405,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                         ),
                         onPressed: () {
-                         // TODO:
+                          // Call weather
+                          List<String> airportsToNotam = List<String>();
+                          for (var fav in _favouritesList[index].airports) {
+                            airportsToNotam.add(fav);
+                          }
+                          widget.callbackFromFav(1, airportsToNotam, true);
                         }
                     ),
                   ),
@@ -765,6 +777,88 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       Icons.warning,
                       color: Colors.red[800],
                       size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+  Future<void> _settingsDialog() async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 42,
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                  ),
+                  margin: EdgeInsets.only(top: 22),
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: const Offset(0.0, 10.0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // To make the card compact
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child: Text(
+                            'Are you sure you want to remove ALL your favourites and '
+                                'all associated airports? \n\n This cannot be undone!'
+                        ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
+                      ),
+                      SizedBox(height: 12.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          FlatButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Close"),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  child: CircleAvatar(
+                    radius: 23,
+                    // TODO: like this for all...? Double avatar
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 22,
+                      child: Icon(
+                        Icons.settings,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
