@@ -26,7 +26,6 @@ class _CavokatorState extends State<Cavokator> {
   void initState() {
     super.initState();
     _restoreThemePreferences();
-    SharedPreferencesModel().setAppVersion(_thisAppVersion);
   }
 
 
