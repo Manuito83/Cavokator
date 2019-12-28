@@ -27,6 +27,7 @@ dependencies:
   url_launcher:
   path_provider:
   back_button_interceptor:
+  flutter_slidable:
 
 
   # The following adds the Cupertino Icons font to your application.

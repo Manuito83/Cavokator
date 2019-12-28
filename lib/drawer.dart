@@ -64,10 +64,14 @@ class _DrawerPageState extends State<DrawerPage> {
   bool _bottomNotamButtonDisabled = false;
   bool _swipeSections = true;  // TODO (maybe?): setting to deactivate this?
 
+  bool _numberOfMaxAirports;
+  int _maxAirportsRequested = 8;
+
   PageController _myPageController;
 
   // Parameters for Favourites
   bool _autoFetch = false;
+  bool _fetchBoth = false;
   List<String> _favToWxNotam = List<String>();
   FavFrom _favFrom = FavFrom.drawer;
   List<String> _importedToFavourites = List<String> ();
@@ -213,6 +217,15 @@ class _DrawerPageState extends State<DrawerPage> {
       SharedPreferencesModel().getSettingsShowHeaders().then((onValue) {
         _showHeaderImages = onValue;
       });
+      SharedPreferencesModel().getSettingsMaxAirports().then((onValue) {
+        if (onValue == 8) {
+          _numberOfMaxAirports = true;
+          _maxAirportsRequested = 8;
+        } else {
+          _numberOfMaxAirports = false;
+          _maxAirportsRequested = 20;
+        }
+      });
 
       _myPageController = PageController (
         initialPage: (_activeDrawerIndex == 0) ? 0 : 1,
@@ -239,6 +252,9 @@ class _DrawerPageState extends State<DrawerPage> {
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
                   callbackToFav: _callbackToFav,
+                  fetchBoth: _fetchBoth,
+                  maxAirportsRequested: _maxAirportsRequested,
+                  thisAppVersion: widget.thisAppVersion,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -253,6 +269,9 @@ class _DrawerPageState extends State<DrawerPage> {
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
                   callbackToFav: _callbackToFav,
+                  fetchBoth: _fetchBoth,
+                  maxAirportsRequested: _maxAirportsRequested,
+                  thisAppVersion: widget.thisAppVersion,
                 ),
               ],
             );
@@ -270,6 +289,9 @@ class _DrawerPageState extends State<DrawerPage> {
               autoFetch: _autoFetch,
               cancelAutoFetch: _cancelAutoFetch,
               callbackToFav: _callbackToFav,
+              fetchBoth: _fetchBoth,
+              maxAirportsRequested: _maxAirportsRequested,
+              thisAppVersion: widget.thisAppVersion,
             );
           }
           break;
@@ -292,6 +314,9 @@ class _DrawerPageState extends State<DrawerPage> {
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
                   callbackToFav: _callbackToFav,
+                  fetchBoth: _fetchBoth,
+                  maxAirportsRequested: _maxAirportsRequested,
+                  thisAppVersion: widget.thisAppVersion,
                 ),
                 NotamPage(
                   isThemeDark: _isThemeDark,
@@ -306,6 +331,9 @@ class _DrawerPageState extends State<DrawerPage> {
                   autoFetch: _autoFetch,
                   cancelAutoFetch: _cancelAutoFetch,
                   callbackToFav: _callbackToFav,
+                  fetchBoth: _fetchBoth,
+                  maxAirportsRequested: _maxAirportsRequested,
+                  thisAppVersion: widget.thisAppVersion,
                 ),
               ],
             );
@@ -323,6 +351,9 @@ class _DrawerPageState extends State<DrawerPage> {
               autoFetch: _autoFetch,
               cancelAutoFetch: _cancelAutoFetch,
               callbackToFav: _callbackToFav,
+              fetchBoth: _fetchBoth,
+              maxAirportsRequested: _maxAirportsRequested,
+              thisAppVersion: widget.thisAppVersion,
             );
           }
           break;
@@ -348,6 +379,7 @@ class _DrawerPageState extends State<DrawerPage> {
             favFrom: _favFrom,
             importedAirports: _importedToFavourites,
             callbackPage: _callbackPage,
+            maxAirportsRequested: _maxAirportsRequested,
           );
         case 5:
           return SettingsPage(
@@ -355,6 +387,7 @@ class _DrawerPageState extends State<DrawerPage> {
             myFloat: myFloat,
             callback: callbackFab,
             showHeaders: _showHeaderImages,
+            maxAirports: _numberOfMaxAirports,
           );
         case 6:
           return AboutPage(
@@ -544,12 +577,13 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   void _callbackFromFav (
-      int whatPage, List<String> favToWxNotam, bool autoFetch) {
+      int whatPage, List<String> favToWxNotam, bool autoFetch, bool fetchBoth) {
     setState(() {
       _activeDrawerIndex = whatPage;
       _selected = whatPage;
       _favToWxNotam = favToWxNotam;
       _autoFetch = autoFetch;
+      _fetchBoth = fetchBoth;
     });
   }
 
@@ -565,6 +599,7 @@ class _DrawerPageState extends State<DrawerPage> {
 
   void _cancelAutoFetch () {
     _autoFetch = false;
+    _favToWxNotam.clear();
   }
 
   void _callbackPage (int whatPage) {

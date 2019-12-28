@@ -11,6 +11,7 @@ class SharedPreferencesModel {
   final String _kSettingsOpenSpecificSection = "settings_openSpecificSection";
   final String _kSettingsLastUsedSection = "settings_lastUsedSection";
   final String _kSettingsShowHeaders = "settings_showHeaders";
+  final String _kSettingsMaxAirports = "settings_maxAirports";
 
   final String _kWeatherInformationPrefs = "wx_information";
   final String _kWeatherUserInputPrefs = "wx_userInput";
@@ -34,7 +35,8 @@ class SharedPreferencesModel {
   final String _kTemperatureRoundPrefs = "temperature_round";
 
   final String _kFavouritePrefs = "favourites_list";
-
+  final String _kFavouritesAutoFetchPrefs = "favourites_AutoFetch";
+  final String _kFavouritesFetchBothPrefs = "favourites_FetchBoth";
 
 
   /// ----------------------------
@@ -96,6 +98,17 @@ class SharedPreferencesModel {
   Future<bool> setSettingsShowHeaders(bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setBool(_kSettingsShowHeaders, value);
+  }
+
+  // ***********
+  Future<int> getSettingsMaxAirports() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kSettingsMaxAirports) ?? 8;
+  }
+
+  Future<bool> setSettingsMaxAirports(int value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setInt(_kSettingsMaxAirports, value);
   }
 
   /// ----------------------------
@@ -311,5 +324,26 @@ class SharedPreferencesModel {
     return prefs.setString(_kFavouritePrefs, value);
   }
 
+  // ***********
+  Future<bool> getFavouritesAutoFetch() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kFavouritesAutoFetchPrefs) ?? true;
+  }
+
+  Future<bool> setFavouritesAutoFetch(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(_kFavouritesAutoFetchPrefs, value);
+  }
+
+  // ***********
+  Future<bool> getFavouritesFetchBoth() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kFavouritesFetchBothPrefs) ?? true;
+  }
+
+  Future<bool> setFavouritesFetchBoth(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(_kFavouritesFetchBothPrefs, value);
+  }
 
 }

@@ -34,6 +34,9 @@ class WeatherPage extends StatefulWidget {
   final bool autoFetch;
   final Function cancelAutoFetch;
   final Function callbackToFav;
+  final bool fetchBoth;
+  final int maxAirportsRequested;
+  final String thisAppVersion;
 
 
   WeatherPage({@required this.isThemeDark, @required this.myFloat,
@@ -42,7 +45,8 @@ class WeatherPage extends StatefulWidget {
                @required this.recalledScrollPosition,
                @required this.notifyScrollPosition, @required this.autoFetch,
                @required this.cancelAutoFetch, @required this.callbackToFav,
-               @required this.airportsFromFav});
+               @required this.airportsFromFav, @required this.fetchBoth,
+               @required this.maxAirportsRequested, @required this.thisAppVersion});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -69,11 +73,14 @@ class _WeatherPageState extends State<WeatherPage> {
   bool _mostRecent = true;
 
   bool _autoFetch = false;
+  bool _fetchBoth = false;
+  int _airportsFromFav = 0;
 
   @override
   void initState() {
     super.initState();
 
+    _fetchBoth = widget.fetchBoth;
     _autoFetch = widget.autoFetch;
     // If we get all, both request will interfere,
     // so we just get the basics
@@ -103,13 +110,16 @@ class _WeatherPageState extends State<WeatherPage> {
       );
     });
 
-    if (_autoFetch) {
-      WidgetsBinding.instance.addPostFrameCallback((_){
+    if (widget.airportsFromFav.length > 0) {
+      _airportsFromFav = widget.airportsFromFav.length;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(Duration(milliseconds: 500), () {
           // If joining with commas in the future, make sure that
           // all sections work as expected (Lists are correctly in sharedPrefs)
           _myTextController.text = widget.airportsFromFav.join(" ");
-          _fetchButtonPressed(context, true);
+          if (_autoFetch) {
+            _fetchButtonPressed(context, _fetchBoth);
+          }
           widget.cancelAutoFetch();
         });
       });
@@ -217,7 +227,6 @@ class _WeatherPageState extends State<WeatherPage> {
                       Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
-
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 10),
                         child: ImageIcon(
@@ -235,6 +244,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           controller: _myTextController,
                           textCapitalization: TextCapitalization.characters,
                           decoration: InputDecoration(
+                            errorMaxLines: 3,
                             labelText: "Enter ICAO/IATA airports",
                           ),
                           validator: (value) {
@@ -250,6 +260,10 @@ class _WeatherPageState extends State<WeatherPage> {
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
                             }
+                            if (_myRequestedAirports.length > widget.maxAirportsRequested) {
+                              return "Too many airports (max is ${widget.maxAirportsRequested})! "
+                                  "You can change this in settings.";
+                            }
                             return null;
                           },
                         ),
@@ -262,7 +276,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
                           child: RaisedButton(
                             shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(18.0),
+                                borderRadius: new BorderRadius.circular(12.0),
                                 side: BorderSide(
                                   color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                                 )
@@ -911,14 +925,23 @@ class _WeatherPageState extends State<WeatherPage> {
 
         String wxServer = PrivateVariables.apiURL;
         String wxApi = "Wx/GetWx?";
-        String wxSource = "source=AppUnknown";
+
+        String wxSource = "source=Unknown";
         if (Platform.isAndroid) {
-          wxSource = "source=AppAndroid";
+          wxSource = "source=Android";
         } else if (Platform.isIOS) {
-          wxSource = "source=AppIOS";
+          wxSource = "source=IOS";
         } else {
-          wxSource = "source=AppOther";
+          wxSource = "source=Other";
         }
+        if (_airportsFromFav > 0) {
+          wxSource += "-Fav$_airportsFromFav";
+          _airportsFromFav = 0;
+        } else {
+          wxSource += "-Fav0";
+        }
+        wxSource += "-v${widget.thisAppVersion}";
+
         String wxAirports = "&Airports=$allAirports";
 
         int internalHoursBefore;
@@ -970,14 +993,23 @@ class _WeatherPageState extends State<WeatherPage> {
         if (fetchBoth) {
           String notamServer = PrivateVariables.apiURL;
           String notamApi = "Notam/GetNotam?";
-          String notamSource = "source=AppUnknown";
+
+          String notamSource = "source=Unknown";
           if (Platform.isAndroid) {
-            notamSource = "source=AppAndroid";
+            notamSource = "source=Android";
           } else if (Platform.isIOS) {
-            notamSource = "source=AppIOS";
+            notamSource = "source=IOS";
           } else {
-            notamSource = "source=AppOther";
+            notamSource = "source=Other";
           }
+          if (_airportsFromFav > 0) {
+            notamSource += "-Fav$_airportsFromFav";
+            _airportsFromFav = 0;
+          } else {
+            notamSource += "-Fav0";
+          }
+          notamSource += "-v${widget.thisAppVersion}";
+
           String notamAirports = "&airports=$allAirports";
           String notamUrl = notamServer + notamApi + notamSource + notamAirports;
 

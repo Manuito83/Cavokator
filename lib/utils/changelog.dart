@@ -45,50 +45,14 @@ class ChangeLog extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Icon(Icons.local_airport, size: 20),
-                    Padding(padding: EdgeInsets.only(right: 8)),
+                    Icon(Icons.favorite, size: 20),
+                    Padding(padding: EdgeInsets.only(right: 15)),
                     Flexible(
                       child: Text(
-                        "Added an option to get both WX and NOTAM information"
-                            " at the same time from both sections!",
-                        //style: TextStyle(
-                        //  fontWeight: FontWeight.bold,
-                        //),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.local_airport, size: 20),
-                    Padding(padding: EdgeInsets.only(right: 8)),
-                    Flexible(
-                      child: Text(
-                        "Added a bottom bar to quickly move between WX and"
-                            " NOTAM sections without using the main menu!",
-                        //style: TextStyle(
-                        //  fontWeight: FontWeight.bold,
-                        //),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.local_airport, size: 20),
-                    Padding(padding: EdgeInsets.only(right: 8)),
-                    Flexible(
-                      child: Text(
-                        "Now the scroll position is recorded when moving between"
-                            " the WX and NOTAM sections!",
+                        "Added a favourites module, so that you can group "
+                            "your airports by destination, alternates, etc. "
+                            "You can also export them as a backup and import it "
+                            "(or a friend's) at a later stage!",
                         //style: TextStyle(
                         //  fontWeight: FontWeight.bold,
                         //),

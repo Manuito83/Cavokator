@@ -10,6 +10,7 @@ import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 
 enum FavFrom {
@@ -25,11 +26,12 @@ class FavouritesPage extends StatefulWidget {
   final Function callbackFromFav;
   final List<String> importedAirports;
   final Function callbackPage;
-  // TODO: pass theme and theme it!
+  final int maxAirportsRequested;
 
   FavouritesPage({@required this.isThemeDark, @required this.callbackFab,
                   @required this.callbackFromFav, @required this.favFrom,
-                  @required this.importedAirports, @required this.callbackPage});
+                  @required this.importedAirports, @required this.callbackPage,
+                  @required this.maxAirportsRequested});
 
   @override
   _FavouritesPageState createState() => _FavouritesPageState();
@@ -52,6 +54,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
   String _userSearch = "";
 
   bool _importing = false;
+
+  // Variables for options dialog
+  bool _autoFetch = true;
+  bool _fetchBoth = true;
 
 
   @override
@@ -186,7 +192,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           labelText: "Search",
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(12.0))),
+                            borderRadius: BorderRadius.all(Radius.circular(12.0))),
                         ),
                       ),
                     ),
@@ -278,7 +284,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   child: Row(
                     children: <Widget>[
                       ImageIcon(
-                        AssetImage("assets/icons/drawer_wx.png"),
+                        AssetImage(
+                          widget.favFrom == FavFrom.weather
+                              ? "assets/icons/drawer_wx.png"
+                              : "assets/icons/drawer_notam.png"
+                        ),
                         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                       ),
                       Text("  Import"),
@@ -334,8 +344,35 @@ class _FavouritesPageState extends State<FavouritesPage> {
     }
   }
 
+
   Widget _favouriteCard(int index) {
-    return Card(
+    return Slidable(
+      actionPane: SlidableDrawerActionPane(),
+      actionExtentRatio: 0.25,
+      actions: <Widget>[
+        new IconSlideAction(
+        caption: 'Edit',
+          color: Colors.blue,
+          icon: Icons.edit,
+          onTap: () =>
+              _showAddDialog(
+                existingFav: true,
+                favIndex: index,
+                favTitle: _favouritesList[index].title,
+                favAirports: _favouritesList[index].airports
+              ),
+        ),
+      ],
+      secondaryActions: <Widget>[
+        new IconSlideAction(
+          caption: 'Delete',
+          color: Colors.red,
+          icon: Icons.delete,
+          onTap: () =>
+              _deleteSingleFavDialog(index),
+        ),
+      ],
+      child: Card(
       margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
       elevation: 2,
       child: Row(
@@ -354,7 +391,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       text: TextSpan(
                         text: _favouritesList[index].title,
                         style: TextStyle(
-                            color: Colors.black,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                             fontWeight: FontWeight.bold,
                             fontSize: 18
                         ),
@@ -367,7 +404,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       text: TextSpan(
                         text: _favouritesList[index].airports.join(', '),
                         style: TextStyle(
-                            color: Colors.black
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
                         ),
                       ),
                     ),
@@ -376,12 +413,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ),
             ),
           ),
+          Container(height: 80, child: VerticalDivider(
+            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),),
+          ),
           Row(
             children: <Widget>[
               Column(
                 children: <Widget>[
                   Padding(
-                      padding: EdgeInsets.fromLTRB(10, 5, 5, 0),
+                      padding: EdgeInsets.fromLTRB(5, 5, 15, 0),
                       child: IconButton(
                         icon: ImageIcon(
                           AssetImage("assets/icons/drawer_wx.png"),
@@ -393,12 +433,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           for (var fav in _favouritesList[index].airports) {
                             airportsToWx.add(fav);
                           }
-                          widget.callbackFromFav(0, airportsToWx, true);
+                          widget.callbackFromFav(0, airportsToWx, _autoFetch, _fetchBoth);
                         },
                       )
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(10, 0, 5, 5),
+                    padding: EdgeInsets.fromLTRB(5, 0, 15, 5),
                     child:  IconButton(
                         icon: ImageIcon(
                           AssetImage("assets/icons/drawer_notam.png"),
@@ -410,12 +450,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           for (var fav in _favouritesList[index].airports) {
                             airportsToNotam.add(fav);
                           }
-                          widget.callbackFromFav(1, airportsToNotam, true);
+                          widget.callbackFromFav(1, airportsToNotam, _autoFetch, _fetchBoth);
                         }
                     ),
                   ),
                 ],
               ),
+
+              // This has been removed to facilitate the test of
+              // the "Slidable". If things go wrong, two icons are ready here!
+              /*
               Container(height: 80, child: VerticalDivider(color: Colors.black)),
               Column(
                 children: <Widget>[
@@ -446,16 +490,24 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   ),
                 ],
               ),
+              */
+
             ],
           )
-
-
-
-
-
         ],
       ),
+    ),
     );
+
+
+
+
+
+
+
+
+
+
   }
 
   Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
@@ -473,13 +525,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return Dialog(
+          return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            child: Stack(
+            content: Stack(
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(
@@ -490,7 +542,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   ),
                   margin: EdgeInsets.only(top: 30),
                   decoration: new BoxDecoration(
-                    color: Colors.white,
+                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -535,6 +587,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             keyboardType: TextInputType.text,
                             textCapitalization: TextCapitalization.characters,
                             decoration: InputDecoration(
+                              errorMaxLines: 3,
                               border: OutlineInputBorder(),
                               labelText: 'ICAO/IATA airports',
                             ),
@@ -550,10 +603,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               if (_thisInputAirportsList.isEmpty) {
                                 return "Could not identify a valid airport!";
                               }
-                              if (_thisInputAirportsList.length > 8) {
-                                // TODO: limit also in Wx + NOTAM??
+                              if (_thisInputAirportsList.length > widget.maxAirportsRequested) {
                                 _thisInputAirportsList.clear();
-                                return "Too many airports (max is 8)!";
+                                return "Too many airports (max is ${widget.maxAirportsRequested})! "
+                                    "You can change this in settings.";
                               }
                               return null;
                             },
@@ -594,12 +647,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   left: 16,
                   right: 16,
                   child: CircleAvatar(
-                    backgroundColor: Colors.grey[400],
-                    radius: 30,
-                    child: Icon(
-                      Icons.favorite_border,
-                      color: Colors.red[800],
-                      size: 35,
+                    radius: 26,
+                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                    child: CircleAvatar(
+                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      radius: 22,
+                      child: Icon(
+                        Icons.favorite_border,
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -615,13 +672,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return Dialog(
+          return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            child: Stack(
+            content: Stack(
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(
@@ -632,7 +689,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   ),
                   margin: EdgeInsets.only(top: 22),
                   decoration: new BoxDecoration(
-                    color: Colors.white,
+                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
@@ -650,8 +707,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                         child: Text(
                           'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
-                              'and all its associated airports? \n\n This cannot be undone!'
-                        ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
+                              'and all its associated airports? \n\n This cannot be undone!',
+                        )
                       ),
                       SizedBox(height: 12.0),
                       Row(
@@ -683,12 +740,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   left: 16,
                   right: 16,
                   child: CircleAvatar(
-                    backgroundColor: Colors.grey[400],
-                    radius: 22,
-                    child: Icon(
-                      Icons.warning,
-                      color: Colors.red[800],
-                      size: 20,
+                    radius: 26,
+                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                    child: CircleAvatar(
+                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      radius: 22,
+                      child: Icon(
+                        Icons.warning,
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -704,13 +765,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return Dialog(
+          return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            child: Stack(
+            content: Stack(
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(
@@ -721,7 +782,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   ),
                   margin: EdgeInsets.only(top: 22),
                   decoration: new BoxDecoration(
-                    color: Colors.white,
+                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
@@ -740,7 +801,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           child: Text(
                               'Are you sure you want to remove ALL your favourites and '
                                   'all associated airports? \n\n This cannot be undone!'
-                          ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
+                          )
                       ),
                       SizedBox(height: 12.0),
                       Row(
@@ -771,12 +832,16 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   left: 16,
                   right: 16,
                   child: CircleAvatar(
-                    backgroundColor: Colors.grey[400],
-                    radius: 22,
-                    child: Icon(
-                      Icons.warning,
-                      color: Colors.red[800],
-                      size: 20,
+                    radius: 26,
+                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                    child: CircleAvatar(
+                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                      radius: 22,
+                      child: Icon(
+                        Icons.warning,
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -792,78 +857,186 @@ class _FavouritesPageState extends State<FavouritesPage> {
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return Dialog(
+          return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 42,
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                  ),
-                  margin: EdgeInsets.only(top: 22),
-                  decoration: new BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        offset: const Offset(0.0, 10.0),
+            content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Stack(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(
+                        top: 42,
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // To make the card compact
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                        child: Text(
-                            'Are you sure you want to remove ALL your favourites and '
-                                'all associated airports? \n\n This cannot be undone!'
-                        ) // TODO: Probar texto corto en tablet, quizá Stack en Center??
-                      ),
-                      SizedBox(height: 12.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Close"),
+                      margin: EdgeInsets.only(top: 22),
+                      decoration: new BoxDecoration(
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10.0,
+                            offset: const Offset(0.0, 10.0),
                           ),
                         ],
-                      )
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 23,
-                    // TODO: like this for all...? Double avatar
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 22,
-                      child: Icon(
-                        Icons.settings,
-                        color: Colors.red,
-                        size: 20,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min, // To make the card compact
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: Text(
+                              "OPTIONS",
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  flex: 2,
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.only(start: 15, end: 15),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text("Auto fetch after clicking "
+                                            "WX or NOTAM",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.only(start: 5, end: 15,),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: <Widget>[
+                                        Switch(
+                                          value: _autoFetch,
+                                          onChanged: (bool value) {
+                                            setState(() {
+                                              _handleAutoFetchChanged(value);
+                                              // Fetching both only occurs
+                                              // if auto fetch is active
+                                              if (value == false) {
+                                                _handleGetBoth(value);
+                                              }
+                                            });
+
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(start: 15, end: 15),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text("Fetch both WX & NOTAM even if the "
+                                          "other is selected",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: _autoFetch
+                                              ? ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                                              : Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(start: 5, end: 15),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: <Widget>[
+                                      Switch(
+                                        value: _fetchBoth,
+                                        onChanged: (bool value) {
+                                          setState(() {
+                                            // Fetching both only occurs
+                                            // if auto fetch is active
+                                            if (_autoFetch) {
+                                              _handleGetBoth(value);
+                                            }
+                                          });
+
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              FlatButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Close"),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              ],
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        child: CircleAvatar(
+                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                          radius: 22,
+                          child: Icon(
+                            Icons.settings,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
             ),
+
+
+
           );
         }
     );
@@ -961,7 +1134,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
   void onSearchInputTextChange() {
     setState(() {
       _userSearch = _searchController.text;
-      print(_userSearch);
     });
   }
 
@@ -971,6 +1143,14 @@ class _FavouritesPageState extends State<FavouritesPage> {
         _favouritesList = favouriteListFromJson(onValue);
       }
       setState(() { });
+    });
+
+    await SharedPreferencesModel().getFavouritesAutoFetch().then((onValue) {
+      _autoFetch = onValue;
+    });
+
+    await SharedPreferencesModel().getFavouritesFetchBoth().then((onValue) {
+      _fetchBoth = onValue;
     });
   }
 
@@ -999,6 +1179,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
     } else {
       return false;
     }
+  }
+
+  void _handleAutoFetchChanged(bool value) {
+    _autoFetch = value;
+    SharedPreferencesModel().setFavouritesAutoFetch(value);
+    if (value == false) {
+      SharedPreferencesModel().setFavouritesFetchBoth(value);
+    }
+  }
+
+  void _handleGetBoth(bool value) {
+    _fetchBoth = value;
+    SharedPreferencesModel().setFavouritesFetchBoth(value);
   }
 
 }

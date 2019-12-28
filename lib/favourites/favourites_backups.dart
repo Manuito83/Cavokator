@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
+import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share/share.dart';
@@ -9,7 +10,6 @@ class FavouritesBackupsPage extends StatefulWidget {
   final bool isThemeDark;
   final List<Favourite> currentFavList;
   final Function updateCallback;
-  // TODO: pass theme and theme it!
 
   FavouritesBackupsPage({@required this.isThemeDark, this.currentFavList,
                         this.updateCallback});
@@ -38,8 +38,13 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
       "you can either add them to your current list, or replace everything "
       "(you'll lose your current favourites!). Choose wisely.";
 
+  Color _importHintStyle = Colors.black;
+  String _importHintText = 'Paste here previously exported data';
+  FontWeight _importHintWeight = FontWeight.normal;
+
   @override
   void initState() {
+    _importHintStyle = ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText);
     _currentFavList = widget.currentFavList;
     super.initState();
   }
@@ -235,11 +240,6 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
     );
   }
 
-  Color _importHintStyle = Colors.black;
-  String _importHintText = 'Paste here previously exported data';
-  FontWeight _importHintWeight = FontWeight.normal;
-
-
   @override
   Future dispose() async {
     super.dispose();
@@ -284,13 +284,13 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (context) {
-          return Dialog(
+          return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            child: Container(
+            content: Container(
               padding: EdgeInsets.only(
                 top: 12,
                 bottom: 16,
@@ -299,7 +299,7 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
               ),
               //margin: EdgeInsets.only(top: 30),
               decoration: new BoxDecoration(
-                color: Colors.white,
+                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                 shape: BoxShape.rectangle,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
