@@ -281,16 +281,17 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
 
   Future<void> _showImportDialog() async {
     return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0.0,
-            backgroundColor: Colors.transparent,
-            content: Container(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          content: SingleChildScrollView (
+            child: Container(
               padding: EdgeInsets.only(
                 top: 12,
                 bottom: 16,
@@ -386,8 +387,9 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
                 ],
               ),
             ),
-          );
-        }
+          ),
+        );
+      }
     );
   }
 

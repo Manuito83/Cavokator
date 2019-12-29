@@ -526,159 +526,163 @@ class _FavouritesPageState extends State<FavouritesPage> {
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0.0,
-            backgroundColor: Colors.transparent,
-            content: Stack(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 82,
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                  ),
-                  margin: EdgeInsets.only(top: 30),
-                  decoration: new BoxDecoration(
-                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        offset: const Offset(0.0, 10.0),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _mainFormKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min, // To make the card compact
-                      children: <Widget>[
-                        Flexible(
-                          child: TextFormField(
-                            controller: _titleInputController,
-                            maxLength: 50,
-                            minLines: 1,
-                            maxLines: 2,
-                            decoration: InputDecoration(
-                              counterText: "",
-                              border: OutlineInputBorder(),
-                              labelText: 'Favourite title',
-                            ),
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return "Title cannot be empty!";
-                              }
-                              _thisInputTitle = value.trim();
-                              return null;
-                            },
-                          ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0.0,
+              backgroundColor: Colors.transparent,
+              content: SingleChildScrollView(
+                child: Stack(
+                  children: <Widget>[
+                    SingleChildScrollView(
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          top: 82,
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
                         ),
-                        SizedBox(height: 16.0),
-                        Flexible(
-                          child: TextFormField(
-                            controller: _airportsInputController,
-                            minLines: 1,
-                            maxLines: 4,
-                            keyboardType: TextInputType.text,
-                            textCapitalization: TextCapitalization.characters,
-                            decoration: InputDecoration(
-                              errorMaxLines: 3,
-                              border: OutlineInputBorder(),
-                              labelText: 'ICAO/IATA airports',
-                            ),
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return "Please enter at least one valid airport!";
-                              }
-                              // Try to parse some airports
-                              // Split the input to suit or needs
-                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
-                              Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
-                              matches.forEach((m) => _thisInputAirportsList.add(m.group(0)));
-                              if (_thisInputAirportsList.isEmpty) {
-                                return "Could not identify a valid airport!";
-                              }
-                              if (_thisInputAirportsList.length > widget.maxAirportsRequested) {
-                                _thisInputAirportsList.clear();
-                                return "Too many airports (max is ${widget.maxAirportsRequested})! "
-                                    "You can change this in settings.";
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        SizedBox(height: 24.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            FlatButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text("Cancel"),
-                            ),
-                            FlatButton(
-                              onPressed: () {
-                                if (_mainFormKey.currentState.validate()) {
-                                  if (existingFav) {
-                                    _modifyFavourite(favIndex);
-                                  } else {
-                                    _addNewFavourite();
-                                  }
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                              child: existingFav
-                                  ? Text("Modify")
-                                  : Text("Add"),
+                        margin: EdgeInsets.only(top: 30),
+                        decoration: new BoxDecoration(
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10.0,
+                              offset: const Offset(0.0, 10.0),
                             ),
                           ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                    child: CircleAvatar(
-                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                      radius: 22,
-                      child: Icon(
-                        Icons.favorite_border,
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                        size: 20,
+                        ),
+                        child: Form(
+                          key: _mainFormKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min, // To make the card compact
+                            children: <Widget>[
+                              TextFormField(
+                                controller: _titleInputController,
+                                maxLength: 50,
+                                minLines: 1,
+                                maxLines: 2,
+                                decoration: InputDecoration(
+                                  counterText: "",
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Favourite title',
+                                ),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Title cannot be empty!";
+                                  }
+                                  _thisInputTitle = value.trim();
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 16.0),
+                              TextFormField(
+                                controller: _airportsInputController,
+                                minLines: 1,
+                                maxLines: 4,
+                                keyboardType: TextInputType.text,
+                                textCapitalization: TextCapitalization.characters,
+                                decoration: InputDecoration(
+                                  errorMaxLines: 3,
+                                  border: OutlineInputBorder(),
+                                  labelText: 'ICAO/IATA airports',
+                                ),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Please enter at least one valid airport!";
+                                  }
+                                  // Try to parse some airports
+                                  // Split the input to suit or needs
+                                  RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                                  Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
+                                  matches.forEach((m) => _thisInputAirportsList.add(m.group(0)));
+                                  if (_thisInputAirportsList.isEmpty) {
+                                    return "Could not identify a valid airport!";
+                                  }
+                                  if (_thisInputAirportsList.length > widget.maxAirportsRequested) {
+                                    _thisInputAirportsList.clear();
+                                    return "Too many airports (max is ${widget.maxAirportsRequested})! "
+                                        "You can change this in settings.";
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 24.0),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  FlatButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text("Cancel"),
+                                  ),
+                                  FlatButton(
+                                    onPressed: () {
+                                      if (_mainFormKey.currentState.validate()) {
+                                        if (existingFav) {
+                                          _modifyFavourite(favIndex);
+                                        } else {
+                                          _addNewFavourite();
+                                        }
+                                        Navigator.of(context).pop();
+                                      }
+                                    },
+                                    child: existingFav
+                                        ? Text("Modify")
+                                        : Text("Add"),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        child: CircleAvatar(
+                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                          radius: 22,
+                          child: Icon(
+                            Icons.favorite_border,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
+              )
+
+
+            );
         }
     );
   }
 
   Future<void> _deleteSingleFavDialog(int removeIndex) async {
     return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0.0,
-            backgroundColor: Colors.transparent,
-            content: Stack(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          content: SingleChildScrollView(
+            child: Stack(
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(
@@ -704,11 +708,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     mainAxisSize: MainAxisSize.min, // To make the card compact
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                        child: Text(
-                          'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
-                              'and all its associated airports? \n\n This cannot be undone!',
-                        )
+                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          child: Text(
+                            'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
+                                'and all its associated airports? \n\n This cannot be undone!',
+                          )
                       ),
                       SizedBox(height: 12.0),
                       Row(
@@ -734,7 +738,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       )
                     ],
                   ),
-
                 ),
                 Positioned(
                   left: 16,
@@ -755,23 +758,25 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 ),
               ],
             ),
-          );
-        }
+          ),
+        );
+      }
     );
   }
 
   Future<void> _deleteAllFavsDialog() async {
     return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0.0,
-            backgroundColor: Colors.transparent,
-            content: Stack(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          content: SingleChildScrollView(
+            child: Stack(
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(
@@ -847,8 +852,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 ),
               ],
             ),
-          );
-        }
+          ),
+        );
+      }
     );
   }
 
@@ -865,56 +871,108 @@ class _FavouritesPageState extends State<FavouritesPage> {
             backgroundColor: Colors.transparent,
             content: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-                return Stack(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(
-                        top: 42,
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
-                      ),
-                      margin: EdgeInsets.only(top: 22),
-                      decoration: new BoxDecoration(
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10.0,
-                            offset: const Offset(0.0, 10.0),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min, // To make the card compact
-                        children: <Widget>[
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                            child: Text(
-                              "OPTIONS",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold
+                return SingleChildScrollView(
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(
+                          top: 42,
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
+                        ),
+                        margin: EdgeInsets.only(top: 22),
+                        decoration: new BoxDecoration(
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10.0,
+                              offset: const Offset(0.0, 10.0),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min, // To make the card compact
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              child: Text(
+                                "OPTIONS",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold
+                                ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: Row(
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 3,
+                                    child: Padding(
+                                      padding: EdgeInsetsDirectional.only(start: 15, end: 15),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text("Auto fetch after clicking "
+                                              "WX or NOTAM",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Padding(
+                                      padding: EdgeInsetsDirectional.only(start: 5, end: 15,),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          Switch(
+                                            value: _autoFetch,
+                                            onChanged: (bool value) {
+                                              setState(() {
+                                                _handleAutoFetchChanged(value);
+                                                // Fetching both only occurs
+                                                // if auto fetch is active
+                                                if (value == false) {
+                                                  _handleGetBoth(value);
+                                                }
+                                              });
+
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Divider(),
+                            Row(
                               children: <Widget>[
                                 Expanded(
-                                  flex: 2,
+                                  flex: 3,
                                   child: Padding(
                                     padding: EdgeInsetsDirectional.only(start: 15, end: 15),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        Text("Auto fetch after clicking "
-                                            "WX or NOTAM",
+                                        Text("Fetch both WX & NOTAM even if the "
+                                            "other is selected",
                                           style: TextStyle(
                                             fontSize: 12,
+                                            color: _autoFetch
+                                                ? ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                                                : Colors.grey,
                                           ),
                                         ),
                                       ],
@@ -922,20 +980,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 1,
+                                  flex: 2,
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.only(start: 5, end: 15,),
+                                    padding: EdgeInsetsDirectional.only(start: 5, end: 15),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: <Widget>[
                                         Switch(
-                                          value: _autoFetch,
+                                          value: _fetchBoth,
                                           onChanged: (bool value) {
                                             setState(() {
-                                              _handleAutoFetchChanged(value);
                                               // Fetching both only occurs
                                               // if auto fetch is active
-                                              if (value == false) {
+                                              if (_autoFetch) {
                                                 _handleGetBoth(value);
                                               }
                                             });
@@ -948,95 +1005,43 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 ),
                               ],
                             ),
-                          ),
-                          Divider(),
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.only(start: 15, end: 15),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text("Fetch both WX & NOTAM even if the "
-                                          "other is selected",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: _autoFetch
-                                              ? ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
-                                              : Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                            Divider(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                FlatButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Close"),
                                 ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.only(start: 5, end: 15),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: <Widget>[
-                                      Switch(
-                                        value: _fetchBoth,
-                                        onChanged: (bool value) {
-                                          setState(() {
-                                            // Fetching both only occurs
-                                            // if auto fetch is active
-                                            if (_autoFetch) {
-                                              _handleGetBoth(value);
-                                            }
-                                          });
-
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              FlatButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text("Close"),
-                              ),
-                            ],
-                          )
-                        ],
+                              ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      child: CircleAvatar(
-                        radius: 26,
-                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                      Positioned(
+                        left: 16,
+                        right: 16,
                         child: CircleAvatar(
-                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                          radius: 22,
-                          child: Icon(
-                            Icons.settings,
-                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                            size: 20,
+                          radius: 26,
+                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                          child: CircleAvatar(
+                            backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                            radius: 22,
+                            child: Icon(
+                              Icons.settings,
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               }
             ),
-
-
-
           );
         }
     );
