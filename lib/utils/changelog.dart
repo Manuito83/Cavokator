@@ -49,7 +49,7 @@ class ChangeLog extends StatelessWidget {
                     Padding(padding: EdgeInsets.only(right: 15)),
                     Flexible(
                       child: Text(
-                        "Added a favourites module, so that you can group "
+                        "Added a favourites section, so that you can group "
                             "your airports by destination, alternates, etc. "
                             "You can also export them as a backup and import your "
                             "list (or a friend's) at a later stage!",
