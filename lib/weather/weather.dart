@@ -67,7 +67,7 @@ class _WeatherPageState extends State<WeatherPage> {
   List<WxJson> _myWeatherList = new List<WxJson>();
   bool _apiCall = false;
 
-  String mySharedWeather = "";
+  String _mySharedWeather = "";
 
   int _hoursBefore = 10;
   bool _mostRecent = true;
@@ -195,7 +195,17 @@ class _WeatherPageState extends State<WeatherPage> {
           icon: Icon(Icons.share),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
-            Share.share(mySharedWeather);
+            if (_mySharedWeather != "") {
+              Share.share(_mySharedWeather);
+            } else {
+              Scaffold.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      'Nothing to share!',
+                  ),
+                ),
+              );
+            }
           },
         ),
       ],
@@ -355,6 +365,7 @@ class _WeatherPageState extends State<WeatherPage> {
                               SharedPreferencesModel().setWeatherUserInput("");
                               SharedPreferencesModel().setWeatherInformation("");
                               _myTextController.text = "";
+                              _mySharedWeather = "";
                             });
                           },
                         ),
@@ -395,10 +406,10 @@ class _WeatherPageState extends State<WeatherPage> {
         var wxBuilder = WxItemBuilder(jsonWeatherList: _myWeatherList);
         var wxModel = wxBuilder.result;
 
-        mySharedWeather = "";
-        mySharedWeather += "###";
-        mySharedWeather += "\n### CAVOKATOR WEATHER ###";
-        mySharedWeather += "\n###";
+        _mySharedWeather = "";
+        _mySharedWeather += "###";
+        _mySharedWeather += "\n### CAVOKATOR WEATHER ###";
+        _mySharedWeather += "\n###";
 
         for (var i = 0; i < wxModel.wxModelList.length; i++) {
           var airportName =
@@ -406,28 +417,28 @@ class _WeatherPageState extends State<WeatherPage> {
             _myRequestedAirports[i].toUpperCase() :
             wxModel.wxModelList[i].airportHeading;
 
-            mySharedWeather += "\n\n\n### $airportName ###";
+            _mySharedWeather += "\n\n\n### $airportName ###";
             if (!wxModel.wxModelList[i].airportFound){
-              mySharedWeather += "\n\nERROR: AIRPORT NOT FOUND!";
+              _mySharedWeather += "\n\nERROR: AIRPORT NOT FOUND!";
             }
             if (wxModel.wxModelList[i].airportWeather.length == 0){
-              mySharedWeather += "\n\nNo weather information found in this airport!";
+              _mySharedWeather += "\n\nNo weather information found in this airport!";
             }
             for (var b = 0; b < wxModel.wxModelList[i].airportWeather.length; b++) {
               var thisItem = wxModel.wxModelList[i].airportWeather[b];
 
               if (thisItem is AirportMetar){
                 for (var met in thisItem.metars) {
-                  mySharedWeather += "\n\n## METAR \n$met";
+                  _mySharedWeather += "\n\n## METAR \n$met";
                 }
               } else if (thisItem is AirportTafor) {
                 for (var taf in thisItem.tafors) {
-                  mySharedWeather += "\n\n## TAFOR \n$taf";
+                  _mySharedWeather += "\n\n## TAFOR \n$taf";
                 }
               }
             }
             if (i == wxModel.wxModelList.length - 1) {
-              mySharedWeather += "\n\n\n\n ### END CAVOKATOR REPORT ###";
+              _mySharedWeather += "\n\n\n\n ### END CAVOKATOR REPORT ###";
             }
 
           mySections.add(

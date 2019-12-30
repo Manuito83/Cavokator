@@ -537,7 +537,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     SingleChildScrollView(
                       child: Container(
                         padding: EdgeInsets.only(
-                          top: 82,
+                          top: 45,
                           bottom: 16,
                           left: 16,
                           right: 16,
@@ -561,6 +561,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             mainAxisSize: MainAxisSize.min, // To make the card compact
                             children: <Widget>[
                               TextFormField(
+                                style: TextStyle(
+                                    fontSize: 14
+                                ),
                                 controller: _titleInputController,
                                 maxLength: 50,
                                 minLines: 1,
@@ -580,6 +583,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               ),
                               SizedBox(height: 16.0),
                               TextFormField(
+                                style: TextStyle(
+                                  fontSize: 14
+                                ),
                                 controller: _airportsInputController,
                                 minLines: 1,
                                 maxLines: 4,
@@ -610,7 +616,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   return null;
                                 },
                               ),
-                              SizedBox(height: 24.0),
+                              SizedBox(height: 10.0),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: <Widget>[

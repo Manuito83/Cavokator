@@ -31,7 +31,7 @@ class _FavouritesBackupsPageState extends State<FavouritesBackupsPage> {
 
   String _importInfo =
       "In order to import favourites, please paste here the string that "
-      "you exported in the past. You can make changes outside of Caveokator, "
+      "you exported in the past. You can make changes outside of Cavokator, "
       "but ensure that the main structure is kept!";
 
   String _importChoice =

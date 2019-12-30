@@ -66,7 +66,7 @@ class _NotamPageState extends State<NotamPage> {
   List<NotamJson> _myNotamList = new List<NotamJson>();
   bool _apiCall = false;
 
-  String mySharedNotam = "";
+  String _mySharedNotam = "";
 
   //int _initialPopupValue = 0;
   // ^^ this is not working yet, see:
@@ -264,7 +264,17 @@ class _NotamPageState extends State<NotamPage> {
           icon: Icon(Icons.share),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
-            Share.share(mySharedNotam);
+            if (_mySharedNotam != "") {
+              Share.share(_mySharedNotam);
+            } else {
+              Scaffold.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Nothing to share!',
+                  ),
+                ),
+              );
+            }
           },
         ),
       ],
@@ -455,6 +465,7 @@ class _NotamPageState extends State<NotamPage> {
                               SharedPreferencesModel().setNotamUserInput("");
                               SharedPreferencesModel().setNotamInformation("");
                               _myTextController.text = "";
+                              _mySharedNotam = "";
                             });
                           },
                         ),
@@ -497,33 +508,33 @@ class _NotamPageState extends State<NotamPage> {
                                             sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
 
-        mySharedNotam = "";
-        mySharedNotam += "###";
-        mySharedNotam += "\n### CAVOKATOR NOTAMS ###";
-        mySharedNotam += "\n###";
+        _mySharedNotam = "";
+        _mySharedNotam += "###";
+        _mySharedNotam += "\n### CAVOKATOR NOTAMS ###";
+        _mySharedNotam += "\n###";
         for (var a = 0; a < notamModel.notamModelList.length; a++){
           var airportName =
             notamModel.notamModelList[a].airportHeading == null
             ? _myRequestedAirports[a].toUpperCase()
             : notamModel.notamModelList[a].airportHeading;
-          mySharedNotam += "\n\n\n### $airportName ###";
+          _mySharedNotam += "\n\n\n### $airportName ###";
           if (notamModel.notamModelList[a].airportNotFound){
-            mySharedNotam += "\n\nERROR: AIRPORT NOT FOUND!";
+            _mySharedNotam += "\n\nERROR: AIRPORT NOT FOUND!";
           }
           if (notamModel.notamModelList[a].airportWithNoNotam){
-            mySharedNotam += "\n\nNo NOTAM found in this airport!";
+            _mySharedNotam += "\n\nNo NOTAM found in this airport!";
           }
           for (var b = 0; b < notamModel.notamModelList[a].airportNotams.length; b++) {
             var thisItem = notamModel.notamModelList[a].airportNotams[b];
 
             if (thisItem is NotamCategory){
-              mySharedNotam += "\n\n## ${thisItem.mainCategory}";
+              _mySharedNotam += "\n\n## ${thisItem.mainCategory}";
             } else if (thisItem is NotamSingle) {
-              mySharedNotam += "\n\n***\n${thisItem.raw}\n***";
+              _mySharedNotam += "\n\n***\n${thisItem.raw}\n***";
             }
           }
         }
-        mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
+        _mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
 
         DateTime myRequestedTime = DateTime.parse(_requestedTime);
         PrettyDuration myPrettyDuration = PrettyDuration(
