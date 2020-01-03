@@ -539,7 +539,12 @@ class _DrawerPageState extends State<DrawerPage> {
   void _handleVersionNumber () {
     SharedPreferencesModel().getAppVersion().then((onValue) {
       if (onValue != widget.thisAppVersion) {
-        _showChangeLogDialog(context);
+        if (onValue == "3.0" && widget.thisAppVersion == "3.0.1") {
+          // Do nothing in this particular case
+          // as this is a minor upgrade
+        } else {
+          _showChangeLogDialog(context);
+        }
         SharedPreferencesModel().setAppVersion(widget.thisAppVersion);
       }
     });

@@ -60,10 +60,10 @@ class ConditionDecode {
     try
     {
       // TYPE 1: R12L/123456
-      if ((_conditionInput.substring(0, 1) == "R") &&
+      if ((_conditionInput.substring(0, 1).toUpperCase() == "R") &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(1, 2))) &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(2, 3))) &&
-          (RegExp("[L|R|C]").hasMatch(_conditionInput.substring(3, 4))) &&
+          (RegExp("[L|R|C]").hasMatch(_conditionInput.substring(3, 4).toUpperCase())) &&
           (_conditionInput.substring(4, 5) == "/") &&
           (RegExp(r"(([0-9]|\/){6})").hasMatch(_conditionInput.substring(5, 11))) &&
           (_conditionInput.length == 11))
@@ -71,7 +71,7 @@ class ConditionDecode {
         conditionType = 1;
       }
       // TYPE 2: R12/123456
-      else if ((_conditionInput.substring(0, 1) == "R") &&
+      else if ((_conditionInput.substring(0, 1).toUpperCase() == "R") &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(1, 2))) &&
           (_conditionInput.substring(3, 4) == "/") &&
           (RegExp(r"(([0-9]|\/){6})").hasMatch(_conditionInput.substring(4, 10))) &&
@@ -85,26 +85,26 @@ class ConditionDecode {
         conditionType = 3;
       }
       // TYPE 4: R/SNOCLO
-      else if (RegExp(r"(\b)+(R\/SNOCLO)+(\b)").hasMatch(_conditionInput))
+      else if (RegExp(r"(\b)+(R\/SNOCLO)+(\b)").hasMatch(_conditionInput.toUpperCase()))
       {
         conditionType = 4;
       }
       // TYPE 5: R14L/CLRD//
-      else if ((_conditionInput.substring(0, 1) == "R") &&
+      else if ((_conditionInput.substring(0, 1).toUpperCase() == "R") &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(1, 2))) &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(2, 3))) &&
-          (RegExp(r"[L|R|C]").hasMatch(_conditionInput.substring(3, 4))) &&
+          (RegExp(r"[L|R|C]").hasMatch(_conditionInput.substring(3, 4).toUpperCase())) &&
           (_conditionInput.substring(4, 5) == "/") &&
-          (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(5, 11))) &&
+          (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(5, 11).toUpperCase())) &&
           (_conditionInput.length == 11))
       {
         conditionType = 5;
       }
       // TYPE 6: R14/CLRD//
-      else if ((_conditionInput.substring(0, 1) == "R") &&
+      else if ((_conditionInput.substring(0, 1).toUpperCase() == "R") &&
           (RegExp(r"\d").hasMatch(_conditionInput.substring(1, 2))) &&
           (_conditionInput.substring(3, 4) == "/") &&
-          (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(4, 10))) &&
+          (RegExp(r"(CLRD)+(\/\/)").hasMatch(_conditionInput.substring(4, 10).toUpperCase())) &&
           (_conditionInput.length == 10)) {
         conditionType = 6;
       } else {
@@ -338,7 +338,7 @@ class ConditionDecode {
       _conditionModel.rwyDecoded = "Error! Runway not valid";
     } else {
      if (_conditionModel.rwyInt <= 36) {
-       _conditionModel.rwyDecoded = "Runway ${_conditionModel.rwyValue}";
+       _conditionModel.rwyDecoded = "Runway ${_conditionModel.rwyValue.toUpperCase()}";
      } else if (_conditionModel.rwyInt == 88) {
        _conditionModel.rwyDecoded = "All runways";
      } else if (_conditionModel.rwyInt == 99) {
@@ -351,37 +351,37 @@ class ConditionDecode {
       _conditionModel.depositDecoded = "Error! Deposit code not valid";
     } else {
       switch (_conditionModel.depositCode){
-        case "/":
+        case "0":
           _conditionModel.depositDecoded = "Clear and dry";
           break;
-        case "0":
+        case "1":
           _conditionModel.depositDecoded = "Damp";
           break;
-        case "1":
+        case "2":
           _conditionModel.depositDecoded = "Wet and water patches";
           break;
-        case "2":
+        case "3":
           _conditionModel.depositDecoded = "Rime and frost covered (depth normally less than 1 mm)";
           break;
-        case "3":
+        case "4":
           _conditionModel.depositDecoded = "Dry snow";
           break;
-        case "4":
+        case "5":
           _conditionModel.depositDecoded = "Wet snow";
           break;
-        case "5":
+        case "6":
           _conditionModel.depositDecoded = "Slush";
           break;
-        case "6":
+        case "7":
           _conditionModel.depositDecoded = "Ice";
           break;
-        case "7":
+        case "8":
           _conditionModel.depositDecoded = "Compacted or rolled snow";
           break;
-        case "8":
+        case "9":
           _conditionModel.depositDecoded = "Frozen ruts or ridges";
           break;
-        case "9":
+        case "/":
           _conditionModel.depositDecoded = "Type of deposit not reported";
           break;
       }

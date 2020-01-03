@@ -312,7 +312,7 @@ class _ConditionPageState extends State<ConditionPage> {
                   Text(
                   decodedCondition.rwyError ?
                   "(runway error)"
-                        : "Runway ${decodedCondition.rwyValue}",
+                        : "Runway ${decodedCondition.rwyValue.toUpperCase()}",
                     style: TextStyle(
                       fontSize: decodedCondition.rwyError ? 16 : 20,
                       fontWeight: FontWeight.bold,
@@ -467,7 +467,7 @@ class _ConditionPageState extends State<ConditionPage> {
             ),
             // Runway
             Padding(
-              padding: EdgeInsets.only(top:20),
+              padding: EdgeInsets.only(top:20, bottom: 50),
               child: Row(
                 children: <Widget> [
                   Container(
