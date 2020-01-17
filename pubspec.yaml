@@ -28,6 +28,7 @@ dependencies:
   path_provider:
   back_button_interceptor:
   flutter_slidable:
+  rate_my_app:
 
 
   # The following adds the Cupertino Icons font to your application.

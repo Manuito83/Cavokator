@@ -13,6 +13,8 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/settings/settings.dart';
 import 'package:cavokator_flutter/about/about.dart';
+import 'package:rate_my_app/rate_my_app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class DrawerItem {
@@ -537,15 +539,51 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   void _handleVersionNumber () {
-    SharedPreferencesModel().getAppVersion().then((onValue) {
+    SharedPreferencesModel().getAppVersion().then((onValue) async {
       if (onValue != widget.thisAppVersion) {
-        if (onValue == "3.0" && widget.thisAppVersion == "3.0.1") {
+        if (onValue == "3.0" &&
+            (widget.thisAppVersion == "3.0.1")
+            || widget.thisAppVersion == "3.0.2") {
           // Do nothing in this particular case
           // as this is a minor upgrade
         } else {
           _showChangeLogDialog(context);
         }
         SharedPreferencesModel().setAppVersion(widget.thisAppVersion);
+      } else { // Changelog is more important than RateMyApp
+
+        RateMyApp rateMyApp = RateMyApp(
+          preferencesPrefix: 'rateMyApp_',
+          minDays: 7,
+          minLaunches: 10,
+          remindDays: 7,
+          remindLaunches: 10,
+          googlePlayIdentifier: 'com.github.manuito83.cavokator',
+          appStoreIdentifier: '1476573096',
+        );
+
+        // DEBUG RATING: caution, only reset for testing!
+        // // await rateMyApp.reset();
+        // SharedPreferences preferences = await SharedPreferences.getInstance();
+        // var launches = preferences.getInt('rateMyApp_launches') ?? 0;
+        // print("Total launches: $launches");
+
+        rateMyApp.init().then((_) {
+          if (rateMyApp.shouldOpenDialog) {
+            rateMyApp.showRateDialog(
+              context,
+              title: 'Rate Cavokator', // The dialog title.
+              message: 'Cavokator is free with no ads.\n\nIt would really help '
+                  'us to continue improving if you rate us, it shouldn\'t take '
+                  'more than one minute! Please!', // The dialog message.
+              rateButton: 'RATE', // The dialog "rate" button text.
+              noButton: 'NO THANKS', // The dialog "no" button text.
+              laterButton: 'MAYBE LATER', // The dialog "later" button text.
+              ignoreIOS: false, // Set to false if you want to show the native Apple app rating dialog on iOS.
+              dialogStyle: DialogStyle(), // Custom dialog styles.
+            );
+          }
+        });
       }
     });
   }
