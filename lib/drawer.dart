@@ -562,8 +562,9 @@ class _DrawerPageState extends State<DrawerPage> {
           appStoreIdentifier: '1476573096',
         );
 
-        // DEBUG RATING: caution, only reset for testing!
-        // await rateMyApp.reset();
+        // DEBUG RATING
+        // await rateMyApp.reset(); // Only to reset all rating SharedPreferences
+        // The rest shows just one example (number of app launches)
         // SharedPreferences preferences = await SharedPreferences.getInstance();
         // var launches = preferences.getInt('rateMyApp_launches') ?? 0;
         // print("Total launches: $launches");
