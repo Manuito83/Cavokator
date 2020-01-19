@@ -563,7 +563,7 @@ class _DrawerPageState extends State<DrawerPage> {
         );
 
         // DEBUG RATING: caution, only reset for testing!
-        // // await rateMyApp.reset();
+        // await rateMyApp.reset();
         // SharedPreferences preferences = await SharedPreferences.getInstance();
         // var launches = preferences.getInt('rateMyApp_launches') ?? 0;
         // print("Total launches: $launches");
@@ -572,14 +572,17 @@ class _DrawerPageState extends State<DrawerPage> {
           if (rateMyApp.shouldOpenDialog) {
             rateMyApp.showRateDialog(
               context,
-              title: 'Rate Cavokator', // The dialog title.
-              message: 'Cavokator is free with no ads.\n\nIt would really help '
-                  'us to continue improving if you rate us, it shouldn\'t take '
-                  'more than one minute! Please!', // The dialog message.
-              rateButton: 'RATE', // The dialog "rate" button text.
-              noButton: 'NO THANKS', // The dialog "no" button text.
-              laterButton: 'MAYBE LATER', // The dialog "later" button text.
-              ignoreIOS: false, // Set to false if you want to show the native Apple app rating dialog on iOS.
+              title: 'Rate Cavokator (please?!)', // The dialog title.
+              message: 'Cavokator is free with no ads, with the sole aim of '
+                  'offering easy and quick access to information pilots need.'
+                  '\n\nIf you have suggestions, please send us an email. '
+                  'Otherwise, it would really help us if you rate us positively and '
+                  'leave a comment, it shouldn\'t take more than a minute! '
+                  '\n\nHowever, we won\'t ask again if you click NO. Thanks.',
+              rateButton: 'YES, RATE!', // The dialog "rate" button text.
+              noButton: 'NO', // The dialog "no" button text.
+              laterButton: 'LATER', // The dialog "later" button text.
+              ignoreIOS: true, // Set to false if you want to show the native Apple app rating dialog on iOS.
               dialogStyle: DialogStyle(), // Custom dialog styles.
             );
           }
