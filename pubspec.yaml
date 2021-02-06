@@ -15,17 +15,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http:
-  flutter_sticky_header:
-  shared_preferences:
-  google_maps_flutter:
-  scroll_to_index:
-  flutter_speed_dial:
-  intl:
-  share:
-  connectivity:
-  url_launcher:
-  path_provider:
+  http: ^0.12.2
+  flutter_sticky_header: ^0.5.0
+  shared_preferences: ^0.5.12+4
+  google_maps_flutter: ^1.2.0
+  scroll_to_index: ^1.0.6
+  flutter_speed_dial: ^1.2.5
+  intl: ^0.16.1
+  share: ^0.6.5+4
+  connectivity: ^2.0.2
+  url_launcher: ^5.7.10
+  path_provider: ^1.6.27
   xml: ^4.5.1
   csv: ^4.1.0
   back_button_interceptor: ^4.4.1
