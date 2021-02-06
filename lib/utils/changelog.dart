@@ -31,7 +31,7 @@ class ChangeLog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Flexible(
-                      child: Text("FEATURES",
+                      child: Text("NOTICE",
                         style: TextStyle(
                           fontSize: 16,
                         ),
@@ -45,14 +45,16 @@ class ChangeLog extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Icon(Icons.favorite, size: 20),
+                    Icon(Icons.warning, size: 20),
                     Padding(padding: EdgeInsets.only(right: 15)),
                     Flexible(
                       child: Text(
-                        "Added a favourites section, so that you can group "
-                            "your airports by destination, alternates, etc. "
-                            "You can also export them as a backup and import your "
-                            "list (or a friend's) at a later stage!",
+                        "Sadly, Cavokator has lost its NOTAMS section for the foreseeable future.\n\n"
+                        "After FAA decided to discontinue AIDAP support in 2021, only costly solutions remain "
+                        "which would go against Cavokator's freeware spirit.\n\n"
+                        "We have tried to find a free or low cost partner, but didn't find anyone willing to collaborate. "
+                        "Hence, until a new NOTAM provider can be found in the future, we have sadly deactivated this section.\n\n"
+                        "All other Cavokator sections will continue to be maintained.",
                         //style: TextStyle(
                         //  fontWeight: FontWeight.bold,
                         //),
