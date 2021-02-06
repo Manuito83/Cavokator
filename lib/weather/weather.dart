@@ -91,7 +91,7 @@ class _WeatherPageState extends State<WeatherPage> {
     if (_autoFetch) {
       _restoreHoursBefore();
     } else {
-      //_restoreSharedPreferences();
+      _restoreSharedPreferences();
     }
     SharedPreferencesModel().setSettingsLastUsedSection("0");
 
