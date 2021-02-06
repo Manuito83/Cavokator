@@ -26,9 +26,11 @@ dependencies:
   connectivity:
   url_launcher:
   path_provider:
-  back_button_interceptor:
-  flutter_slidable:
-  rate_my_app:
+  xml: ^4.5.1
+  csv: ^4.1.0
+  back_button_interceptor: ^4.4.1
+  flutter_slidable: ^0.5.7
+  rate_my_app: ^0.7.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -58,6 +60,7 @@ flutter:
   assets:
   - assets/icons/
   - assets/images/
+  - assets/airports/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

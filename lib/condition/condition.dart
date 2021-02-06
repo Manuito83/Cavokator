@@ -33,7 +33,7 @@ class _ConditionPageState extends State<ConditionPage> {
     super.initState();
 
     _restoreSharedPreferences();
-    SharedPreferencesModel().setSettingsLastUsedSection("2");
+    SharedPreferencesModel().setSettingsLastUsedSection("1");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());

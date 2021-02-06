@@ -57,7 +57,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   // Variables for options dialog
   bool _autoFetch = true;
-  bool _fetchBoth = true;
+  bool _fetchBoth = false;
 
 
   @override
@@ -163,6 +163,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
             );
           },
         ),
+        /*
         IconButton(
           icon: Icon(Icons.settings),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
@@ -170,6 +171,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
             _settingsDialog();
           },
         ),
+        */
       ],
     );
   }
@@ -437,6 +439,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         },
                       )
                   ),
+                  /*
                   Padding(
                     padding: EdgeInsets.fromLTRB(5, 0, 15, 5),
                     child:  IconButton(
@@ -454,6 +457,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         }
                     ),
                   ),
+                  */
                 ],
               ),
 
@@ -1160,9 +1164,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
       _autoFetch = onValue;
     });
 
+    /*
     await SharedPreferencesModel().getFavouritesFetchBoth().then((onValue) {
       _fetchBoth = onValue;
-    });
+    });*/
+    _fetchBoth = false;
+
   }
 
   void _updateFromImport (List<Favourite> tentativeList, bool overwrite) {
@@ -1180,7 +1187,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _saveFavPrefs();
   }
 
-  bool myInterceptor(bool stopDefaultButtonEvent) {
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo route) {
     if (widget.favFrom == FavFrom.weather){
       widget.callbackPage(0);
       return true;

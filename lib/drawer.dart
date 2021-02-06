@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
+import 'package:csv/csv.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/weather/weather.dart';
 import 'package:cavokator_flutter/notam/notam.dart';
 import 'package:cavokator_flutter/condition/condition.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
@@ -16,7 +18,6 @@ import 'package:cavokator_flutter/about/about.dart';
 import 'package:rate_my_app/rate_my_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class DrawerItem {
   String title;
   String asset;
@@ -24,19 +25,19 @@ class DrawerItem {
   DrawerItem(this.title, this.asset);
 }
 
-
 class DrawerPage extends StatefulWidget {
-
   final Function changeBrightness;
   final bool savedThemeDark;
   final String thisAppVersion;
 
-  DrawerPage({@required this.changeBrightness, @required this.savedThemeDark,
-              @required this.thisAppVersion});
+  DrawerPage(
+      {@required this.changeBrightness,
+      @required this.savedThemeDark,
+      @required this.thisAppVersion});
 
   final drawerItems = [
     new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
-    new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
+    //new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
     new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
     new DrawerItem("TEMP Corrections", "assets/icons/drawer_temperature.png"),
     new DrawerItem("Favourites", "assets/icons/drawer_favourites.png"),
@@ -46,10 +47,11 @@ class DrawerPage extends StatefulWidget {
 
   @override
   _DrawerPageState createState() => _DrawerPageState();
-  }
-
+}
 
 class _DrawerPageState extends State<DrawerPage> {
+  var _airports = <List<dynamic>>[];
+
   int _activeDrawerIndex = 0;
   int _selected = 0;
   bool _sharedPreferencesReady = false;
@@ -64,7 +66,7 @@ class _DrawerPageState extends State<DrawerPage> {
   bool _hideBottomNavBar = false;
   bool _bottomWeatherButtonDisabled = false;
   bool _bottomNotamButtonDisabled = false;
-  bool _swipeSections = true;  // TODO (maybe?): setting to deactivate this?
+  bool _swipeSections = true; // TODO (maybe?): setting to deactivate this?
 
   bool _numberOfMaxAirports;
   int _maxAirportsRequested = 8;
@@ -76,7 +78,7 @@ class _DrawerPageState extends State<DrawerPage> {
   bool _fetchBoth = false;
   List<String> _favToWxNotam = List<String>();
   FavFrom _favFrom = FavFrom.drawer;
-  List<String> _importedToFavourites = List<String> ();
+  List<String> _importedToFavourites = List<String>();
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -95,6 +97,8 @@ class _DrawerPageState extends State<DrawerPage> {
   @override
   void initState() {
     super.initState();
+
+    loadAsset();
 
     _handleVersionNumber();
 
@@ -119,8 +123,8 @@ class _DrawerPageState extends State<DrawerPage> {
 
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var myItem = widget.drawerItems[i];
-      var myBackgroundColor = Colors.transparent;  // Transparent
-      if (i == _selected){
+      var myBackgroundColor = Colors.transparent; // Transparent
+      if (i == _selected) {
         myBackgroundColor = Colors.grey[200];
       }
 
@@ -142,8 +146,7 @@ class _DrawerPageState extends State<DrawerPage> {
                 selected: i == _selected,
                 onTap: () => _onSelectItem(i),
               ),
-            )
-        ),
+            )),
       );
     }
     return Scaffold(
@@ -208,7 +211,7 @@ class _DrawerPageState extends State<DrawerPage> {
         ),
       ),
       body: _getDrawerItemWidget(),
-      bottomNavigationBar: _bottomNavBar(),
+      //bottomNavigationBar: _bottomNavBar(),
     );
   }
 
@@ -229,13 +232,14 @@ class _DrawerPageState extends State<DrawerPage> {
         }
       });
 
-      _myPageController = PageController (
+      _myPageController = PageController(
         initialPage: (_activeDrawerIndex == 0) ? 0 : 1,
         keepPage: false,
       );
 
       switch (_activeDrawerIndex) {
         case 0:
+          /*
           if (_swipeSections) {
             return PageView(
               physics: NeverScrollableScrollPhysics(),
@@ -278,25 +282,28 @@ class _DrawerPageState extends State<DrawerPage> {
               ],
             );
           } else {
-            return WeatherPage(
-              isThemeDark: _isThemeDark,
-              myFloat: myFloat,
-              callback: callbackFab,
-              showHeaders: _showHeaderImages,
-              hideBottomNavBar: _turnBottomNavBarOff,
-              showBottomNavBar: _turnBottomNavBarOn,
-              recalledScrollPosition: _scrollPositionWeather,
-              notifyScrollPosition: _setWeatherScrollPosition,
-              airportsFromFav: _favToWxNotam,
-              autoFetch: _autoFetch,
-              cancelAutoFetch: _cancelAutoFetch,
-              callbackToFav: _callbackToFav,
-              fetchBoth: _fetchBoth,
-              maxAirportsRequested: _maxAirportsRequested,
-              thisAppVersion: widget.thisAppVersion,
-            );
-          }
+          */
+          return WeatherPage(
+            isThemeDark: _isThemeDark,
+            myFloat: myFloat,
+            callback: callbackFab,
+            showHeaders: _showHeaderImages,
+            hideBottomNavBar: _turnBottomNavBarOff,
+            showBottomNavBar: _turnBottomNavBarOn,
+            recalledScrollPosition: _scrollPositionWeather,
+            notifyScrollPosition: _setWeatherScrollPosition,
+            airportsFromFav: _favToWxNotam,
+            autoFetch: _autoFetch,
+            cancelAutoFetch: _cancelAutoFetch,
+            callbackToFav: _callbackToFav,
+            fetchBoth: _fetchBoth,
+            maxAirportsRequested: _maxAirportsRequested,
+            thisAppVersion: widget.thisAppVersion,
+            airports: _airports,
+          );
+          //}
           break;
+        /*
         case 1:
           if (_swipeSections) {
             return PageView(
@@ -359,21 +366,22 @@ class _DrawerPageState extends State<DrawerPage> {
             );
           }
           break;
-        case 2:
+          */
+        case 1:
           return ConditionPage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
             callback: callbackFab,
             showHeaders: _showHeaderImages,
           );
-        case 3:
+        case 2:
           return TemperaturePage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
             callback: callbackFab,
             showHeaders: _showHeaderImages,
           );
-        case 4:
+        case 3:
           return FavouritesPage(
             isThemeDark: _isThemeDark,
             callbackFab: callbackFab,
@@ -383,7 +391,7 @@ class _DrawerPageState extends State<DrawerPage> {
             callbackPage: _callbackPage,
             maxAirportsRequested: _maxAirportsRequested,
           );
-        case 5:
+        case 4:
           return SettingsPage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
@@ -391,7 +399,7 @@ class _DrawerPageState extends State<DrawerPage> {
             showHeaders: _showHeaderImages,
             maxAirports: _numberOfMaxAirports,
           );
-        case 6:
+        case 5:
           return AboutPage(
             isThemeDark: _isThemeDark,
             myFloat: myFloat,
@@ -406,6 +414,7 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   _onSelectItem(int index) {
+    /*
     if (index == 1 && _selected == 0) {
       _myPageController.animateToPage(
           1,
@@ -417,6 +426,7 @@ class _DrawerPageState extends State<DrawerPage> {
           duration: Duration(milliseconds: 500),
           curve: Curves.easeInOut);
     }
+    */
 
     setState(() {
       _activeDrawerIndex = index;
@@ -441,20 +451,19 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  Widget _bottomNavBar () {
-
+  Widget _bottomNavBar() {
     if (_hideBottomNavBar) {
       return null;
     }
 
-    if (_activeDrawerIndex == 0 || _activeDrawerIndex == 1){
+    if (_activeDrawerIndex == 0 || _activeDrawerIndex == 1) {
       return Container(
         height: 40,
         decoration: new BoxDecoration(
           border: Border(
             top: BorderSide(
-                color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
-                width: 1,
+              color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+              width: 1,
             ),
           ),
         ),
@@ -468,12 +477,11 @@ class _DrawerPageState extends State<DrawerPage> {
                     ? ThemeMe.apply(_isThemeDark, DesiredColor.MagentaCategory)
                     : ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
               ),
-              onPressed: ()  {
+              onPressed: () {
                 if (!_bottomWeatherButtonDisabled) {
                   _bottomNotamButtonDisabled = true;
                   _bottomWeatherButtonDisabled = true;
-                  _myPageController.animateToPage(
-                      0,
+                  _myPageController.animateToPage(0,
                       duration: Duration(milliseconds: 500),
                       curve: Curves.easeInOut);
                   setState(() {
@@ -493,15 +501,13 @@ class _DrawerPageState extends State<DrawerPage> {
                     ? ThemeMe.apply(_isThemeDark, DesiredColor.MagentaCategory)
                     : ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
               ),
-              onPressed: ()  {
+              onPressed: () {
                 if (!_bottomNotamButtonDisabled) {
                   _bottomNotamButtonDisabled = true;
                   _bottomWeatherButtonDisabled = true;
-                  _myPageController.animateToPage(
-                      1,
+                  _myPageController.animateToPage(1,
                       duration: Duration(milliseconds: 500),
-                      curve: Curves.easeInOut
-                  );
+                      curve: Curves.easeInOut);
                   setState(() {
                     _selected = 1;
                   });
@@ -522,11 +528,15 @@ class _DrawerPageState extends State<DrawerPage> {
 
   Future<Null> _restoreSharedPreferences() async {
     var lastUsed;
-    await SharedPreferencesModel().getSettingsLastUsedSection().then((onLastUsedValue) {
+    await SharedPreferencesModel()
+        .getSettingsLastUsedSection()
+        .then((onLastUsedValue) {
       lastUsed = int.parse(onLastUsedValue);
     });
 
-    await SharedPreferencesModel().getSettingsOpenSpecificSection().then((onValue) async {
+    await SharedPreferencesModel()
+        .getSettingsOpenSpecificSection()
+        .then((onValue) async {
       var savedSelection = int.parse(onValue);
       if (savedSelection == 99) {
         // Open last-recalled page
@@ -538,19 +548,19 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  void _handleVersionNumber () {
+  void _handleVersionNumber() {
     SharedPreferencesModel().getAppVersion().then((onValue) async {
       if (onValue != widget.thisAppVersion) {
-        if (onValue == "3.0" &&
-            (widget.thisAppVersion == "3.0.1")
-            || widget.thisAppVersion == "3.0.2") {
+        if (onValue == "3.0" && (widget.thisAppVersion == "3.0.1") ||
+            widget.thisAppVersion == "3.0.2") {
           // Do nothing in this particular case
           // as this is a minor upgrade
         } else {
           _showChangeLogDialog(context);
         }
         SharedPreferencesModel().setAppVersion(widget.thisAppVersion);
-      } else { // Changelog is more important than RateMyApp
+      } else {
+        // Changelog is more important than RateMyApp
 
         RateMyApp rateMyApp = RateMyApp(
           preferencesPrefix: 'rateMyApp_',
@@ -583,7 +593,6 @@ class _DrawerPageState extends State<DrawerPage> {
               rateButton: 'YES, RATE!', // The dialog "rate" button text.
               noButton: 'NO', // The dialog "no" button text.
               laterButton: 'LATER', // The dialog "later" button text.
-              ignoreIOS: true, // Set to false if you want to show the native Apple app rating dialog on iOS.
               dialogStyle: DialogStyle(), // Custom dialog styles.
             );
           }
@@ -593,13 +602,12 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   void _showChangeLogDialog(BuildContext context) {
-    showDialog (
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (context) {
-        return ChangeLog(appVersion: widget.thisAppVersion);
-      }
-    );
+    showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (context) {
+          return ChangeLog(appVersion: widget.thisAppVersion);
+        });
   }
 
   void _turnBottomNavBarOff() {
@@ -614,15 +622,15 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  void _setWeatherScrollPosition(double position){
+  void _setWeatherScrollPosition(double position) {
     _scrollPositionWeather = position;
   }
 
-  void _setNotamScrollPosition(double position){
+  void _setNotamScrollPosition(double position) {
     _scrollPositionNotam = position;
   }
 
-  void _callbackFromFav (
+  void _callbackFromFav(
       int whatPage, List<String> favToWxNotam, bool autoFetch, bool fetchBoth) {
     setState(() {
       _activeDrawerIndex = whatPage;
@@ -633,7 +641,7 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  void _callbackToFav (
+  void _callbackToFav(
       int whatPage, FavFrom favFrom, List<String> importedToFavourites) {
     setState(() {
       _activeDrawerIndex = whatPage;
@@ -643,16 +651,26 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  void _cancelAutoFetch () {
+  void _cancelAutoFetch() {
     _autoFetch = false;
     _favToWxNotam.clear();
   }
 
-  void _callbackPage (int whatPage) {
+  void _callbackPage(int whatPage) {
     setState(() {
       _activeDrawerIndex = whatPage;
       _selected = whatPage;
     });
   }
 
+  Future loadAsset() async {
+    rootBundle.loadString('assets/airports/airports.csv').then((value) async {
+      List<List<dynamic>> csvTable = CsvToListConverter().convert(
+        value,
+        fieldDelimiter: ";",
+        //eol: "\n",
+      );
+      _airports = csvTable;
+    });
+  }
 }

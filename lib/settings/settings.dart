@@ -172,6 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ),
+        /*
         DropdownMenuItem(
           value: "1",
           child: Text(
@@ -181,8 +182,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ),
+        */
         DropdownMenuItem(
-          value: "2",
+          value: "1",
           child: Text(
             "Open RWY Condition",
             style: TextStyle (
@@ -191,7 +193,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         DropdownMenuItem(
-          value: "3",
+          value: "2",
           child: Text(
             "Open TEMP Corrections",
             style: TextStyle (

@@ -55,7 +55,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     _myElevationTextController.text = "0";
     _myTemperatureTextController.text = "0";
 
-    SharedPreferencesModel().setSettingsLastUsedSection("3");
+    SharedPreferencesModel().setSettingsLastUsedSection("2");
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
