@@ -103,6 +103,7 @@ class _AboutPageState extends State<AboutPage> {
                 ],
               ),
             ),
+            /*
             Padding (
               padding: EdgeInsets.fromLTRB(50, 25, 30, 10),
               child: Row(
@@ -124,6 +125,7 @@ class _AboutPageState extends State<AboutPage> {
                 ],
               ),
             ),
+            */
             Padding (
               padding: EdgeInsets.fromLTRB(50, 10, 30, 10),
               child: Row(
