@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
@@ -668,7 +669,7 @@ class _DrawerPageState extends State<DrawerPage> {
       List<List<dynamic>> csvTable = CsvToListConverter().convert(
         value,
         fieldDelimiter: ";",
-        //eol: "\n",
+        eol: Platform.isAndroid ? "\r\n" : "\n",
       );
       _airports = csvTable;
     });
