@@ -6,6 +6,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 /// TODO: LAUNCH CHECKLIST
 /// Is the current version OK? Update it?
 /// Update changelog?
+/// NOTE: AS OF v3.1.0, CHANGELOG ONLY APPEARS FOR NEW UPDATES, NO NEW INSTALLATIONS (REVISIT?)
 String thisAppVersion = "3.1.0";
 String androidVersionCode = "33";
 String iosVersionCode = "0";
