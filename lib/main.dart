@@ -7,7 +7,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 /// Is the current version OK? Update it?
 /// Update changelog?
 String thisAppVersion = "3.1.0";
-String androidVersionCode = "32";
+String androidVersionCode = "33";
 String iosVersionCode = "0";
 
 void main() => runApp(new Cavokator());
