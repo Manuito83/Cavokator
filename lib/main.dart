@@ -9,7 +9,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 /// NOTE: AS OF v3.1.0, CHANGELOG ONLY APPEARS FOR NEW UPDATES, NO NEW INSTALLATIONS (REVISIT?)
 String thisAppVersion = "3.1.0";
 String androidVersionCode = "33";
-String iosVersionCode = "0";
+String iosVersionCode = "19";
 
 void main() => runApp(new Cavokator());
 
