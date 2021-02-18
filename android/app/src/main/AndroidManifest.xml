@@ -16,7 +16,7 @@
         android:label="Cavokator"
         android:icon="@mipmap/ic_appicon">
         <meta-data android:name="com.google.android.geo.API_KEY"
-                   android:value="AIzaSyC2r0K_S7hTT1jQw2PQNxPpSnXMKy88hDA"/>
+                   android:value="###KEY RESETED###"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
