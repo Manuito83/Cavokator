@@ -869,6 +869,10 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   void onInputTextChange() {
+    // REST CANCELLED AS IT WAS CREATING ISSUES
+    String textEntered = _myTextController.text;
+
+    /*
     // Ensure that submitted airports are split correctly
     String textEntered = _myTextController.text;
     // Don't do anything if we are deleting text!
@@ -895,6 +899,8 @@ class _WeatherPageState extends State<WeatherPage> {
         }
       }
     }
+   */
+
     _userSubmitText = textEntered;
   }
 
