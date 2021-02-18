@@ -53,6 +53,8 @@ class DrawerPage extends StatefulWidget {
 class _DrawerPageState extends State<DrawerPage> {
   var _airports = <List<dynamic>>[];
 
+  Future _csvLoaded;
+
   int _activeDrawerIndex = 0;
   int _selected = 0;
   bool _sharedPreferencesReady = false;
@@ -99,7 +101,7 @@ class _DrawerPageState extends State<DrawerPage> {
   void initState() {
     super.initState();
 
-    loadAsset();
+    _csvLoaded = loadAsset();
 
     _handleVersionNumber();
 
@@ -150,70 +152,100 @@ class _DrawerPageState extends State<DrawerPage> {
             )),
       );
     }
-    return Scaffold(
-      floatingActionButton: myFloat,
-      drawer: Drawer(
-        elevation: 2, // This avoids shadow over SafeArea
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            Container(
-              height: 300,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                child: Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Flexible(
-                        child: Image(
-                          image: AssetImage('assets/images/appicon.png'),
-                          fit: BoxFit.fill,
+    return FutureBuilder(
+        future: _csvLoaded,
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snampshot) {
+          if (snampshot.connectionState == ConnectionState.done) {
+            return Scaffold(
+              floatingActionButton: myFloat,
+              drawer: Drawer(
+                elevation: 2, // This avoids shadow over SafeArea
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    Container(
+                      height: 300,
+                      child: DrawerHeader(
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
                         ),
+                        child: Container(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Flexible(
+                                child: Image(
+                                  image:
+                                      AssetImage('assets/images/appicon.png'),
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                              Text(
+                                'CAVOKATOR',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: Text(_switchThemeString),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 20),
+                                    ),
+                                    Flexible(
+                                      child: Switch(
+                                        value: _isThemeDark,
+                                        onChanged: (bool value) {
+                                          _handleThemeChanged(value);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Column(children: drawerOptions),
+                  ],
+                ),
+              ),
+              body: _getDrawerItemWidget(),
+              //bottomNavigationBar: _bottomNavBar(),
+            );
+          } else {
+            return Scaffold(
+              body: Container(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image(
+                        image: AssetImage('assets/images/appicon.png'),
+                        width: 200,
                       ),
                       Text(
                         'CAVOKATOR',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(
-                              child: Text(_switchThemeString),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 20),
-                            ),
-                            Flexible(
-                              child: Switch(
-                                value: _isThemeDark,
-                                onChanged: (bool value) {
-                                  _handleThemeChanged(value);
-                                },
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            Column(children: drawerOptions),
-          ],
-        ),
-      ),
-      body: _getDrawerItemWidget(),
-      //bottomNavigationBar: _bottomNavBar(),
-    );
+            );
+          }
+        });
   }
 
   Widget _getDrawerItemWidget() {
@@ -665,7 +697,9 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   Future loadAsset() async {
-    rootBundle.loadString('assets/airports/airports.csv').then((value) async {
+    await rootBundle
+        .loadString('assets/airports/airports.csv')
+        .then((value) async {
       List<List<dynamic>> csvTable = CsvToListConverter().convert(
         value,
         fieldDelimiter: ";",
