@@ -3,14 +3,14 @@ import 'drawer.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 
-
-void main() => runApp(new Cavokator());
-
 /// TODO: LAUNCH CHECKLIST
 /// Is the current version OK? Update it?
 /// Update changelog?
-/// Are we using the correct server?
+String thisAppVersion = "3.1.0";
+String androidVersionCode = "32";
+String iosVersionCode = "0";
 
+void main() => runApp(new Cavokator());
 
 class Cavokator extends StatefulWidget {
   @override
@@ -18,7 +18,6 @@ class Cavokator extends StatefulWidget {
 }
 
 class _CavokatorState extends State<Cavokator> {
-  String _thisAppVersion = "3.1.0";
   Brightness _myBrightness = Brightness.light;
   bool _isDark = false;
 
@@ -45,7 +44,7 @@ class _CavokatorState extends State<Cavokator> {
           child: DrawerPage(
             changeBrightness: callbackBrightness,
             savedThemeDark: _myBrightness == Brightness.dark ? true : false,
-            thisAppVersion: _thisAppVersion,
+            thisAppVersion: thisAppVersion,
           ),
         ),
       ),

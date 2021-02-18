@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:cavokator_flutter/utils/hyperlink.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
+import 'package:cavokator_flutter/main.dart';
 
 class AboutPage extends StatefulWidget {
   final bool isThemeDark;
@@ -149,6 +152,22 @@ class _AboutPageState extends State<AboutPage> {
                         ),
                       ),
                       onTap: _showChangeLogDialog,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding (
+              padding: EdgeInsets.fromLTRB(50, 10, 30, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Flexible (
+                    child: Text(
+                      "Version: $thisAppVersion (${Platform.isAndroid ? androidVersionCode : iosVersionCode})",
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ],
