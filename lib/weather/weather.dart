@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,9 +19,7 @@ import 'package:share/share.dart';
 import 'package:xml/xml.dart';
 import 'dart:io';
 
-
 class WeatherPage extends StatefulWidget {
-
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
@@ -41,16 +37,23 @@ class WeatherPage extends StatefulWidget {
   final String thisAppVersion;
   final List<List<dynamic>> airports;
 
-
-  WeatherPage({@required this.isThemeDark, @required this.myFloat,
-               @required this.callback, @required this.showHeaders,
-               @required this.hideBottomNavBar, @required this.showBottomNavBar,
-               @required this.recalledScrollPosition,
-               @required this.notifyScrollPosition, @required this.autoFetch,
-               @required this.cancelAutoFetch, @required this.callbackToFav,
-               @required this.airportsFromFav, @required this.fetchBoth,
-               @required this.maxAirportsRequested, @required this.thisAppVersion,
-               @required this.airports});
+  WeatherPage(
+      {@required this.isThemeDark,
+      @required this.myFloat,
+      @required this.callback,
+      @required this.showHeaders,
+      @required this.hideBottomNavBar,
+      @required this.showBottomNavBar,
+      @required this.recalledScrollPosition,
+      @required this.notifyScrollPosition,
+      @required this.autoFetch,
+      @required this.cancelAutoFetch,
+      @required this.callbackToFav,
+      @required this.airportsFromFav,
+      @required this.fetchBoth,
+      @required this.maxAirportsRequested,
+      @required this.thisAppVersion,
+      @required this.airports});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -80,7 +83,6 @@ class _WeatherPageState extends State<WeatherPage> {
   bool _fetchBoth = false;
   int _airportsFromFav = 0;
 
-
   @override
   void initState() {
     super.initState();
@@ -98,7 +100,7 @@ class _WeatherPageState extends State<WeatherPage> {
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
 
-    _ticker = new Timer.periodic(Duration(seconds:30), (Timer t) => _updateTimes());
+    _ticker = new Timer.periodic(Duration(seconds: 30), (Timer t) => _updateTimes());
 
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
@@ -129,7 +131,6 @@ class _WeatherPageState extends State<WeatherPage> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +168,7 @@ class _WeatherPageState extends State<WeatherPage> {
         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
       ),
       title: Text(
-          "Weather",
+        "Weather",
         style: TextStyle(
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
         ),
@@ -180,9 +181,8 @@ class _WeatherPageState extends State<WeatherPage> {
             image: DecorationImage(
               image: AssetImage('assets/images/weather_header.jpg'),
               fit: BoxFit.fitWidth,
-              colorFilter: widget.isThemeDark == true
-                  ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken)
-                  : null,
+              colorFilter:
+                  widget.isThemeDark == true ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken) : null,
             ),
           ),
         ),
@@ -205,7 +205,7 @@ class _WeatherPageState extends State<WeatherPage> {
               Scaffold.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      'Nothing to share!',
+                    'Nothing to share!',
                   ),
                 ),
               );
@@ -222,11 +222,11 @@ class _WeatherPageState extends State<WeatherPage> {
         margin: EdgeInsets.fromLTRB(10, 10, 10, 50),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          border: Border.all(color: Colors.grey),
-          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
-          //color: Colors.grey[200],
-        ),
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            border: Border.all(color: Colors.grey),
+            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
+            //color: Colors.grey[200],
+            ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -293,13 +293,12 @@ class _WeatherPageState extends State<WeatherPage> {
                                 borderRadius: new BorderRadius.circular(12.0),
                                 side: BorderSide(
                                   color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                                )
-                            ),
+                                )),
                             child: Icon(
                               Icons.favorite_border,
                               color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                             ),
-                            onPressed: ()  {
+                            onPressed: () {
                               var favAirports = <String>[];
                               RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches = exp.allMatches(_myTextController.text);
@@ -324,11 +323,9 @@ class _WeatherPageState extends State<WeatherPage> {
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
                         child: RaisedButton(
-                          child: ImageIcon(
-                            AssetImage("assets/icons/drawer_wx.png"),
-                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
-                          ),
-                          onPressed: ()  {
+                          child: ImageIcon(AssetImage("assets/icons/drawer_wx.png"),
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)),
+                          onPressed: () {
                             _fetchButtonPressed(context, false);
                           },
                         ),
@@ -364,7 +361,7 @@ class _WeatherPageState extends State<WeatherPage> {
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
                         child: RaisedButton(
                           child: Icon(Icons.delete),
-                          onPressed: ()  {
+                          onPressed: () {
                             setState(() {
                               _apiCall = false;
                               _myWeatherList.clear();
@@ -395,14 +392,14 @@ class _WeatherPageState extends State<WeatherPage> {
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) => Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsetsDirectional.only(top: 50),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsetsDirectional.only(top: 50),
+                  child: CircularProgressIndicator(),
                 ),
+              ],
+            ),
             childCount: 1,
           ),
         ),
@@ -418,34 +415,33 @@ class _WeatherPageState extends State<WeatherPage> {
         _mySharedWeather += "\n###";
 
         for (var i = 0; i < wxModel.wxModelList.length; i++) {
-          var airportName =
-            wxModel.wxModelList[i].airportHeading == null ?
-            _myRequestedAirports[i].toUpperCase() :
-            wxModel.wxModelList[i].airportHeading;
+          var airportName = wxModel.wxModelList[i].airportHeading == null
+              ? _myRequestedAirports[i].toUpperCase()
+              : wxModel.wxModelList[i].airportHeading;
 
-            _mySharedWeather += "\n\n\n### $airportName ###";
-            if (!wxModel.wxModelList[i].airportFound){
-              _mySharedWeather += "\n\nERROR: AIRPORT NOT FOUND!";
-            }
-            if (wxModel.wxModelList[i].airportWeather.length == 0){
-              _mySharedWeather += "\n\nNo weather information found in this airport!";
-            }
-            for (var b = 0; b < wxModel.wxModelList[i].airportWeather.length; b++) {
-              var thisItem = wxModel.wxModelList[i].airportWeather[b];
+          _mySharedWeather += "\n\n\n### $airportName ###";
+          if (!wxModel.wxModelList[i].airportFound) {
+            _mySharedWeather += "\n\nERROR: AIRPORT NOT FOUND!";
+          }
+          if (wxModel.wxModelList[i].airportWeather.length == 0) {
+            _mySharedWeather += "\n\nNo weather information found in this airport!";
+          }
+          for (var b = 0; b < wxModel.wxModelList[i].airportWeather.length; b++) {
+            var thisItem = wxModel.wxModelList[i].airportWeather[b];
 
-              if (thisItem is AirportMetar){
-                for (var met in thisItem.metars) {
-                  _mySharedWeather += "\n\n## METAR \n$met";
-                }
-              } else if (thisItem is AirportTafor) {
-                for (var taf in thisItem.tafors) {
-                  _mySharedWeather += "\n\n## TAFOR \n$taf";
-                }
+            if (thisItem is AirportMetar) {
+              for (var met in thisItem.metars) {
+                _mySharedWeather += "\n\n## METAR \n$met";
+              }
+            } else if (thisItem is AirportTafor) {
+              for (var taf in thisItem.tafors) {
+                _mySharedWeather += "\n\n## TAFOR \n$taf";
               }
             }
-            if (i == wxModel.wxModelList.length - 1) {
-              _mySharedWeather += "\n\n\n\n ### END CAVOKATOR REPORT ###";
-            }
+          }
+          if (i == wxModel.wxModelList.length - 1) {
+            _mySharedWeather += "\n\n\n\n ### END CAVOKATOR REPORT ###";
+          }
 
           mySections.add(
             SliverStickyHeaderBuilder(
@@ -458,7 +454,7 @@ class _WeatherPageState extends State<WeatherPage> {
                     color: (state.isPinned
                         ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
                         : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)
-                        .withOpacity(1.0 - state.scrollPercentage)),
+                            .withOpacity(1.0 - state.scrollPercentage)),
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -469,8 +465,7 @@ class _WeatherPageState extends State<WeatherPage> {
                         ),
                         Flexible(
                           child: Text(
-                            "(${_myRequestedAirports[i].toUpperCase()}) " +
-                            airportName,
+                            "(${_myRequestedAirports[i].toUpperCase()}) " + airportName,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -482,9 +477,7 @@ class _WeatherPageState extends State<WeatherPage> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-
                     if (!wxModel.wxModelList[i].airportFound) {
-
                       return ListTile(
                         title: Card(
                           elevation: 2,
@@ -499,35 +492,28 @@ class _WeatherPageState extends State<WeatherPage> {
                           ),
                         ),
                       );
-
                     } else {
-
                       final item = wxModel.wxModelList[i].airportWeather[index];
 
                       if (item is AirportMetar) {
-
                         // DEBUG METAR HERE (not times)
                         //item.metars[0] = "LEZL 162030Z CAVOK "
                         //"R25R/123456 2000 0800 R23/M2000U";
 
                         var metarLines = <Widget>[];
                         for (var m = 0; m < item.metars.length; m++) {
-                          var wxSpan = MetarColorize(
-                              metar: item.metars[m],
-                              isThemeDark: widget.isThemeDark,
-                              context: context)
-                              .getResult;
+                          var wxSpan =
+                              MetarColorize(metar: item.metars[m], isThemeDark: widget.isThemeDark, context: context)
+                                  .getResult;
 
                           var myText = RichText(text: wxSpan);
 
                           metarLines.add(myText);
 
                           if (m < item.metars.length - 1) {
-                            metarLines.add(
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 20),
-                              )
-                            );
+                            metarLines.add(Padding(
+                              padding: EdgeInsets.only(bottom: 20),
+                            ));
                           }
                         }
 
@@ -537,14 +523,13 @@ class _WeatherPageState extends State<WeatherPage> {
                             margin: EdgeInsets.only(bottom: 10),
                             child: Padding(
                               padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                              child: Column (
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: metarLines,
                               ),
                             ),
                           ),
                         );
-
                       }
 
                       if (item is AirportTafor) {
@@ -553,24 +538,21 @@ class _WeatherPageState extends State<WeatherPage> {
 
                         var myTaforString = item.tafors[0];
                         List<Widget> myWeatherRows = <Widget>[];
-                        if (_splitTafor){
+                        if (_splitTafor) {
                           List<String> splitList = SplitTafor(taforString: myTaforString).getResult;
-                          for (var split in splitList){
+                          for (var split in splitList) {
                             List<TextSpan> thisSpan = <TextSpan>[];
-                            if (split.contains("[/trend]")){
+                            if (split.contains("[/trend]")) {
                               var splitAgain = split.split("[/trend]");
                               var firstSpan = TextSpan(
                                 text: splitAgain[0],
                                 style: TextStyle(
-                                  color: ThemeMe.apply(widget.isThemeDark,
-                                      DesiredColor.BlueTempo),
+                                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.BlueTempo),
                                 ),
                               );
-                              var secondSpan = MetarColorize(
-                                  metar: splitAgain[1],
-                                  isThemeDark: widget.isThemeDark,
-                                  context: context)
-                                  .getResult;
+                              var secondSpan =
+                                  MetarColorize(metar: splitAgain[1], isThemeDark: widget.isThemeDark, context: context)
+                                      .getResult;
                               thisSpan.add(firstSpan);
                               thisSpan.add(secondSpan);
                               myWeatherRows.add(
@@ -578,16 +560,15 @@ class _WeatherPageState extends State<WeatherPage> {
                                   padding: EdgeInsets.only(left: 8, top: 8),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.play_arrow,
-                                        color: ThemeMe.apply(widget.isThemeDark,
-                                            DesiredColor.BlueTempo),
-                                        size: 16,),
+                                      Icon(
+                                        Icons.play_arrow,
+                                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.BlueTempo),
+                                        size: 16,
+                                      ),
                                       Padding(padding: EdgeInsets.only(left: 2)),
                                       Flexible(
                                         child: RichText(
-                                          text: TextSpan(
-                                              children: thisSpan
-                                          ),
+                                          text: TextSpan(children: thisSpan),
                                         ),
                                       ),
                                     ],
@@ -596,11 +577,9 @@ class _WeatherPageState extends State<WeatherPage> {
                               );
                             } else {
                               List<TextSpan> thisSpan = <TextSpan>[];
-                              thisSpan.add(MetarColorize(
-                                  metar: split,
-                                  isThemeDark: widget.isThemeDark,
-                                  context: context)
-                                  .getResult);
+                              thisSpan.add(
+                                  MetarColorize(metar: split, isThemeDark: widget.isThemeDark, context: context)
+                                      .getResult);
                               myWeatherRows.add(
                                 Row(
                                   children: [
@@ -618,14 +597,11 @@ class _WeatherPageState extends State<WeatherPage> {
                             myWeatherLineWidget = Column(
                               children: myWeatherRows,
                             );
-
                           }
                         } else {
-                          wxSpan = MetarColorize(
-                              metar: myTaforString,
-                              isThemeDark: widget.isThemeDark,
-                              context: context)
-                              .getResult;
+                          wxSpan =
+                              MetarColorize(metar: myTaforString, isThemeDark: widget.isThemeDark, context: context)
+                                  .getResult;
                           myWeatherLineWidget = RichText(text: wxSpan);
                         }
 
@@ -641,8 +617,7 @@ class _WeatherPageState extends State<WeatherPage> {
                         );
                       }
 
-
-                      if (item is MetarTimes){
+                      if (item is MetarTimes) {
                         PrettyTimeCombination metarTimeFinal;
                         Color clockIconColor;
 
@@ -652,13 +627,9 @@ class _WeatherPageState extends State<WeatherPage> {
                         if (!item.error) {
                           try {
                             var myPrettyDuration = PrettyDuration(
-                                referenceTime: item.metarTimes[0],
-                                header: "METAR",
-                                prettyType: PrettyType.metar
-                            );
+                                referenceTime: item.metarTimes[0], header: "METAR", prettyType: PrettyType.metar);
                             metarTimeFinal = myPrettyDuration.getDuration;
                             clockIconColor = metarTimeFinal.prettyColor;
-
                           } catch (Exception) {
                             clockIconColor = Colors.red;
                           }
@@ -669,15 +640,14 @@ class _WeatherPageState extends State<WeatherPage> {
                           title: Container(
                             child: Row(
                               children: <Widget>[
-                                Icon(Icons.access_time,
+                                Icon(
+                                  Icons.access_time,
                                   color: clockIconColor,
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 15)),
                                 Flexible(
                                   child: Text(
-                                    item.error
-                                        ? "(no time information)"
-                                        : metarTimeFinal.prettyDuration,
+                                    item.error ? "(no time information)" : metarTimeFinal.prettyDuration,
                                     style: item.error
                                         ? TextStyle(
                                             fontSize: 12,
@@ -696,20 +666,16 @@ class _WeatherPageState extends State<WeatherPage> {
                         );
                       }
 
-                      if (item is TaforTimes){
+                      if (item is TaforTimes) {
                         PrettyTimeCombination taforTimeFinal;
                         Color clockIconColor;
 
                         if (!item.error) {
                           try {
                             var myPrettyDuration = PrettyDuration(
-                                referenceTime: item.taforTimes[0],
-                                header: "TAFOR",
-                                prettyType: PrettyType.tafor
-                            );
+                                referenceTime: item.taforTimes[0], header: "TAFOR", prettyType: PrettyType.tafor);
                             taforTimeFinal = myPrettyDuration.getDuration;
                             clockIconColor = taforTimeFinal.prettyColor;
-
                           } catch (Exception) {
                             clockIconColor = Colors.red;
                           }
@@ -720,15 +686,14 @@ class _WeatherPageState extends State<WeatherPage> {
                           title: Container(
                             child: Row(
                               children: <Widget>[
-                                Icon(Icons.access_time,
+                                Icon(
+                                  Icons.access_time,
                                   color: clockIconColor,
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 15)),
                                 Flexible(
                                   child: Text(
-                                    item.error
-                                        ? "(no time information)"
-                                        : taforTimeFinal.prettyDuration,
+                                    item.error ? "(no time information)" : taforTimeFinal.prettyDuration,
                                     style: item.error
                                         ? TextStyle(
                                             fontSize: 12,
@@ -753,15 +718,12 @@ class _WeatherPageState extends State<WeatherPage> {
 
                        */
                       }
-
                     }
                     // Should not arrive here, if all AirportWeather
                     // items are properly coded
                     return null;
                   },
-                  childCount: wxModel.wxModelList[i].airportFound
-                      ? wxModel.wxModelList[i].airportWeather.length
-                      : 1,
+                  childCount: wxModel.wxModelList[i].airportFound ? wxModel.wxModelList[i].airportWeather.length : 1,
                 ),
               ),
             ),
@@ -772,7 +734,7 @@ class _WeatherPageState extends State<WeatherPage> {
           mySections.add(
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                    (context, index) => Container(
+                (context, index) => Container(
                   margin: EdgeInsets.only(bottom: 80),
                 ),
                 childCount: 1,
@@ -796,15 +758,14 @@ class _WeatherPageState extends State<WeatherPage> {
     return mySections;
   }
 
-  void _updateTimes(){
+  void _updateTimes() {
     //print("UPDATING WX TICKER: ${DateTime.now().toUtc()}");
-    if (_myWeatherList.isNotEmpty){
-          setState(() {
-            // This will trigger a refresh of weather times
-          });
+    if (_myWeatherList.isNotEmpty) {
+      setState(() {
+        // This will trigger a refresh of weather times
+      });
     }
   }
-
 
   Future<void> fabCallback() async {
     widget.callback(SizedBox.shrink());
@@ -818,7 +779,7 @@ class _WeatherPageState extends State<WeatherPage> {
     });
 
     SharedPreferencesModel().getWeatherInformation().then((onValue) {
-      if (onValue.isNotEmpty){
+      if (onValue.isNotEmpty) {
         setState(() {
           _myWeatherList = wxJsonFromJson(onValue);
         });
@@ -917,164 +878,161 @@ class _WeatherPageState extends State<WeatherPage> {
     }
 
     var wxExportedJson = <WxJson>[];
-      var connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.none) {
-        widget.hideBottomNavBar();
-        Scaffold.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Oops! No Internet connection!',
-                style: TextStyle(
-                  color: Colors.black,
-                )
-            ),
-            backgroundColor: Colors.red[100],
-            duration: Duration(seconds: 5),
-          ),
-        );
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      widget.hideBottomNavBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Oops! No Internet connection!',
+              style: TextStyle(
+                color: Colors.black,
+              )),
+          backgroundColor: Colors.red[100],
+          duration: Duration(seconds: 5),
+        ),
+      );
 
-        Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
-        return null;
+      Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
+      return null;
+    }
+
+    try {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Fetching WEATHER, hold position!"),
+          duration: Duration(seconds: 5),
+        ),
+      );
+
+      var airports = allAirports.split(',');
+
+      int internalHoursBefore;
+      if (_hoursBefore == 0) {
+        _mostRecent = true;
+        internalHoursBefore = 10;
+      } else {
+        _mostRecent = false;
+        internalHoursBefore = _hoursBefore;
       }
 
-     try {
-        Scaffold.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Fetching WEATHER, hold position!"),
-            duration: Duration(seconds: 5),
-          ),
-        );
+      // Get raw for all airports
+      for (var i = 0; i < airports.length; i++) {
+        var wxJson = WxJson();
+        wxJson.metars = <Metar>[];
+        wxJson.tafors = <Tafor>[];
+        wxJson.fullAirportDetails = FullAirportDetails();
+        wxJson.airportNotFound = true;
 
-        var airports = allAirports.split(',');
-
-        int internalHoursBefore;
-        if (_hoursBefore == 0) {
-          _mostRecent = true;
-          internalHoursBefore = 10;
+        // Get airport information and convert IATA/ICAO
+        var icao = "";
+        var iata = "";
+        if (airports[i].length == 3) {
+          iata = airports[i];
+          wxJson.fullAirportDetails.iataCode = iata;
+          for (var line in widget.airports) {
+            if (line[1] == airports[i].toUpperCase()) {
+              icao = line[0];
+              airports[i] = icao;
+              wxJson.fullAirportDetails.name = line[2];
+              wxJson.airportNotFound = false;
+              break;
+            }
+          }
+        } else if (airports[i].length == 4) {
+          for (var line in widget.airports) {
+            if (line[0] == airports[i].toUpperCase()) {
+              iata = line[1];
+              wxJson.fullAirportDetails.iataCode = iata;
+              wxJson.fullAirportDetails.name = line[2];
+              wxJson.airportNotFound = false;
+              break;
+            }
+          }
         } else {
-          _mostRecent = false;
-          internalHoursBefore = _hoursBefore;
+          continue;
         }
 
-        // Get raw for all airports
-        for (var i = 0; i < airports.length; i++) {
+        var metarResponses = "";
+        var taforResponses = "";
 
-          var wxJson = WxJson();
-          wxJson.metars = <Metar>[];
-          wxJson.tafors = <Tafor>[];
-          wxJson.fullAirportDetails = FullAirportDetails();
-          wxJson.airportNotFound = true;
+        var metUrl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?" +
+            "dataSource=metars" +
+            "&requestType=retrieve" +
+            "&format=xml" +
+            "&stationString=" +
+            airports[i] +
+            "&hoursBeforeNow=$internalHoursBefore" +
+            "&mostRecent=$_mostRecent";
+        var metResponse = await http.post(metUrl).timeout(Duration(seconds: 10));
+        metarResponses = metResponse.body;
 
-          // Get airport information and convert IATA/ICAO
-          var icao = "";
-          var iata = "";
-          if (airports[i].length == 3) {
-            iata = airports[i];
-            wxJson.fullAirportDetails.iataCode = iata;
-            for (var line in widget.airports) {
-              if (line[1] == airports[i].toUpperCase()) {
-                icao = line[0];
-                airports[i] = icao;
-                wxJson.fullAirportDetails.name = line[2];
-                wxJson.airportNotFound = false;
-                break;
-              }
-            }
-          } else if (airports[i].length == 4) {
-            for (var line in widget.airports) {
-              if (line[0] == airports[i].toUpperCase()) {
-                iata = line[1];
-                wxJson.fullAirportDetails.iataCode = iata;
-                wxJson.fullAirportDetails.name = line[2];
-                wxJson.airportNotFound = false;
-                break;
-              }
-            }
-          } else {
-            continue;
-          }
+        var tafUrlurl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?" +
+            "dataSource=tafs" +
+            "&requestType=retrieve" +
+            "&format=xml" +
+            "&stationString=" +
+            airports[i] +
+            "&hoursBeforeNow=24" +
+            "&mostRecent=true" +
+            "&timeType=issue";
+        var tafResponse = await http.post(tafUrlurl).timeout(Duration(seconds: 10));
+        taforResponses = tafResponse.body;
 
-          var metarResponses = "";
-          var taforResponses = "";
-
-          var metUrl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?"
-              + "dataSource=metars"
-              + "&requestType=retrieve"
-              + "&format=xml"
-              + "&stationString=" + airports[i]
-              + "&hoursBeforeNow=$internalHoursBefore"
-              + "&mostRecent=$_mostRecent";
-          var metResponse = await http.post(metUrl).timeout(Duration(seconds: 10));
-          metarResponses = metResponse.body;
-
-          var tafUrlurl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?"
-              + "dataSource=tafs"
-              + "&requestType=retrieve"
-              + "&format=xml"
-              + "&stationString=" + airports[i]
-              + "&hoursBeforeNow=24"
-              + "&mostRecent=true"
-              + "&timeType=issue";
-          var tafResponse = await http.post(tafUrlurl).timeout(Duration(seconds: 10));
-          taforResponses = tafResponse.body;
-
-          // Main airport data
-          final metarsDocument = XmlDocument.parse(metarResponses);
-          try {
-            wxJson.airportIdIcao = metarsDocument.findAllElements('station_id').map((node) => node.text).first;
-            wxJson.airportIdIata = "";
-            wxJson.airportNotFound = false;
-          } catch (e) {
-            // Initialize to empty object, with only airport information
-            wxJson.metars.add(Metar());
-            wxJson.tafors.add(Tafor());
-            wxExportedJson.add(wxJson);
-            continue;
-          }
-
-          // We add all METARS
-          final metarsRaw = metarsDocument.findAllElements('METAR').map((node) => node.text);
-          if (metarsRaw.isNotEmpty) {
-            for (var i = 0; i < metarsRaw.length; i++) {
-              var met = Metar();
-              met.metar = metarsDocument.findAllElements('raw_text').map((node) => node.text).first;
-              met.metarTime = metarsDocument.findAllElements('observation_time').map((node) => node.text).first;
-              wxJson.metars.add(met);
-            }
-          } else {
-            wxJson.metars.add(Metar());
-          }
-
-          // We only add first TAF
-          var taf = Tafor();
-          final taforsDocument = XmlDocument.parse(taforResponses);
-          final taforsRaw = taforsDocument.findAllElements('TAF').map((node) => node.text);
-          if (taforsRaw.isNotEmpty) {
-            taf.tafor = taforsDocument.findAllElements('raw_text').map((node) => node.text).first;
-            taf.taforTime = taforsDocument.findAllElements('issue_time').map((node) => node.text).first;
-            wxJson.tafors.add(taf);
-          } else {
-            wxJson.tafors.add(Tafor());
-          }
-
+        // Main airport data
+        final metarsDocument = XmlDocument.parse(metarResponses);
+        try {
+          wxJson.airportIdIcao = metarsDocument.findAllElements('station_id').map((node) => node.text).first;
+          wxJson.airportIdIata = "";
+          wxJson.airportNotFound = false;
+        } catch (e) {
+          // Initialize to empty object, with only airport information
+          wxJson.metars.add(Metar());
+          wxJson.tafors.add(Tafor());
           wxExportedJson.add(wxJson);
-
+          continue;
         }
 
-        //wxExportedJson = wxJsonFromJson(response.body);
-        SharedPreferencesModel().setWeatherInformation(wxJsonToJson(wxExportedJson));
-        SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
-        SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
+        // We add all METARS
+        var metarsList = <XmlElement>[];
+        var metarsRaw = metarsDocument.findAllElements('METAR').forEach((metar) => metarsList.add(metar));
+        //metarsRaw.map((node) => node.text).forEach((metar) => metarsList.add(metar));
+        if (metarsList.isNotEmpty) {
+          for (var i = 0; i < metarsList.length; i++) {
+            var met = Metar();
+            met.metar = metarsList[i].findElements('raw_text').map((node) => node.text).first;
+            met.metarTime = metarsList[i].findElements('observation_time').map((node) => node.text).first;
+            wxJson.metars.add(met);
+          }
+        } else {
+          wxJson.metars.add(Metar());
+        }
 
+        // We only add first TAF
+        var taf = Tafor();
+        final taforsDocument = XmlDocument.parse(taforResponses);
+        final taforsRaw = taforsDocument.findAllElements('TAF').map((node) => node.text);
+        if (taforsRaw.isNotEmpty) {
+          taf.tafor = taforsDocument.findAllElements('raw_text').map((node) => node.text).first;
+          taf.taforTime = taforsDocument.findAllElements('issue_time').map((node) => node.text).first;
+          wxJson.tafors.add(taf);
+        } else {
+          wxJson.tafors.add(Tafor());
+        }
+
+        wxExportedJson.add(wxJson);
+      }
+
+      //wxExportedJson = wxJsonFromJson(response.body);
+      SharedPreferencesModel().setWeatherInformation(wxJsonToJson(wxExportedJson));
+      SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
+      SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
     } catch (Exception) {
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              "There was an error with the server or the Internet connection!",
+          content: Text("There was an error with the server or the Internet connection!",
               style: TextStyle(
                 color: Colors.black,
-              )
-          ),
+              )),
           backgroundColor: Colors.red[100],
           duration: Duration(seconds: 6),
         ),
@@ -1084,7 +1042,6 @@ class _WeatherPageState extends State<WeatherPage> {
 
     return wxExportedJson;
   }
-
 
   Future<List<WxJson>> _callWeatherApiOLD(bool fetchBoth) async {
     String allAirports = "";
@@ -1112,12 +1069,10 @@ class _WeatherPageState extends State<WeatherPage> {
         widget.hideBottomNavBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Oops! No Internet connection!',
+            content: Text('Oops! No Internet connection!',
                 style: TextStyle(
                   color: Colors.black,
-                )
-            ),
+                )),
             backgroundColor: Colors.red[100],
             duration: Duration(seconds: firstSnackTimeNeeded),
           ),
@@ -1125,9 +1080,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
         Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
         return null;
-
       } else {
-
         String wxServer = PrivateVariables.apiURL;
         String wxApi = "Wx/GetWx?";
 
@@ -1187,7 +1140,6 @@ class _WeatherPageState extends State<WeatherPage> {
 
         if (response.statusCode != 200) {
           wxFailed = true;
-
         } else {
           wxExportedJson = wxJsonFromJson(response.body);
           SharedPreferencesModel().setWeatherInformation(response.body);
@@ -1223,7 +1175,6 @@ class _WeatherPageState extends State<WeatherPage> {
 
           if (response.statusCode != 200) {
             notamFailed = true;
-
           } else {
             var timeNow = DateTime.now().toUtc();
             String notamRequestedTime = timeNow.toIso8601String();
@@ -1240,9 +1191,7 @@ class _WeatherPageState extends State<WeatherPage> {
       if (wxFailed || notamFailed) {
         throw "error";
       }
-
     } catch (Exception) {
-
       String expString = "";
       if (fetchBoth) {
         if (wxFailed && notamFailed) {
@@ -1265,12 +1214,10 @@ class _WeatherPageState extends State<WeatherPage> {
       widget.hideBottomNavBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            expString,
-            style: TextStyle(
-              color: Colors.black,
-            )
-          ),
+          content: Text(expString,
+              style: TextStyle(
+                color: Colors.black,
+              )),
           backgroundColor: Colors.red[100],
           duration: Duration(seconds: 6),
         ),
@@ -1285,9 +1232,9 @@ class _WeatherPageState extends State<WeatherPage> {
       int diffTime = finishRequest.difference(startRequest).inSeconds;
       int myWait;
       if (diffTime <= firstSnackTimeNeeded) {
-        myWait = firstSnackTimeNeeded - diffTime + 7;   // First SnackBar - time until now + time for the second one
+        myWait = firstSnackTimeNeeded - diffTime + 7; // First SnackBar - time until now + time for the second one
       } else {
-        myWait = 7;  // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
+        myWait = 7; // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
       }
       Timer(Duration(seconds: myWait), () => widget.showBottomNavBar());
 
@@ -1308,23 +1255,17 @@ class _WeatherPageState extends State<WeatherPage> {
     return wxExportedJson;
   }
 
-
   Future<void> _showSettings() async {
-    return showDialog (
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return WeatherOptionsDialog(
-          hours: _hoursBefore,
-          hoursChangedCallback: _hoursBeforeChanged
-        );
-      }
-    );
+    return showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return WeatherOptionsDialog(hours: _hoursBefore, hoursChangedCallback: _hoursBeforeChanged);
+        });
   }
 
-
   void _hoursBeforeChanged(double newValue) {
-      _hoursBefore = newValue.toInt();
+    _hoursBefore = newValue.toInt();
   }
 
   void onMainScrolled() {

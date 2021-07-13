@@ -10,7 +10,7 @@ description: Cavokator - Weather for pilots
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -26,7 +26,7 @@ dependencies:
   connectivity: ^2.0.2
   url_launcher: ^5.7.10
   path_provider: ^1.6.27
-  xml: ^4.5.1
+  xml: ^5.1.2
   csv: ^4.1.0
   back_button_interceptor: ^4.4.1
   flutter_slidable: ^0.5.7
