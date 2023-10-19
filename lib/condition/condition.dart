@@ -7,13 +7,12 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ConditionPage extends StatefulWidget {
-  final bool isThemeDark;
+  final bool? isThemeDark;
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
 
-  ConditionPage({@required this.isThemeDark, @required this.myFloat,
-                 @required this.callback, @required this.showHeaders});
+  ConditionPage({required this.isThemeDark, required this.myFloat, required this.callback, required this.showHeaders});
 
   @override
   _ConditionPageState createState() => _ConditionPageState();
@@ -21,12 +20,11 @@ class ConditionPage extends StatefulWidget {
 
 class _ConditionPageState extends State<ConditionPage> {
   final _formKey = GlobalKey<FormState>();
-  final _myTextController = new TextEditingController();
+  final _myTextController = TextEditingController();
   String _userConditionInput = "";
 
   bool _resultsToShow = false;
-  Widget _resultsPositive;
-
+  Widget? _resultsPositive;
 
   @override
   void initState() {
@@ -37,7 +35,6 @@ class _ConditionPageState extends State<ConditionPage> {
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
-
   }
 
   @override
@@ -46,7 +43,7 @@ class _ConditionPageState extends State<ConditionPage> {
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
           ),
@@ -60,7 +57,7 @@ class _ConditionPageState extends State<ConditionPage> {
   }
 
   List<Widget> _buildSlivers(BuildContext context) {
-    List<Widget> slivers = new List<Widget>();
+    List<Widget> slivers = <Widget>[];
 
     slivers.add(_myAppBar());
     slivers.add(_inputForm());
@@ -71,7 +68,7 @@ class _ConditionPageState extends State<ConditionPage> {
 
   Widget _myAppBar() {
     return SliverAppBar(
-      iconTheme: new IconThemeData(color: Colors.white),
+      iconTheme: IconThemeData(color: Colors.white),
       title: Text(
         "Runway Condition",
         style: TextStyle(color: Colors.white),
@@ -80,13 +77,12 @@ class _ConditionPageState extends State<ConditionPage> {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage('assets/images/condition_header.jpg'),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/condition_header.jpg'),
               fit: BoxFit.fitWidth,
-              colorFilter: widget.isThemeDark == true
-                  ? ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
-                  : null,
+              colorFilter:
+                  widget.isThemeDark == true ? ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken) : null,
             ),
           ),
         ),
@@ -103,8 +99,8 @@ class _ConditionPageState extends State<ConditionPage> {
             borderRadius: BorderRadius.all(Radius.circular(8.0)),
             border: Border.all(color: Colors.grey),
             color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
-          //color: Colors.grey[200],
-        ),
+            //color: Colors.grey[200],
+            ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -147,10 +143,8 @@ class _ConditionPageState extends State<ConditionPage> {
                                 r"|((\b)+(R\/SNOCLO)+(\b))"
                                 r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))",
                                 caseSensitive: false);
-                            String myMatch = exp
-                                .stringMatch(_myTextController.text)
-                                .toString();
-                            if (myMatch != "null"){
+                            String myMatch = exp.stringMatch(_myTextController.text).toString();
+                            if (myMatch != "null") {
                               _userConditionInput = myMatch;
                               return null;
                             } else {
@@ -170,13 +164,13 @@ class _ConditionPageState extends State<ConditionPage> {
                       Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       ),
-                      RaisedButton(
+                      ElevatedButton(
                           child: Text('Decode!'),
                           onPressed: () {
                             _decodeButtonPressed();
                           }),
                       Padding(padding: EdgeInsets.fromLTRB(0, 0, 10, 0)),
-                      RaisedButton(
+                      ElevatedButton(
                         child: Text('Clear'),
                         onPressed: () {
                           setState(() {
@@ -197,7 +191,7 @@ class _ConditionPageState extends State<ConditionPage> {
     );
   }
 
-  Widget _resultSection () {
+  Widget _resultSection() {
     if (!_resultsToShow) {
       return CustomSliverSection(
         child: _resultExamples(),
@@ -207,10 +201,9 @@ class _ConditionPageState extends State<ConditionPage> {
         child: _resultsPositive,
       );
     }
-
   }
 
-  Widget _resultExamples (){
+  Widget _resultExamples() {
     return Container(
       padding: EdgeInsets.only(left: 50, top: 30),
       child: Column(
@@ -220,35 +213,26 @@ class _ConditionPageState extends State<ConditionPage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-              )
-          ),
+              )),
           Padding(
               padding: EdgeInsets.only(left: 20, top: 20),
               child: Text(
-                "R27L/356691" +
-                    "\n\n88356691" +
-                    "\n\nR27/CLRD//" +
-                    "\n\nR/SNOCLO",
-                style: TextStyle(
-                    fontSize: 18),
-              )
-          ),
+                "R27L/356691" + "\n\n88356691" + "\n\nR27/CLRD//" + "\n\nR/SNOCLO",
+                style: TextStyle(fontSize: 18),
+              )),
         ],
       ),
     );
   }
 
-
-
   void _decodeButtonPressed() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       _userConditionInput = _myTextController.text;
       _saveSharedPreferences();
       _decodeCondition();
     }
-    FocusScope.of(context).requestFocus(new FocusNode());
+    FocusScope.of(context).requestFocus(FocusNode());
   }
-
 
   void _decodeCondition() {
     var condition = ConditionDecode(conditionString: _userConditionInput);
@@ -260,9 +244,10 @@ class _ConditionPageState extends State<ConditionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("ERROR!"
-                "\n\n"
-                "Invalid runway condition.",
+            Text(
+              "ERROR!"
+              "\n\n"
+              "Invalid runway condition.",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -310,14 +295,11 @@ class _ConditionPageState extends State<ConditionPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                  decodedCondition.rwyError ?
-                  "(runway error)"
-                        : "Runway ${decodedCondition.rwyValue.toUpperCase()}",
+                    decodedCondition.rwyError ? "(runway error)" : "Runway ${decodedCondition.rwyValue.toUpperCase()}",
                     style: TextStyle(
                       fontSize: decodedCondition.rwyError ? 16 : 20,
                       fontWeight: FontWeight.bold,
-                      color: decodedCondition.rwyError ?
-                          Colors.red : null,
+                      color: decodedCondition.rwyError ? Colors.red : null,
                     ),
                   ),
                   Text(
@@ -347,9 +329,9 @@ class _ConditionPageState extends State<ConditionPage> {
           children: <Widget>[
             // Runway
             Padding(
-              padding: EdgeInsets.only(top:20),
+              padding: EdgeInsets.only(top: 20),
               child: Row(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     width: 90,
                     child: Text(
@@ -377,9 +359,9 @@ class _ConditionPageState extends State<ConditionPage> {
             ),
             // Deposit type
             Padding(
-              padding: EdgeInsets.only(top:20),
+              padding: EdgeInsets.only(top: 20),
               child: Row(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     width: 90,
                     child: Text(
@@ -407,9 +389,9 @@ class _ConditionPageState extends State<ConditionPage> {
             ),
             // Extent
             Padding(
-              padding: EdgeInsets.only(top:20),
+              padding: EdgeInsets.only(top: 20),
               child: Row(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     width: 90,
                     child: Text(
@@ -437,9 +419,9 @@ class _ConditionPageState extends State<ConditionPage> {
             ),
             // Depth
             Padding(
-              padding: EdgeInsets.only(top:20),
+              padding: EdgeInsets.only(top: 20),
               child: Row(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     width: 90,
                     child: Text(
@@ -467,9 +449,9 @@ class _ConditionPageState extends State<ConditionPage> {
             ),
             // Runway
             Padding(
-              padding: EdgeInsets.only(top:20, bottom: 50),
+              padding: EdgeInsets.only(top: 20, bottom: 50),
               child: Row(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     width: 90,
                     child: Text(
@@ -528,11 +510,8 @@ class _ConditionPageState extends State<ConditionPage> {
       });
     });
 
-    if (_userConditionInput != "" || _myTextController.text != ""){
+    if (_userConditionInput != "" || _myTextController.text != "") {
       _decodeCondition();
     }
   }
-
-
-
 }

@@ -3,15 +3,11 @@ import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:cavokator_flutter/favourites/favourites_backups.dart';
 import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'dart:async';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-
 
 enum FavFrom {
   drawer,
@@ -21,17 +17,21 @@ enum FavFrom {
 
 class FavouritesPage extends StatefulWidget {
   final FavFrom favFrom;
-  final bool isThemeDark;
+  final bool? isThemeDark;
   final Function callbackFab;
   final Function callbackFromFav;
   final List<String> importedAirports;
   final Function callbackPage;
   final int maxAirportsRequested;
 
-  FavouritesPage({@required this.isThemeDark, @required this.callbackFab,
-                  @required this.callbackFromFav, @required this.favFrom,
-                  @required this.importedAirports, @required this.callbackPage,
-                  @required this.maxAirportsRequested});
+  FavouritesPage(
+      {required this.isThemeDark,
+      required this.callbackFab,
+      required this.callbackFromFav,
+      required this.favFrom,
+      required this.importedAirports,
+      required this.callbackPage,
+      required this.maxAirportsRequested});
 
   @override
   _FavouritesPageState createState() => _FavouritesPageState();
@@ -40,17 +40,17 @@ class FavouritesPage extends StatefulWidget {
 class _FavouritesPageState extends State<FavouritesPage> {
   final _mainFormKey = GlobalKey<FormState>();
 
-  final _titleInputController = new TextEditingController();
-  final _airportsInputController = new TextEditingController();
-  final _importInputController = new TextEditingController();
+  final _titleInputController = TextEditingController();
+  final _airportsInputController = TextEditingController();
+  final _importInputController = TextEditingController();
   String _userSubmittedAirports = "";
 
   String _thisInputTitle = "";
-  List<String> _thisInputAirportsList = List<String>();
+  List<String> _thisInputAirportsList = <String>[];
 
-  List<Favourite> _favouritesList = List<Favourite>();
+  List<Favourite> _favouritesList = <Favourite>[];
 
-  final _searchController = new TextEditingController();
+  final _searchController = TextEditingController();
   String _userSearch = "";
 
   bool _importing = false;
@@ -58,7 +58,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
   // Variables for options dialog
   bool _autoFetch = true;
   bool _fetchBoth = false;
-
 
   @override
   void initState() {
@@ -81,7 +80,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
           ),
@@ -105,7 +104,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
   }
 
   List<Widget> _buildSlivers(BuildContext context) {
-    List<Widget> slivers = new List<Widget>();
+    List<Widget> slivers = <Widget>[];
 
     slivers.add(_myAppBar());
     slivers.add(_mainBody());
@@ -118,7 +117,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     if (widget.favFrom == FavFrom.weather) {
       returnArrow = IconButton(
         icon: Icon(Icons.arrow_back),
-        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        color: Colors.white,
         onPressed: () {
           widget.callbackPage(0);
         },
@@ -126,7 +125,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     } else if (widget.favFrom == FavFrom.notam) {
       returnArrow = IconButton(
         icon: Icon(Icons.arrow_back),
-        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+        color: Colors.white,
         onPressed: () {
           widget.callbackPage(1);
         },
@@ -141,20 +140,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
         returnArrow,
         IconButton(
           icon: Icon(Icons.delete_forever),
-          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          color: Colors.white,
           onPressed: () {
             _deleteAllFavsDialog();
           },
         ),
         IconButton(
           icon: Icon(Icons.save),
-          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          color: Colors.white,
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                FavouritesBackupsPage(
+                builder: (context) => FavouritesBackupsPage(
                   isThemeDark: widget.isThemeDark,
                   currentFavList: _favouritesList,
                   updateCallback: _updateFromImport,
@@ -176,38 +174,37 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-  Widget _mainBody () {
+  Widget _mainBody() {
     return CustomSliverSection(
-        child: Column (
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding (
-              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-              child: Row(
-                children: <Widget>[
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          labelText: "Search",
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+            child: Row(
+              children: <Widget>[
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: "Search",
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12.0))),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
-              child: _addButtons(),
-            ),
-            Flexible(
-              child: ListView.builder(
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(0, 20, 0, 5),
+            child: _addButtons(),
+          ),
+          Flexible(
+            child: ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
@@ -216,23 +213,21 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   if (_userSearch == "") {
                     return _favouriteCard(index);
                   } else {
-                    if (_favouritesList[index].title.toUpperCase()
-                        .contains(_userSearch.toUpperCase())) {
+                    if (_favouritesList[index].title!.toUpperCase().contains(_userSearch.toUpperCase())) {
                       return _favouriteCard(index);
                     } else {
                       return SizedBox.shrink();
                     }
                   }
-                }
-              ),
-            ),
-            SizedBox(height: 60.0),
-          ],
-        ),
+                }),
+          ),
+          SizedBox(height: 60.0),
+        ],
+      ),
     );
   }
 
-  Widget _addButtons () {
+  Widget _addButtons() {
     if (widget.favFrom == FavFrom.drawer) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,23 +235,27 @@ class _FavouritesPageState extends State<FavouritesPage> {
           ButtonTheme(
             minWidth: 1.0,
             buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-            child: RaisedButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(18.0),
-                side: BorderSide(
-                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all<OutlinedBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    side: BorderSide(
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)!,
+                    ),
+                  ),
                 ),
               ),
               child: Row(
                 children: <Widget>[
                   Icon(
                     Icons.add,
-                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                    color: Colors.white,
                   ),
                   Text(" Add new"),
                 ],
               ),
-              onPressed: ()  {
+              onPressed: () {
                 _thisInputTitle = "";
                 _thisInputAirportsList.clear();
                 _titleInputController.text = "";
@@ -276,27 +275,29 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ButtonTheme(
                 minWidth: 1.0,
                 buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(12.0),
-                    side: BorderSide(
-                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory),
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all<OutlinedBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory)!,
+                        ),
+                      ),
                     ),
                   ),
                   child: Row(
                     children: <Widget>[
                       ImageIcon(
-                        AssetImage(
-                          widget.favFrom == FavFrom.weather
-                              ? "assets/icons/drawer_wx.png"
-                              : "assets/icons/drawer_notam.png"
-                        ),
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        AssetImage(widget.favFrom == FavFrom.weather
+                            ? "assets/icons/drawer_wx.png"
+                            : "assets/icons/drawer_notam.png"),
+                        color: Colors.white,
                       ),
                       Text("  Import"),
                     ],
                   ),
-                  onPressed: ()  {
+                  onPressed: () {
                     _thisInputTitle = "";
                     _thisInputAirportsList.clear();
                     _titleInputController.text = "";
@@ -314,23 +315,27 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ButtonTheme(
                 minWidth: 1.0,
                 buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(12.0),
-                    side: BorderSide(
-                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all<OutlinedBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)!,
+                        ),
+                      ),
                     ),
                   ),
                   child: Row(
                     children: <Widget>[
                       Icon(
                         Icons.add,
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        color: Colors.white,
                       ),
                       Text(" Add new"),
                     ],
                   ),
-                  onPressed: ()  {
+                  onPressed: () {
                     _thisInputTitle = "";
                     _thisInputAirportsList.clear();
                     _titleInputController.text = "";
@@ -346,100 +351,95 @@ class _FavouritesPageState extends State<FavouritesPage> {
     }
   }
 
-
   Widget _favouriteCard(int index) {
     return Slidable(
       actionPane: SlidableDrawerActionPane(),
       actionExtentRatio: 0.25,
       actions: <Widget>[
-        new IconSlideAction(
-        caption: 'Edit',
+        IconSlideAction(
+          caption: 'Edit',
           color: Colors.blue,
           icon: Icons.edit,
-          onTap: () =>
-              _showAddDialog(
-                existingFav: true,
-                favIndex: index,
-                favTitle: _favouritesList[index].title,
-                favAirports: _favouritesList[index].airports
-              ),
+          onTap: () => _showAddDialog(
+              existingFav: true,
+              favIndex: index,
+              favTitle: _favouritesList[index].title,
+              favAirports: _favouritesList[index].airports),
         ),
       ],
       secondaryActions: <Widget>[
-        new IconSlideAction(
+        IconSlideAction(
           caption: 'Delete',
           color: Colors.red,
           icon: Icons.delete,
-          onTap: () =>
-              _deleteSingleFavDialog(index),
+          onTap: () => _deleteSingleFavDialog(index),
         ),
       ],
       child: Card(
-      margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
-      elevation: 2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              // onTap: // In case we want to do something on card tap
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
-                    child: RichText(
-                      text: TextSpan(
-                        text: _favouritesList[index].title,
-                        style: TextStyle(
-                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18
+        margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+        elevation: 2,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                // onTap: // In case we want to do something on card tap
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(25, 20, 15, 0),
+                      child: RichText(
+                        text: TextSpan(
+                          text: _favouritesList[index].title,
+                          style: TextStyle(
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18),
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
-                    child: RichText(
-                      text: TextSpan(
-                        text: _favouritesList[index].airports.join(', '),
-                        style: TextStyle(
-                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(25, 5, 15, 20),
+                      child: RichText(
+                        text: TextSpan(
+                          text: _favouritesList[index].airports!.join(', '),
+                          style: TextStyle(color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          Container(height: 80, child: VerticalDivider(
-            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),),
-          ),
-          Row(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(5, 5, 15, 0),
-                      child: IconButton(
-                        icon: ImageIcon(
-                          AssetImage("assets/icons/drawer_wx.png"),
-                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                        ),
-                        onPressed: () {
-                          // Call weather
-                          List<String> airportsToWx = List<String>();
-                          for (var fav in _favouritesList[index].airports) {
-                            airportsToWx.add(fav);
-                          }
-                          widget.callbackFromFav(0, airportsToWx, _autoFetch, _fetchBoth);
-                        },
-                      )
-                  ),
-                  /*
+            Container(
+              height: 80,
+              child: VerticalDivider(
+                color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+              ),
+            ),
+            Row(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(5, 5, 15, 0),
+                        child: IconButton(
+                          icon: ImageIcon(
+                            AssetImage("assets/icons/drawer_wx.png"),
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                          ),
+                          onPressed: () {
+                            // Call weather
+                            List<String> airportsToWx = <String>[];
+                            for (var fav in _favouritesList[index].airports!) {
+                              airportsToWx.add(fav);
+                            }
+                            widget.callbackFromFav(0, airportsToWx, _autoFetch, _fetchBoth);
+                          },
+                        )),
+                    /*
                   Padding(
                     padding: EdgeInsets.fromLTRB(5, 0, 15, 5),
                     child:  IconButton(
@@ -449,7 +449,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         ),
                         onPressed: () {
                           // Call weather
-                          List<String> airportsToNotam = List<String>();
+                          List<String> airportsToNotam = <String>[];
                           for (var fav in _favouritesList[index].airports) {
                             airportsToNotam.add(fav);
                           }
@@ -458,12 +458,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     ),
                   ),
                   */
-                ],
-              ),
+                  ],
+                ),
 
-              // This has been removed to facilitate the test of
-              // the "Slidable". If things go wrong, two icons are ready here!
-              /*
+                // This has been removed to facilitate the test of
+                // the "Slidable". If things go wrong, two icons are ready here!
+                /*
               Container(height: 80, child: VerticalDivider(color: Colors.black)),
               Column(
                 children: <Widget>[
@@ -495,33 +495,24 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 ],
               ),
               */
-
-            ],
-          )
-        ],
+              ],
+            )
+          ],
+        ),
       ),
-    ),
     );
-
-
-
-
-
-
-
-
-
-
   }
 
-  Future<void> _showAddDialog({bool existingFav = false, int favIndex, String favTitle, List<String> favAirports}) async {
+  Future<void> _showAddDialog(
+      {bool existingFav = false, int? favIndex, String? favTitle, List<String>? favAirports}) async {
     if (existingFav) {
-      _titleInputController.text = favTitle;
-      _airportsInputController.text = favAirports.join(", ");
+      _titleInputController.text = favTitle!;
+      _airportsInputController.text = favAirports!.join(", ");
     }
     if (_importing // Make sure the "add new" button does not trigger an import
-        && widget.favFrom != FavFrom.drawer
-        && widget.importedAirports.length > 0) {
+        &&
+        widget.favFrom != FavFrom.drawer &&
+        widget.importedAirports.length > 0) {
       _airportsInputController.text = widget.importedAirports.join(", ");
       _importing = false;
     }
@@ -547,7 +538,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           right: 16,
                         ),
                         margin: EdgeInsets.only(top: 30),
-                        decoration: new BoxDecoration(
+                        decoration: BoxDecoration(
                           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(16),
@@ -565,9 +556,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             mainAxisSize: MainAxisSize.min, // To make the card compact
                             children: <Widget>[
                               TextFormField(
-                                style: TextStyle(
-                                    fontSize: 14
-                                ),
+                                style: TextStyle(fontSize: 14),
                                 controller: _titleInputController,
                                 maxLength: 50,
                                 minLines: 1,
@@ -578,7 +567,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   labelText: 'Favourite title',
                                 ),
                                 validator: (value) {
-                                  if (value.isEmpty) {
+                                  if (value!.isEmpty) {
                                     return "Title cannot be empty!";
                                   }
                                   _thisInputTitle = value.trim();
@@ -587,9 +576,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               ),
                               SizedBox(height: 16.0),
                               TextFormField(
-                                style: TextStyle(
-                                  fontSize: 14
-                                ),
+                                style: TextStyle(fontSize: 14),
                                 controller: _airportsInputController,
                                 minLines: 1,
                                 maxLines: 4,
@@ -601,14 +588,18 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   labelText: 'ICAO/IATA airports',
                                 ),
                                 validator: (value) {
-                                  if (value.isEmpty) {
+                                  if (value!.isEmpty) {
                                     return "Please enter at least one valid airport!";
                                   }
                                   // Try to parse some airports
                                   // Split the input to suit or needs
-                                  RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                                  RegExp exp = RegExp(r"([a-z]|[A-Z]){3,4}");
                                   Iterable<Match> matches = exp.allMatches(_userSubmittedAirports);
-                                  matches.forEach((m) => _thisInputAirportsList.add(m.group(0)));
+                                  matches.forEach((m) {
+                                    if (m.group(0) != null) {
+                                      _thisInputAirportsList.add(m.group(0)!);
+                                    }
+                                  });
                                   if (_thisInputAirportsList.isEmpty) {
                                     return "Could not identify a valid airport!";
                                   }
@@ -624,15 +615,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: <Widget>[
-                                  FlatButton(
+                                  TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
                                     child: Text("Cancel"),
                                   ),
-                                  FlatButton(
+                                  TextButton(
                                     onPressed: () {
-                                      if (_mainFormKey.currentState.validate()) {
+                                      if (_mainFormKey.currentState!.validate()) {
                                         if (existingFav) {
                                           _modifyFavourite(favIndex);
                                         } else {
@@ -641,9 +632,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                         Navigator.of(context).pop();
                                       }
                                     },
-                                    child: existingFav
-                                        ? Text("Modify")
-                                        : Text("Add"),
+                                    child: existingFav ? Text("Modify") : Text("Add"),
                                   ),
                                 ],
                               )
@@ -652,7 +641,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
                         ),
                       ),
                     ),
-
                     Positioned(
                       left: 16,
                       right: 16,
@@ -672,200 +660,190 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     ),
                   ],
                 ),
-              )
-
-
-            );
-        }
-    );
+              ));
+        });
   }
 
   Future<void> _deleteSingleFavDialog(int removeIndex) async {
     return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          content: SingleChildScrollView(
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 42,
-                    bottom: 16,
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            content: SingleChildScrollView(
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 42,
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                    ),
+                    margin: EdgeInsets.only(top: 22),
+                    decoration: BoxDecoration(
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10.0,
+                          offset: const Offset(0.0, 10.0),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // To make the card compact
+                      children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: Text(
+                              'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
+                              'and all its associated airports? \n\n This cannot be undone!',
+                            )),
+                        SizedBox(height: 12.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Oh no!"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _favouritesList.removeAt(removeIndex);
+                                });
+                                _saveFavPrefs();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Do it!"),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  Positioned(
                     left: 16,
                     right: 16,
-                  ),
-                  margin: EdgeInsets.only(top: 22),
-                  decoration: new BoxDecoration(
-                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        offset: const Offset(0.0, 10.0),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // To make the card compact
-                    children: <Widget>[
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                          child: Text(
-                            'Are you sure you want to remove "${_favouritesList[removeIndex].title}" '
-                                'and all its associated airports? \n\n This cannot be undone!',
-                          )
-                      ),
-                      SizedBox(height: 12.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Oh no!"),
-                          ),
-                          FlatButton(
-                            onPressed: () {
-                              setState(() {
-                                _favouritesList.removeAt(removeIndex);
-                              });
-                              _saveFavPrefs();
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Do it!"),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                     child: CircleAvatar(
-                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                      radius: 22,
-                      child: Icon(
-                        Icons.warning,
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                        size: 20,
+                      radius: 26,
+                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                      child: CircleAvatar(
+                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        radius: 22,
+                        child: Icon(
+                          Icons.warning,
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }
-    );
+          );
+        });
   }
 
   Future<void> _deleteAllFavsDialog() async {
     return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          content: SingleChildScrollView(
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 42,
-                    bottom: 16,
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            content: SingleChildScrollView(
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 42,
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                    ),
+                    margin: EdgeInsets.only(top: 22),
+                    decoration: BoxDecoration(
+                      color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10.0,
+                          offset: const Offset(0.0, 10.0),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // To make the card compact
+                      children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: Text('Are you sure you want to remove ALL your favourites and '
+                                'all associated airports? \n\n This cannot be undone!')),
+                        SizedBox(height: 12.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Oh no!"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _favouritesList.clear();
+                                });
+                                _saveFavPrefs();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Do it!"),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  Positioned(
                     left: 16,
                     right: 16,
-                  ),
-                  margin: EdgeInsets.only(top: 22),
-                  decoration: new BoxDecoration(
-                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        offset: const Offset(0.0, 10.0),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // To make the card compact
-                    children: <Widget>[
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                          child: Text(
-                              'Are you sure you want to remove ALL your favourites and '
-                                  'all associated airports? \n\n This cannot be undone!'
-                          )
-                      ),
-                      SizedBox(height: 12.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Oh no!"),
-                          ),
-                          FlatButton(
-                            onPressed: () {
-                              setState(() {
-                                _favouritesList.clear();
-                              });
-                              _saveFavPrefs();
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Do it!"),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                     child: CircleAvatar(
-                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                      radius: 22,
-                      child: Icon(
-                        Icons.warning,
-                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                        size: 20,
+                      radius: 26,
+                      backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                      child: CircleAvatar(
+                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        radius: 22,
+                        child: Icon(
+                          Icons.warning,
+                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }
-    );
+          );
+        });
   }
 
   Future<void> _settingsDialog() async {
@@ -879,95 +857,43 @@ class _FavouritesPageState extends State<FavouritesPage> {
             ),
             elevation: 0.0,
             backgroundColor: Colors.transparent,
-            content: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return SingleChildScrollView(
-                  child: Stack(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(
-                          top: 42,
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
-                        ),
-                        margin: EdgeInsets.only(top: 22),
-                        decoration: new BoxDecoration(
-                          color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10.0,
-                              offset: const Offset(0.0, 10.0),
+            content: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+              return SingleChildScrollView(
+                child: Stack(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(
+                        top: 42,
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                      ),
+                      margin: EdgeInsets.only(top: 22),
+                      decoration: BoxDecoration(
+                        color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10.0,
+                            offset: const Offset(0.0, 10.0),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min, // To make the card compact
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: Text(
+                              "OPTIONS",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min, // To make the card compact
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                              child: Text(
-                                "OPTIONS",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 20),
-                              child: Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    flex: 3,
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.only(start: 15, end: 15),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text("Auto fetch after clicking "
-                                              "WX or NOTAM",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.only(start: 5, end: 15,),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: <Widget>[
-                                          Switch(
-                                            value: _autoFetch,
-                                            onChanged: (bool value) {
-                                              setState(() {
-                                                _handleAutoFetchChanged(value);
-                                                // Fetching both only occurs
-                                                // if auto fetch is active
-                                                if (value == false) {
-                                                  _handleGetBoth(value);
-                                                }
-                                              });
-
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Divider(),
-                            Row(
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: Row(
                               children: <Widget>[
                                 Expanded(
                                   flex: 3,
@@ -976,13 +902,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        Text("Fetch both WX & NOTAM even if the "
-                                            "other is selected",
+                                        Text(
+                                          "Auto fetch after clicking "
+                                          "WX or NOTAM",
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: _autoFetch
-                                                ? ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
-                                                : Colors.grey,
                                           ),
                                         ),
                                       ],
@@ -992,21 +916,24 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 Expanded(
                                   flex: 2,
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.only(start: 5, end: 15),
+                                    padding: EdgeInsetsDirectional.only(
+                                      start: 5,
+                                      end: 15,
+                                    ),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: <Widget>[
                                         Switch(
-                                          value: _fetchBoth,
+                                          value: _autoFetch,
                                           onChanged: (bool value) {
                                             setState(() {
+                                              _handleAutoFetchChanged(value);
                                               // Fetching both only occurs
                                               // if auto fetch is active
-                                              if (_autoFetch) {
+                                              if (value == false) {
                                                 _handleGetBoth(value);
                                               }
                                             });
-
                                           },
                                         ),
                                       ],
@@ -1015,67 +942,115 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 ),
                               ],
                             ),
-                            Divider(),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                FlatButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Close"),
+                          ),
+                          Divider(),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 3,
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(start: 15, end: 15),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "Fetch both WX & NOTAM even if the "
+                                        "other is selected",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: _autoFetch
+                                              ? ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
+                                              : Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            )
-                          ],
-                        ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(start: 5, end: 15),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: <Widget>[
+                                      Switch(
+                                        value: _fetchBoth,
+                                        onChanged: (bool value) {
+                                          setState(() {
+                                            // Fetching both only occurs
+                                            // if auto fetch is active
+                                            if (_autoFetch) {
+                                              _handleGetBoth(value);
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Close"),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
-                      Positioned(
-                        left: 16,
-                        right: 16,
+                    ),
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
                         child: CircleAvatar(
-                          radius: 26,
-                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                          child: CircleAvatar(
-                            backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                            radius: 22,
-                            child: Icon(
-                              Icons.settings,
-                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
-                              size: 20,
-                            ),
+                          backgroundColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                          radius: 22,
+                          child: Icon(
+                            Icons.settings,
+                            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground),
+                            size: 20,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }
-            ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           );
-        }
-    );
+        });
   }
 
-  void _modifyFavourite(int favIndex) {
+  void _modifyFavourite(int? favIndex) {
     var myModifiedFavourite = Favourite(
       title: _thisInputTitle,
       airports: List<String>.from(_thisInputAirportsList.map((x) => x.trim())),
     );
     setState(() {
-      _favouritesList[favIndex] = myModifiedFavourite;
-      _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
+      _favouritesList[favIndex!] = myModifiedFavourite;
+      _favouritesList.sort((a, b) => a.title!.compareTo(b.title!));
     });
 
     _saveFavPrefs();
 
-    Scaffold.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: Duration(seconds: 8),
         content: Text(
           'Updated "$_thisInputTitle" '
-              'with the following airports: '
-              '${_thisInputAirportsList.join(', ')}',
+          'with the following airports: '
+          '${_thisInputAirportsList.join(', ')}',
         ),
       ),
     );
@@ -1091,18 +1066,18 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
     setState(() {
       _favouritesList.add(myNewFavourite);
-      _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
+      _favouritesList.sort((a, b) => a.title!.compareTo(b.title!));
     });
 
     _saveFavPrefs();
 
-    Scaffold.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: Duration(seconds: 8),
         content: Text(
           'Added "$_thisInputTitle" to favourites, '
-              'with the following airports: '
-              '${_thisInputAirportsList.join(', ')}',
+          'with the following airports: '
+          '${_thisInputAirportsList.join(', ')}',
         ),
       ),
     );
@@ -1123,8 +1098,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     if (textEntered.length > _userSubmittedAirports.length) {
       if (textEntered.length > 3) {
         // Take a look at the last 4 chars entered
-        String lastFourChars =
-        textEntered.substring(textEntered.length - 4, textEntered.length);
+        String lastFourChars = textEntered.substring(textEntered.length - 4, textEntered.length);
         // If there is at least a space, do nothing
         bool spaceNeeded = true;
         for (String char in lastFourChars.split("")) {
@@ -1135,10 +1109,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
         if (spaceNeeded) {
           _airportsInputController.value = TextEditingValue(
             text: textEntered + " ",
-            selection: TextSelection.fromPosition(
-                TextPosition(
-                    offset: (textEntered + " ").length)
-            ),
+            selection: TextSelection.fromPosition(TextPosition(offset: (textEntered + " ").length)),
           );
         }
       }
@@ -1157,7 +1128,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
       if (onValue != "") {
         _favouritesList = favouriteListFromJson(onValue);
       }
-      setState(() { });
+      setState(() {});
     });
 
     await SharedPreferencesModel().getFavouritesAutoFetch().then((onValue) {
@@ -1169,26 +1140,25 @@ class _FavouritesPageState extends State<FavouritesPage> {
       _fetchBoth = onValue;
     });*/
     _fetchBoth = false;
-
   }
 
-  void _updateFromImport (List<Favourite> tentativeList, bool overwrite) {
+  void _updateFromImport(List<Favourite> tentativeList, bool overwrite) {
     if (overwrite) {
       setState(() {
         _favouritesList = List<Favourite>.from(tentativeList);
-        _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
+        _favouritesList.sort((a, b) => a.title!.compareTo(b.title!));
       });
     } else {
       for (var fav in tentativeList) {
         _favouritesList.add(fav);
-        _favouritesList.sort((a, b) => (a.title).compareTo(b.title));
+        _favouritesList.sort((a, b) => a.title!.compareTo(b.title!));
       }
     }
     _saveFavPrefs();
   }
 
   bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo route) {
-    if (widget.favFrom == FavFrom.weather){
+    if (widget.favFrom == FavFrom.weather) {
       widget.callbackPage(0);
       return true;
     } else if (widget.favFrom == FavFrom.notam) {
@@ -1211,5 +1181,4 @@ class _FavouritesPageState extends State<FavouritesPage> {
     _fetchBoth = value;
     SharedPreferencesModel().setFavouritesFetchBoth(value);
   }
-
 }

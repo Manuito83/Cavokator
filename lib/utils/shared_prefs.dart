@@ -38,7 +38,6 @@ class SharedPreferencesModel {
   final String _kFavouritesAutoFetchPrefs = "favourites_AutoFetch";
   final String _kFavouritesFetchBothPrefs = "favourites_FetchBoth";
 
-
   /// ----------------------------
   /// Methods for app theme
   /// ----------------------------
@@ -138,12 +137,12 @@ class SharedPreferencesModel {
   // ***********
   Future<List<String>> getWeatherRequestedAirports() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kWeatherRequestedAirportsPrefs) ?? List<String>();
+    return prefs.getStringList(_kWeatherRequestedAirportsPrefs) ?? <String>[];
   }
 
   Future<bool> setWeatherRequestedAirports(List<String> value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setStringList(_kWeatherRequestedAirportsPrefs, value);
+    return prefs.setStringList(_kWeatherRequestedAirportsPrefs, value as List<String>);
   }
 
   // ***********
@@ -156,8 +155,7 @@ class SharedPreferencesModel {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setInt(_kWeatherHoursBeforePrefs, value);
   }
-  
-  
+
   /// ----------------------------
   /// Methods for notam requests
   /// ----------------------------
@@ -185,23 +183,23 @@ class SharedPreferencesModel {
   // ***********
   Future<List<String>> getNotamRequestedAirports() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kNotamRequestedAirportsPrefs) ?? List<String>();
+    return prefs.getStringList(_kNotamRequestedAirportsPrefs) ?? <String>[];
   }
 
   Future<bool> setNotamRequestedAirports(List<String> value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setStringList(_kNotamRequestedAirportsPrefs, value);
+    return prefs.setStringList(_kNotamRequestedAirportsPrefs, value as List<String>);
   }
 
   // ***********
   Future<List<String>> getNotamScrollList() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kNotamScrollListPrefs) ?? List<String>();
+    return prefs.getStringList(_kNotamScrollListPrefs) ?? <String>[];
   }
 
   Future<bool> setNotamScrollList(List<String> value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setStringList(_kNotamScrollListPrefs, value);
+    return prefs.setStringList(_kNotamScrollListPrefs, value as List<String>);
   }
 
   // ***********
@@ -250,13 +248,12 @@ class SharedPreferencesModel {
     return prefs.setString(_kConditionInputPrefs, value);
   }
 
-
-/// --------------------------------------------
-/// Methods for temperature corrections requests
-/// --------------------------------------------
+  /// --------------------------------------------
+  /// Methods for temperature corrections requests
+  /// --------------------------------------------
   Future<List<String>> getTemperatureValueList() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kTemperatureValuesPrefs) ?? List<String>();
+    return prefs.getStringList(_kTemperatureValuesPrefs) ?? <String>[];
   }
 
   Future<bool> setTemperatureValueList(List<String> value) async {
@@ -267,7 +264,7 @@ class SharedPreferencesModel {
   // ***********
   Future<List<String>> getTemperatureCorrectionList() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kTemperatureCorrectionsPrefs) ?? List<String>();
+    return prefs.getStringList(_kTemperatureCorrectionsPrefs) ?? <String>[];
   }
 
   Future<bool> setTemperatureCorrectionList(List<String> value) async {
@@ -308,8 +305,6 @@ class SharedPreferencesModel {
     return prefs.setInt(_kTemperatureRoundPrefs, value);
   }
 
-
-
   /// --------------------------------------------
   /// Methods for favourites
   /// --------------------------------------------
@@ -345,5 +340,4 @@ class SharedPreferencesModel {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setBool(_kFavouritesFetchBothPrefs, value);
   }
-
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ChangeLog extends StatelessWidget {
   final String appVersion;
 
-  ChangeLog({@required this.appVersion});
+  ChangeLog({required this.appVersion});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class ChangeLog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                "NEW CAVOKATOR v$appVersion",
+                " CAVOKATOR v$appVersion",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -32,8 +32,7 @@ class ChangeLog extends StatelessWidget {
                     Padding(padding: EdgeInsets.only(right: 15)),
                     Flexible(
                       child: Text(
-                        "Fixed - when requesting the METAR history for the last few hours, only the most recent one was "
-                        "being returned repeatedly",
+                        "Fixed weather provider",
                         //style: TextStyle(
                         //  fontWeight: FontWeight.bold,
                         //),
@@ -69,7 +68,7 @@ class ChangeLog extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(top: 30),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text(
                     'Great!',
                     style: TextStyle(

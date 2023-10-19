@@ -6,12 +6,12 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 /// TODO: LAUNCH CHECKLIST
 /// Is the current version OK? Update it?
 /// Update changelog?
-/// NOTE: AS OF v3.1.0, CHANGELOG ONLY APPEARS FOR NEW UPDATES, NO NEW INSTALLATIONS (REVISIT?)
-String thisAppVersion = "3.1.1";
-String androidVersionCode = "34";
-String iosVersionCode = "20";
+/// NOTE: AS OF v3.1.0, CHANGELOG ONLY APPEARS FOR  UPDATES, NO  INSTALLATIONS (REVISIT?)
+String thisAppVersion = "3.1.2";
+String androidVersionCode = "35";
+String iosVersionCode = "35";
 
-void main() => runApp(new Cavokator());
+void main() => runApp(Cavokator());
 
 class Cavokator extends StatefulWidget {
   @override
@@ -28,7 +28,6 @@ class _CavokatorState extends State<Cavokator> {
     _restoreThemePreferences();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -41,7 +40,10 @@ class _CavokatorState extends State<Cavokator> {
       home: Container(
         color: ThemeMe.apply(_isDark, DesiredColor.MainBackground),
         child: SafeArea(
-          top: false, right: false, left: false, bottom: true,
+          top: false,
+          right: false,
+          left: false,
+          bottom: true,
           child: DrawerPage(
             changeBrightness: callbackBrightness,
             savedThemeDark: _myBrightness == Brightness.dark ? true : false,
@@ -52,7 +54,6 @@ class _CavokatorState extends State<Cavokator> {
     );
   }
 
-
   void callbackBrightness(Brightness thisBrightness) {
     setState(() {
       _myBrightness = thisBrightness;
@@ -62,12 +63,10 @@ class _CavokatorState extends State<Cavokator> {
       } else {
         _isDark = false;
       }
-
     });
   }
 
-
-  void _restoreThemePreferences () {
+  void _restoreThemePreferences() {
     SharedPreferencesModel().getAppTheme().then((onValue) {
       setState(() {
         _myBrightness = onValue == "DARK" ? Brightness.dark : Brightness.light;
@@ -75,5 +74,4 @@ class _CavokatorState extends State<Cavokator> {
       });
     });
   }
-
 }

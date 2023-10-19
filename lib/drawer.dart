@@ -4,11 +4,8 @@ import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/temperature/temperature.dart';
 import 'package:cavokator_flutter/utils/changelog.dart';
 import 'package:csv/csv.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/weather/weather.dart';
-import 'package:cavokator_flutter/notam/notam.dart';
 import 'package:cavokator_flutter/condition/condition.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -17,7 +14,6 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/settings/settings.dart';
 import 'package:cavokator_flutter/about/about.dart';
 import 'package:rate_my_app/rate_my_app.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DrawerItem {
   String title;
@@ -31,19 +27,16 @@ class DrawerPage extends StatefulWidget {
   final bool savedThemeDark;
   final String thisAppVersion;
 
-  DrawerPage(
-      {@required this.changeBrightness,
-      @required this.savedThemeDark,
-      @required this.thisAppVersion});
+  DrawerPage({required this.changeBrightness, required this.savedThemeDark, required this.thisAppVersion});
 
   final drawerItems = [
-    new DrawerItem("Weather", "assets/icons/drawer_wx.png"),
-    //new DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
-    new DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
-    new DrawerItem("TEMP Corrections", "assets/icons/drawer_temperature.png"),
-    new DrawerItem("Favourites", "assets/icons/drawer_favourites.png"),
-    new DrawerItem("Settings", "assets/icons/drawer_settings.png"),
-    new DrawerItem("About", "assets/icons/drawer_about.png"),
+    DrawerItem("Weather", "assets/icons/drawer_wx.png"),
+    // DrawerItem("NOTAM", "assets/icons/drawer_notam.png"),
+    DrawerItem("RWY Condition", "assets/icons/drawer_condition.png"),
+    DrawerItem("TEMP Corrections", "assets/icons/drawer_temperature.png"),
+    DrawerItem("Favourites", "assets/icons/drawer_favourites.png"),
+    DrawerItem("Settings", "assets/icons/drawer_settings.png"),
+    DrawerItem("About", "assets/icons/drawer_about.png"),
   ];
 
   @override
@@ -53,13 +46,13 @@ class DrawerPage extends StatefulWidget {
 class _DrawerPageState extends State<DrawerPage> {
   var _airports = <List<dynamic>>[];
 
-  Future _csvLoaded;
+  Future? _csvLoaded;
 
-  int _activeDrawerIndex = 0;
-  int _selected = 0;
+  int? _activeDrawerIndex = 0;
+  int? _selected = 0;
   bool _sharedPreferencesReady = false;
 
-  bool _isThemeDark;
+  bool? _isThemeDark;
   bool _showHeaderImages = true;
   String _switchThemeString = "";
 
@@ -71,17 +64,17 @@ class _DrawerPageState extends State<DrawerPage> {
   bool _bottomNotamButtonDisabled = false;
   bool _swipeSections = true; // TODO (maybe?): setting to deactivate this?
 
-  bool _numberOfMaxAirports;
+  bool? _numberOfMaxAirports;
   int _maxAirportsRequested = 8;
 
-  PageController _myPageController;
+  late PageController _myPageController;
 
   // Parameters for Favourites
   bool _autoFetch = false;
   bool _fetchBoth = false;
-  List<String> _favToWxNotam = List<String>();
+  List<String> _favToWxNotam = <String>[];
   FavFrom _favFrom = FavFrom.drawer;
-  List<String> _importedToFavourites = List<String>();
+  List<String> _importedToFavourites = <String>[];
 
   Widget myFloat = SpeedDial(
     overlayColor: Colors.black,
@@ -126,7 +119,7 @@ class _DrawerPageState extends State<DrawerPage> {
 
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var myItem = widget.drawerItems[i];
-      var myBackgroundColor = Colors.transparent; // Transparent
+      Color? myBackgroundColor = Colors.transparent; // Transparent
       if (i == _selected) {
         myBackgroundColor = Colors.grey[200];
       }
@@ -175,8 +168,7 @@ class _DrawerPageState extends State<DrawerPage> {
                             children: <Widget>[
                               Flexible(
                                 child: Image(
-                                  image:
-                                      AssetImage('assets/images/appicon.png'),
+                                  image: AssetImage('assets/images/appicon.png'),
                                   fit: BoxFit.fill,
                                 ),
                               ),
@@ -200,7 +192,7 @@ class _DrawerPageState extends State<DrawerPage> {
                                     ),
                                     Flexible(
                                       child: Switch(
-                                        value: _isThemeDark,
+                                        value: _isThemeDark!,
                                         onChanged: (bool value) {
                                           _handleThemeChanged(value);
                                         },
@@ -248,7 +240,7 @@ class _DrawerPageState extends State<DrawerPage> {
         });
   }
 
-  Widget _getDrawerItemWidget() {
+  Widget? _getDrawerItemWidget() {
     if (_sharedPreferencesReady) {
       // This shared pref. needs to go here or else won't update
       // live if we change the configuration in Settings
@@ -440,7 +432,7 @@ class _DrawerPageState extends State<DrawerPage> {
             thisAppVersion: widget.thisAppVersion,
           );
         default:
-          return new Text("Error");
+          return Text("Error");
       }
     }
     return null;
@@ -484,7 +476,7 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  Widget _bottomNavBar() {
+  Widget? _bottomNavBar() {
     if (_hideBottomNavBar) {
       return null;
     }
@@ -492,10 +484,10 @@ class _DrawerPageState extends State<DrawerPage> {
     if (_activeDrawerIndex == 0 || _activeDrawerIndex == 1) {
       return Container(
         height: 40,
-        decoration: new BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
+              color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText)!,
               width: 1,
             ),
           ),
@@ -514,9 +506,7 @@ class _DrawerPageState extends State<DrawerPage> {
                 if (!_bottomWeatherButtonDisabled) {
                   _bottomNotamButtonDisabled = true;
                   _bottomWeatherButtonDisabled = true;
-                  _myPageController.animateToPage(0,
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeInOut);
+                  _myPageController.animateToPage(0, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     _selected = 0;
                   });
@@ -538,9 +528,7 @@ class _DrawerPageState extends State<DrawerPage> {
                 if (!_bottomNotamButtonDisabled) {
                   _bottomNotamButtonDisabled = true;
                   _bottomWeatherButtonDisabled = true;
-                  _myPageController.animateToPage(1,
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeInOut);
+                  _myPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     _selected = 1;
                   });
@@ -561,15 +549,11 @@ class _DrawerPageState extends State<DrawerPage> {
 
   Future<Null> _restoreSharedPreferences() async {
     var lastUsed;
-    await SharedPreferencesModel()
-        .getSettingsLastUsedSection()
-        .then((onLastUsedValue) {
+    await SharedPreferencesModel().getSettingsLastUsedSection().then((onLastUsedValue) {
       lastUsed = int.parse(onLastUsedValue);
     });
 
-    await SharedPreferencesModel()
-        .getSettingsOpenSpecificSection()
-        .then((onValue) async {
+    await SharedPreferencesModel().getSettingsOpenSpecificSection().then((onValue) async {
       var savedSelection = int.parse(onValue);
       if (savedSelection == 99) {
         // Open last-recalled page
@@ -585,7 +569,7 @@ class _DrawerPageState extends State<DrawerPage> {
     SharedPreferencesModel().getAppVersion().then((onValue) async {
       if (onValue != widget.thisAppVersion) {
         if (onValue == "") {
-          // Do nothing in this particular case as it is a new installation
+          // Do nothing in this particular case as it is a  installation
           // and we only show news to those who already have the app
         } else {
           _showChangeLogDialog(context);
@@ -662,8 +646,7 @@ class _DrawerPageState extends State<DrawerPage> {
     _scrollPositionNotam = position;
   }
 
-  void _callbackFromFav(
-      int whatPage, List<String> favToWxNotam, bool autoFetch, bool fetchBoth) {
+  void _callbackFromFav(int whatPage, List<String> favToWxNotam, bool autoFetch, bool fetchBoth) {
     setState(() {
       _activeDrawerIndex = whatPage;
       _selected = whatPage;
@@ -673,8 +656,7 @@ class _DrawerPageState extends State<DrawerPage> {
     });
   }
 
-  void _callbackToFav(
-      int whatPage, FavFrom favFrom, List<String> importedToFavourites) {
+  void _callbackToFav(int whatPage, FavFrom favFrom, List<String> importedToFavourites) {
     setState(() {
       _activeDrawerIndex = whatPage;
       _selected = whatPage;
@@ -696,9 +678,7 @@ class _DrawerPageState extends State<DrawerPage> {
   }
 
   Future loadAsset() async {
-    await rootBundle
-        .loadString('assets/airports/airports.csv')
-        .then((value) async {
+    await rootBundle.loadString('assets/airports/airports.csv').then((value) async {
       List<List<dynamic>> csvTable = CsvToListConverter().convert(
         value,
         fieldDelimiter: ";",

@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
-
 class TempOptionsDialog extends StatefulWidget {
   final int round;
   final Function roundChangedCallback;
 
-  TempOptionsDialog({@required this.round,
-    @required this.roundChangedCallback});
-
+  TempOptionsDialog({required this.round, required this.roundChangedCallback});
 
   @override
   _TempOptionsDialog createState() => _TempOptionsDialog();
 }
 
 class _TempOptionsDialog extends State<TempOptionsDialog> {
-  int _round;
+  int? _round;
 
   @override
   void initState() {
@@ -27,7 +24,7 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        padding: EdgeInsets.fromLTRB(15,25,15,15),
+        padding: EdgeInsets.fromLTRB(15, 25, 15, 15),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,14 +48,14 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                     padding: EdgeInsets.only(left: 20),
                   ),
                   Flexible(
-                    child: DropdownButton<String> (
+                    child: DropdownButton<String>(
                       value: _round.toString(),
                       items: [
                         DropdownMenuItem(
                           value: "0",
                           child: Text(
                             "No",
-                            style: TextStyle (
+                            style: TextStyle(
                               fontSize: 14,
                             ),
                           ),
@@ -67,7 +64,7 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                           value: "10",
                           child: Text(
                             "Higher 10ft",
-                            style: TextStyle (
+                            style: TextStyle(
                               fontSize: 14,
                             ),
                           ),
@@ -76,7 +73,7 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                           value: "50",
                           child: Text(
                             "Higher 50ft",
-                            style: TextStyle (
+                            style: TextStyle(
                               fontSize: 14,
                             ),
                           ),
@@ -85,14 +82,14 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
                           value: "100",
                           child: Text(
                             "Higher 100ft",
-                            style: TextStyle (
+                            style: TextStyle(
                               fontSize: 14,
                             ),
                           ),
                         ),
                       ],
                       onChanged: (value) {
-                        _roundValueChanged(int.parse(value));
+                        _roundValueChanged(int.parse(value!));
                       },
                     ),
                   ),
@@ -100,8 +97,8 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only (top: 30),
-              child: RaisedButton(
+              padding: EdgeInsets.only(top: 30),
+              child: ElevatedButton(
                 child: Text(
                   'Done!',
                   style: TextStyle(
@@ -128,5 +125,4 @@ class _TempOptionsDialog extends State<TempOptionsDialog> {
 
     SharedPreferencesModel().setTempRound(newValue);
   }
-
 }

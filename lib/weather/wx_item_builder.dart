@@ -1,55 +1,53 @@
 import 'package:cavokator_flutter/json_models/wx_json.dart';
 
 class WxModelList {
-  var wxModelList = List<WxModel>();
+  var wxModelList = <WxModel>[];
 }
 
 class WxModel {
-  String airportHeading;
-  var airportWeather = List <AirportWeather>();
-  bool airportFound;
+  String? airportHeading;
+  var airportWeather = <AirportWeather>[];
+  late bool airportFound;
 }
 
 abstract class AirportWeather {}
 
 class AirportMetar extends AirportWeather {
-  List<String> metars = new List<String>();
+  List<String?> metars = <String>[];
 }
 
 class AirportTafor extends AirportWeather {
-  var tafors = new List<String>();
+  var tafors = <String>[];
 }
 
 class MetarTimes extends AirportWeather {
-  var metarTimes = List<DateTime>();
-  String metarTimesId;
+  var metarTimes = <DateTime>[];
+  String? metarTimesId;
   bool error = false;
 }
 
 class TaforTimes extends AirportWeather {
-  var taforTimes = List<DateTime>();
+  var taforTimes = <DateTime>[];
   bool error = false;
 }
 
 class WxItemBuilder {
-
-  var jsonWeatherList = List<WxJson>();
+  var jsonWeatherList = <WxJson>[];
   var result = WxModelList();
 
-  WxItemBuilder({ this.jsonWeatherList }){
-
+  WxItemBuilder({required this.jsonWeatherList}) {
     // Iterate every airport inside of list
-    for (var i = 0; i < jsonWeatherList.length; i++){
+    for (var i = 0; i < jsonWeatherList.length; i++) {
       var wxModel = WxModel();
       var _myMetarsTimes = MetarTimes();
       var _myMetars = AirportMetar();
       var _myTaforsTimes = TaforTimes();
       var _myTafors = AirportTafor();
 
-      for (var mets in jsonWeatherList[i].metars){
+      for (var mets in jsonWeatherList[i].metars!) {
         // Time
-        if (mets.metarTime != null){
-          final timeString = mets.metarTime;
+        if (mets.metarTime != null) {
+          final timeString = mets.metarTime!;
           final thisTime = DateTime.parse(timeString).toUtc();
           _myMetarsTimes.metarTimes.add(thisTime);
           _myMetarsTimes.metarTimesId = jsonWeatherList[i].airportIdIcao;
@@ -64,10 +62,10 @@ class WxItemBuilder {
         }
       }
 
-      for (var tafs in jsonWeatherList[i].tafors){
+      for (var tafs in jsonWeatherList[i].tafors!) {
         // Time
-        if (tafs.taforTime != null){
-          final timeString = tafs.taforTime;
+        if (tafs.taforTime != null) {
+          final timeString = tafs.taforTime!;
           final thisTime = DateTime.parse(timeString).toUtc();
           _myTaforsTimes.taforTimes.add(thisTime);
         } else {
@@ -77,18 +75,17 @@ class WxItemBuilder {
         if (tafs.tafor == null || tafs.tafor == "") {
           _myTafors.tafors.add("No TAFOR found!");
         } else {
-          _myTafors.tafors.add(tafs.tafor);
+          _myTafors.tafors.add(tafs.tafor!);
         }
-
       }
 
-      if (jsonWeatherList[i].airportNotFound) {
+      if (jsonWeatherList[i].airportNotFound!) {
         wxModel.airportFound = false;
       } else {
         wxModel.airportFound = true;
       }
 
-      wxModel.airportHeading = jsonWeatherList[i].fullAirportDetails.name;
+      wxModel.airportHeading = jsonWeatherList[i].fullAirportDetails!.name;
       wxModel.airportWeather.add(_myMetarsTimes);
       wxModel.airportWeather.add(_myMetars);
       wxModel.airportWeather.add(_myTaforsTimes);

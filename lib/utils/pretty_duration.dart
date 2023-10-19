@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class PrettyTimeCombination {
-  String prettyDuration;
-  MaterialColor prettyColor;
-  DateTime referenceTime;
+  late String prettyDuration;
+  MaterialColor? prettyColor;
+  DateTime? referenceTime;
 }
 
 enum PrettyType {
@@ -16,17 +16,17 @@ enum PrettyType {
 class PrettyDuration {
 
   List<int> _durationList = [0, 0, 0, 0]; // [days],[hours],[minutes],[seconds]
-  PrettyTimeCombination _prettyTime;
-  String _header;
-  int _totalHours;
-  PrettyType _prettyType;
+  PrettyTimeCombination? _prettyTime;
+  late String _header;
+  late int _totalHours;
+  PrettyType? _prettyType;
 
   get getDuration => _prettyTime;
 
   /// [header] is expected to be something like "METAR" or "TAFOR".
   /// [prettyType] determines the color (different depending on what it is)
-  PrettyDuration({ @required DateTime referenceTime, @required String header,
-                   @required PrettyType prettyType}) {
+  PrettyDuration({ required DateTime referenceTime, required String header,
+                   required PrettyType prettyType}) {
     _header = header;
     _prettyType = prettyType;
     var timeNow = DateTime.now().toUtc();
@@ -34,7 +34,7 @@ class PrettyDuration {
     _totalHours = duration.inHours;
     _calculateDuration(duration);
     _prettyTime = _buildPrettyDuration();
-    _prettyTime.referenceTime = referenceTime;
+    _prettyTime!.referenceTime = referenceTime;
   }
 
   void _calculateDuration(Duration duration) {

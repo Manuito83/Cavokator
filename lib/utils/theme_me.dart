@@ -21,7 +21,7 @@ enum DesiredColor
 
 class ThemeMe {
 
-  static Color apply (bool themeDark, DesiredColor desiredColor){
+  static Color? apply (bool? themeDark, DesiredColor desiredColor){
 
     // COLORS ##LIGHT##
     var _colorMainBackgroundLIGHT = Colors.grey[200];
@@ -43,19 +43,19 @@ class ThemeMe {
 
     switch (desiredColor){
       case DesiredColor.MainBackground:
-        return themeDark ? _colorMainBackgroundDARK : _colorMainBackgroundLIGHT;
+        return themeDark! ? _colorMainBackgroundDARK : _colorMainBackgroundLIGHT;
       case DesiredColor.MainText:
-        return themeDark ? _colorMainTextDARK : _colorMainTextLIGHT;
+        return themeDark! ? _colorMainTextDARK : _colorMainTextLIGHT;
       case DesiredColor.HeaderPinned:
-        return themeDark ? _colorHeaderPinnedDARK : _colorHeaderPinnedLIGHT;
+        return themeDark! ? _colorHeaderPinnedDARK : _colorHeaderPinnedLIGHT;
       case DesiredColor.HeaderUnpinned:
-        return themeDark ? _colorHeaderUnpinnedDARK : _colorHeaderUnpinnedLIGHT;
+        return themeDark! ? _colorHeaderUnpinnedDARK : _colorHeaderUnpinnedLIGHT;
       case DesiredColor.BlueTempo:
-        return themeDark ? _colorBlueTempoDARK : _colorBlueTempoLIGHT;
+        return themeDark! ? _colorBlueTempoDARK : _colorBlueTempoLIGHT;
       case DesiredColor.MagentaCategory:
-        return themeDark ? _colorMagentaCategoryDARK : _colorMagentaCategoryLIGHT;
+        return themeDark! ? _colorMagentaCategoryDARK : _colorMagentaCategoryLIGHT;
       case DesiredColor.Buttons:
-        return themeDark ? _colorButtonsDARK : _colorButtonsLIGHT;
+        return themeDark! ? _colorButtonsDARK : _colorButtonsLIGHT;
       default:
         return Colors.red;
     }

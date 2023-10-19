@@ -8,8 +8,8 @@ List<Favourite> favouriteListFromJson(String str) => List<Favourite>.from(json.d
 String favouriteListToJson(List<Favourite> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Favourite {
-  String title;
-  List<String> airports;
+  String? title;
+  List<String>? airports;
 
   Favourite({
     this.title,
@@ -23,7 +23,7 @@ class Favourite {
 
   Map<String, dynamic> toJson() => {
     "title": title == null ? null : title,
-    "airports": airports == null ? null : List<dynamic>.from(airports.map((x) => x)),
+    "airports": airports == null ? null : List<dynamic>.from(airports!.map((x) => x)),
   };
 
 }

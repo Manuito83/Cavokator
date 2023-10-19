@@ -1,12 +1,13 @@
+import 'dart:developer';
+
 import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:cavokator_flutter/json_models/wx_json.dart';
-import 'package:cavokator_flutter/private.dart';
+import 'package:cavokator_flutter/constants.dart';
 import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/weather/wx_item_builder.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
@@ -20,7 +21,7 @@ import 'package:xml/xml.dart';
 import 'dart:io';
 
 class WeatherPage extends StatefulWidget {
-  final bool isThemeDark;
+  final bool? isThemeDark;
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
@@ -38,22 +39,22 @@ class WeatherPage extends StatefulWidget {
   final List<List<dynamic>> airports;
 
   WeatherPage(
-      {@required this.isThemeDark,
-      @required this.myFloat,
-      @required this.callback,
-      @required this.showHeaders,
-      @required this.hideBottomNavBar,
-      @required this.showBottomNavBar,
-      @required this.recalledScrollPosition,
-      @required this.notifyScrollPosition,
-      @required this.autoFetch,
-      @required this.cancelAutoFetch,
-      @required this.callbackToFav,
-      @required this.airportsFromFav,
-      @required this.fetchBoth,
-      @required this.maxAirportsRequested,
-      @required this.thisAppVersion,
-      @required this.airports});
+      {required this.isThemeDark,
+      required this.myFloat,
+      required this.callback,
+      required this.showHeaders,
+      required this.hideBottomNavBar,
+      required this.showBottomNavBar,
+      required this.recalledScrollPosition,
+      required this.notifyScrollPosition,
+      required this.autoFetch,
+      required this.cancelAutoFetch,
+      required this.callbackToFav,
+      required this.airportsFromFav,
+      required this.fetchBoth,
+      required this.maxAirportsRequested,
+      required this.thisAppVersion,
+      required this.airports});
 
   @override
   _WeatherPageState createState() => _WeatherPageState();
@@ -61,15 +62,15 @@ class WeatherPage extends StatefulWidget {
 
 class _WeatherPageState extends State<WeatherPage> {
   final _formKey = GlobalKey<FormState>();
-  final _myTextController = new TextEditingController();
+  final _myTextController = TextEditingController();
 
   final _myMainScrollController = ScrollController();
 
-  Timer _ticker;
+  Timer? _ticker;
 
   bool _splitTafor = true;
 
-  String _userSubmitText;
+  late String _userSubmitText;
   List<String> _myRequestedAirports = [];
   List<WxJson> _myWeatherList = [];
   bool _apiCall = false;
@@ -100,7 +101,7 @@ class _WeatherPageState extends State<WeatherPage> {
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback());
 
-    _ticker = new Timer.periodic(Duration(seconds: 30), (Timer t) => _updateTimes());
+    _ticker = Timer.periodic(Duration(seconds: 30), (Timer t) => _updateTimes());
 
     _userSubmitText = _myTextController.text;
     _myTextController.addListener(onInputTextChange);
@@ -138,7 +139,7 @@ class _WeatherPageState extends State<WeatherPage> {
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: CustomScrollView(
             controller: _myMainScrollController,
             slivers: _buildSlivers(context),
@@ -202,7 +203,7 @@ class _WeatherPageState extends State<WeatherPage> {
             if (_mySharedWeather != "") {
               Share.share(_mySharedWeather);
             } else {
-              Scaffold.of(context).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     'Nothing to share!',
@@ -262,14 +263,18 @@ class _WeatherPageState extends State<WeatherPage> {
                             labelText: "Enter ICAO/IATA airports",
                           ),
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return "Please enter at least one valid airport!";
                             } else {
                               // Try to parse some airports
                               // Split the input to suit or needs
-                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              RegExp exp = RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches = exp.allMatches(_userSubmitText);
-                              matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
+                              matches.forEach((m) {
+                                if (m.group(0) != null) {
+                                  _myRequestedAirports.add(m.group(0)!);
+                                }
+                              });
                             }
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
@@ -288,21 +293,30 @@ class _WeatherPageState extends State<WeatherPage> {
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           minWidth: 1.0,
                           buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                          child: RaisedButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(12.0),
-                                side: BorderSide(
-                                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                                )),
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              shape: MaterialStateProperty.all<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  side: BorderSide(
+                                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)!,
+                                  ),
+                                ),
+                              ),
+                            ),
                             child: Icon(
                               Icons.favorite_border,
-                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                              color: Colors.white,
                             ),
                             onPressed: () {
                               var favAirports = <String>[];
-                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              RegExp exp = RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches = exp.allMatches(_myTextController.text);
-                              matches.forEach((m) => favAirports.add(m.group(0)));
+                              matches.forEach((m) {
+                                if (m.group(0) != null) {
+                                  favAirports.add(m.group(0)!);
+                                }
+                              });
                               widget.callbackToFav(3, FavFrom.weather, favAirports);
                             },
                           ),
@@ -322,9 +336,8 @@ class _WeatherPageState extends State<WeatherPage> {
                       ButtonTheme(
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child: RaisedButton(
-                          child: ImageIcon(AssetImage("assets/icons/drawer_wx.png"),
-                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)),
+                        child: ElevatedButton(
+                          child: ImageIcon(AssetImage("assets/icons/drawer_wx.png"), color: Colors.white),
                           onPressed: () {
                             _fetchButtonPressed(context, false);
                           },
@@ -335,7 +348,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       ButtonTheme(
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child: RaisedButton(
+                        child: ElevatedButton(
                           child: Row(
                             children: <Widget>[
                               ImageIcon(
@@ -358,9 +371,12 @@ class _WeatherPageState extends State<WeatherPage> {
                       */
                       ButtonTheme(
                         minWidth: 1.0,
-                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child: RaisedButton(
-                          child: Icon(Icons.delete),
+                        buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+                        child: ElevatedButton(
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
                           onPressed: () {
                             setState(() {
                               _apiCall = false;
@@ -453,7 +469,7 @@ class _WeatherPageState extends State<WeatherPage> {
                     height: 60.0,
                     color: (state.isPinned
                         ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
-                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)
+                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)!
                             .withOpacity(1.0 - state.scrollPercentage)),
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
@@ -465,7 +481,7 @@ class _WeatherPageState extends State<WeatherPage> {
                         ),
                         Flexible(
                           child: Text(
-                            "(${_myRequestedAirports[i].toUpperCase()}) " + airportName,
+                            "(${_myRequestedAirports[i].toUpperCase()}) " + airportName!,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -503,7 +519,7 @@ class _WeatherPageState extends State<WeatherPage> {
                         var metarLines = <Widget>[];
                         for (var m = 0; m < item.metars.length; m++) {
                           var wxSpan =
-                              MetarColorize(metar: item.metars[m], isThemeDark: widget.isThemeDark, context: context)
+                              MetarColorize(metar: item.metars[m]!, isThemeDark: widget.isThemeDark, context: context)
                                   .getResult;
 
                           var myText = RichText(text: wxSpan);
@@ -533,7 +549,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       }
 
                       if (item is AirportTafor) {
-                        TextSpan wxSpan;
+                        TextSpan? wxSpan;
                         var myWeatherLineWidget;
 
                         var myTaforString = item.tafors[0];
@@ -602,7 +618,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           wxSpan =
                               MetarColorize(metar: myTaforString, isThemeDark: widget.isThemeDark, context: context)
                                   .getResult;
-                          myWeatherLineWidget = RichText(text: wxSpan);
+                          myWeatherLineWidget = RichText(text: wxSpan!);
                         }
 
                         return ListTile(
@@ -618,8 +634,8 @@ class _WeatherPageState extends State<WeatherPage> {
                       }
 
                       if (item is MetarTimes) {
-                        PrettyTimeCombination metarTimeFinal;
-                        Color clockIconColor;
+                        PrettyTimeCombination? metarTimeFinal;
+                        Color? clockIconColor;
 
                         // DEBUG TIMES HERE
                         // item.metarTimes[0] = DateTime.utc(2019, 8, 19, 19, 10);
@@ -629,8 +645,8 @@ class _WeatherPageState extends State<WeatherPage> {
                             var myPrettyDuration = PrettyDuration(
                                 referenceTime: item.metarTimes[0], header: "METAR", prettyType: PrettyType.metar);
                             metarTimeFinal = myPrettyDuration.getDuration;
-                            clockIconColor = metarTimeFinal.prettyColor;
-                          } catch (Exception) {
+                            clockIconColor = metarTimeFinal!.prettyColor;
+                          } catch (e) {
                             clockIconColor = Colors.red;
                           }
                         } else {
@@ -647,7 +663,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                 Padding(padding: EdgeInsets.only(right: 15)),
                                 Flexible(
                                   child: Text(
-                                    item.error ? "(no time information)" : metarTimeFinal.prettyDuration,
+                                    item.error ? "(no time information)" : metarTimeFinal!.prettyDuration,
                                     style: item.error
                                         ? TextStyle(
                                             fontSize: 12,
@@ -656,7 +672,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                           )
                                         : TextStyle(
                                             fontSize: 14,
-                                            color: metarTimeFinal.prettyColor,
+                                            color: metarTimeFinal!.prettyColor,
                                           ),
                                   ),
                                 ),
@@ -667,16 +683,16 @@ class _WeatherPageState extends State<WeatherPage> {
                       }
 
                       if (item is TaforTimes) {
-                        PrettyTimeCombination taforTimeFinal;
-                        Color clockIconColor;
+                        PrettyTimeCombination? taforTimeFinal;
+                        Color? clockIconColor;
 
                         if (!item.error) {
                           try {
                             var myPrettyDuration = PrettyDuration(
                                 referenceTime: item.taforTimes[0], header: "TAFOR", prettyType: PrettyType.tafor);
                             taforTimeFinal = myPrettyDuration.getDuration;
-                            clockIconColor = taforTimeFinal.prettyColor;
-                          } catch (Exception) {
+                            clockIconColor = taforTimeFinal!.prettyColor;
+                          } catch (e) {
                             clockIconColor = Colors.red;
                           }
                         } else {
@@ -693,7 +709,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                 Padding(padding: EdgeInsets.only(right: 15)),
                                 Flexible(
                                   child: Text(
-                                    item.error ? "(no time information)" : taforTimeFinal.prettyDuration,
+                                    item.error ? "(no time information)" : taforTimeFinal!.prettyDuration,
                                     style: item.error
                                         ? TextStyle(
                                             fontSize: 12,
@@ -702,7 +718,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                           )
                                         : TextStyle(
                                             fontSize: 14,
-                                            color: taforTimeFinal.prettyColor,
+                                            color: taforTimeFinal!.prettyColor,
                                           ),
                                   ),
                                 ),
@@ -812,7 +828,7 @@ class _WeatherPageState extends State<WeatherPage> {
   void _fetchButtonPressed(BuildContext context, bool fetchBoth) {
     _myRequestedAirports.clear();
 
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _apiCall = true;
       });
@@ -826,7 +842,7 @@ class _WeatherPageState extends State<WeatherPage> {
         });
       });
     }
-    FocusScope.of(context).requestFocus(new FocusNode());
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   void onInputTextChange() {
@@ -865,7 +881,7 @@ class _WeatherPageState extends State<WeatherPage> {
     _userSubmitText = textEntered;
   }
 
-  Future<List<WxJson>> _callWeatherApi() async {
+  Future<List<WxJson>?> _callWeatherApi() async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
       for (var i = 0; i < _myRequestedAirports.length; i++) {
@@ -881,7 +897,7 @@ class _WeatherPageState extends State<WeatherPage> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       widget.hideBottomNavBar();
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Oops! No Internet connection!',
               style: TextStyle(
@@ -897,7 +913,7 @@ class _WeatherPageState extends State<WeatherPage> {
     }
 
     try {
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Fetching WEATHER, hold position!"),
           duration: Duration(seconds: 5),
@@ -928,12 +944,12 @@ class _WeatherPageState extends State<WeatherPage> {
         var iata = "";
         if (airports[i].length == 3) {
           iata = airports[i];
-          wxJson.fullAirportDetails.iataCode = iata;
+          wxJson.fullAirportDetails!.iataCode = iata;
           for (var line in widget.airports) {
             if (line[1] == airports[i].toUpperCase()) {
               icao = line[0];
               airports[i] = icao;
-              wxJson.fullAirportDetails.name = line[2];
+              wxJson.fullAirportDetails!.name = line[2];
               wxJson.airportNotFound = false;
               break;
             }
@@ -942,8 +958,8 @@ class _WeatherPageState extends State<WeatherPage> {
           for (var line in widget.airports) {
             if (line[0] == airports[i].toUpperCase()) {
               iata = line[1];
-              wxJson.fullAirportDetails.iataCode = iata;
-              wxJson.fullAirportDetails.name = line[2];
+              wxJson.fullAirportDetails!.iataCode = iata;
+              wxJson.fullAirportDetails!.name = line[2];
               wxJson.airportNotFound = false;
               break;
             }
@@ -955,7 +971,7 @@ class _WeatherPageState extends State<WeatherPage> {
         var metarResponses = "";
         var taforResponses = "";
 
-        var metUrl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?" +
+        var metUrl = "https://www.aviationweather.gov/cgi-bin/data/dataserver.php?" +
             "dataSource=metars" +
             "&requestType=retrieve" +
             "&format=xml" +
@@ -963,10 +979,11 @@ class _WeatherPageState extends State<WeatherPage> {
             airports[i] +
             "&hoursBeforeNow=$internalHoursBefore" +
             "&mostRecent=$_mostRecent";
-        var metResponse = await http.post(metUrl).timeout(Duration(seconds: 10));
+        log("WX request URL: $metUrl");
+        var metResponse = await http.get(Uri.parse(metUrl)).timeout(Duration(seconds: 10));
         metarResponses = metResponse.body;
 
-        var tafUrlurl = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?" +
+        var tafUrl = "https://www.aviationweather.gov/cgi-bin/data/dataserver.php?" +
             "dataSource=tafs" +
             "&requestType=retrieve" +
             "&format=xml" +
@@ -975,7 +992,8 @@ class _WeatherPageState extends State<WeatherPage> {
             "&hoursBeforeNow=24" +
             "&mostRecent=true" +
             "&timeType=issue";
-        var tafResponse = await http.post(tafUrlurl).timeout(Duration(seconds: 10));
+        log("TAF request URL: $tafUrl");
+        var tafResponse = await http.get(Uri.parse(tafUrl)).timeout(Duration(seconds: 10));
         taforResponses = tafResponse.body;
 
         // Main airport data
@@ -986,8 +1004,8 @@ class _WeatherPageState extends State<WeatherPage> {
           wxJson.airportNotFound = false;
         } catch (e) {
           // Initialize to empty object, with only airport information
-          wxJson.metars.add(Metar());
-          wxJson.tafors.add(Tafor());
+          wxJson.metars!.add(Metar());
+          wxJson.tafors!.add(Tafor());
           wxExportedJson.add(wxJson);
           continue;
         }
@@ -1001,10 +1019,10 @@ class _WeatherPageState extends State<WeatherPage> {
             var met = Metar();
             met.metar = metarsList[i].findElements('raw_text').map((node) => node.text).first;
             met.metarTime = metarsList[i].findElements('observation_time').map((node) => node.text).first;
-            wxJson.metars.add(met);
+            wxJson.metars!.add(met);
           }
         } else {
-          wxJson.metars.add(Metar());
+          wxJson.metars!.add(Metar());
         }
 
         // We only add first TAF
@@ -1014,9 +1032,9 @@ class _WeatherPageState extends State<WeatherPage> {
         if (taforsRaw.isNotEmpty) {
           taf.tafor = taforsDocument.findAllElements('raw_text').map((node) => node.text).first;
           taf.taforTime = taforsDocument.findAllElements('issue_time').map((node) => node.text).first;
-          wxJson.tafors.add(taf);
+          wxJson.tafors!.add(taf);
         } else {
-          wxJson.tafors.add(Tafor());
+          wxJson.tafors!.add(Tafor());
         }
 
         wxExportedJson.add(wxJson);
@@ -1026,8 +1044,8 @@ class _WeatherPageState extends State<WeatherPage> {
       SharedPreferencesModel().setWeatherInformation(wxJsonToJson(wxExportedJson));
       SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
       SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
-    } catch (Exception) {
-      Scaffold.of(context).showSnackBar(
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("There was an error with the server or the Internet connection!",
               style: TextStyle(
@@ -1043,7 +1061,7 @@ class _WeatherPageState extends State<WeatherPage> {
     return wxExportedJson;
   }
 
-  Future<List<WxJson>> _callWeatherApiOLD(bool fetchBoth) async {
+  Future<List<WxJson>?> _callWeatherApiOLD(bool fetchBoth) async {
     String allAirports = "";
     if (_myRequestedAirports.isNotEmpty) {
       for (var i = 0; i < _myRequestedAirports.length; i++) {
@@ -1055,7 +1073,7 @@ class _WeatherPageState extends State<WeatherPage> {
       }
     }
 
-    List<WxJson> wxExportedJson;
+    List<WxJson>? wxExportedJson;
 
     bool wxFailed = false;
     bool notamFailed = false;
@@ -1067,7 +1085,7 @@ class _WeatherPageState extends State<WeatherPage> {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
         widget.hideBottomNavBar();
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Oops! No Internet connection!',
                 style: TextStyle(
@@ -1081,7 +1099,7 @@ class _WeatherPageState extends State<WeatherPage> {
         Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
         return null;
       } else {
-        String wxServer = PrivateVariables.apiURL;
+        String wxServer = ConstVariables.apiURL;
         String wxApi = "Wx/GetWx?";
 
         String wxSource = "source=Unknown";
@@ -1129,14 +1147,14 @@ class _WeatherPageState extends State<WeatherPage> {
           }
         }
         widget.hideBottomNavBar();
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(fetchText),
             duration: Duration(seconds: firstSnackTimeNeeded),
           ),
         );
 
-        final response = await http.post(wxUrl).timeout(Duration(seconds: 60));
+        final response = await http.post(Uri.parse(wxUrl)).timeout(Duration(seconds: 60));
 
         if (response.statusCode != 200) {
           wxFailed = true;
@@ -1148,7 +1166,7 @@ class _WeatherPageState extends State<WeatherPage> {
         }
 
         if (fetchBoth) {
-          String notamServer = PrivateVariables.apiURL;
+          String notamServer = ConstVariables.apiURL;
           String notamApi = "Notam/GetNotam?";
 
           String notamSource = "source=Unknown";
@@ -1171,7 +1189,7 @@ class _WeatherPageState extends State<WeatherPage> {
           String notamUrl = notamServer + notamApi + notamSource + notamAirports;
 
           int timeOut = 20 * _myRequestedAirports.length;
-          final response = await http.post(notamUrl).timeout(Duration(seconds: timeOut));
+          final response = await http.post(Uri.parse(notamUrl)).timeout(Duration(seconds: timeOut));
 
           if (response.statusCode != 200) {
             notamFailed = true;
@@ -1191,7 +1209,7 @@ class _WeatherPageState extends State<WeatherPage> {
       if (wxFailed || notamFailed) {
         throw "error";
       }
-    } catch (Exception) {
+    } catch (e) {
       String expString = "";
       if (fetchBoth) {
         if (wxFailed && notamFailed) {
@@ -1212,7 +1230,7 @@ class _WeatherPageState extends State<WeatherPage> {
       }
 
       widget.hideBottomNavBar();
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(expString,
               style: TextStyle(
@@ -1255,7 +1273,7 @@ class _WeatherPageState extends State<WeatherPage> {
     return wxExportedJson;
   }
 
-  Future<void> _showSettings() async {
+  _showSettings() async {
     return showDialog(
         context: context,
         barrierDismissible: false, // user must tap button!

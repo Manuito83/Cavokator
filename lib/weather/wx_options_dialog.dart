@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 
-
 class WeatherOptionsDialog extends StatefulWidget {
   final int hours;
   final Function hoursChangedCallback;
 
-  WeatherOptionsDialog({@required this.hours,
-    @required this.hoursChangedCallback});
-
+  WeatherOptionsDialog({required this.hours, required this.hoursChangedCallback});
 
   @override
   _WeatherOptionsDialog createState() => _WeatherOptionsDialog();
 }
 
 class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
-  int _hoursBefore;
+  int? _hoursBefore;
 
   @override
   void initState() {
@@ -27,7 +24,7 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        padding: EdgeInsets.fromLTRB(15,25,15,15),
+        padding: EdgeInsets.fromLTRB(15, 25, 15, 15),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -38,8 +35,8 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
                 fontSize: 18,
               ),
             ),
-            Padding (
-              padding: EdgeInsets.only (top: 40, bottom: 10),
+            Padding(
+              padding: EdgeInsets.only(top: 40, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -48,33 +45,28 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only (bottom: 20),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget> [
-                    Slider(
-                      value: _hoursBefore.toDouble(),
-                      max: 12,
-                      min: 0,
-                      divisions: 12,
-                      onChanged: (double newValue) => _hoursBeforeChanged(newValue),
+              padding: EdgeInsets.only(bottom: 20),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                Slider(
+                  value: _hoursBefore!.toDouble(),
+                  max: 12,
+                  min: 0,
+                  divisions: 12,
+                  onChanged: (double newValue) => _hoursBeforeChanged(newValue),
+                ),
+                Flexible(
+                  child: Text(
+                    _hoursBefore == 0 ? "Last only" : "Past $_hoursBefore hours",
+                    style: TextStyle(
+                      fontSize: 12,
                     ),
-                    Flexible(
-                      child: Text(
-                        _hoursBefore == 0
-                            ? "Last only"
-                            : "Past $_hoursBefore hours",
-                        style: TextStyle(
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ]
-              ),
+                  ),
+                ),
+              ]),
             ),
             Padding(
-              padding: EdgeInsets.only (top: 30),
-              child: RaisedButton(
+              padding: EdgeInsets.only(top: 30),
+              child: ElevatedButton(
                 child: Text(
                   'Done!',
                   style: TextStyle(
@@ -101,5 +93,4 @@ class _WeatherOptionsDialog extends State<WeatherOptionsDialog> {
 
     SharedPreferencesModel().setWeatherHoursBefore(newValue.toInt());
   }
-
 }

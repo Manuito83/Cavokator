@@ -1,6 +1,4 @@
 import 'package:cavokator_flutter/favourites/favourites.dart';
-import 'package:flutter/animation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -8,7 +6,7 @@ import 'package:cavokator_flutter/utils/custom_sliver.dart';
 import 'package:cavokator_flutter/json_models/notam_json.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
-import 'package:cavokator_flutter/private.dart';
+import 'package:cavokator_flutter/constants.dart';
 import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -22,7 +20,6 @@ import 'package:connectivity/connectivity.dart';
 import 'dart:io';
 
 class NotamPage extends StatefulWidget {
-
   final bool isThemeDark;
   final Widget myFloat;
   final Function callback;
@@ -39,14 +36,22 @@ class NotamPage extends StatefulWidget {
   final int maxAirportsRequested;
   final String thisAppVersion;
 
-  NotamPage({@required this.isThemeDark, @required this.myFloat,
-             @required this.callback, @required this.showHeaders,
-             @required this.hideBottomNavBar, @required this.showBottomNavBar,
-             @required this.recalledScrollPosition,
-             @required this.notifyScrollPosition, @required this.autoFetch,
-             @required this.cancelAutoFetch, @required this.callbackToFav,
-             @required this.airportsFromFav, @required this.fetchBoth,
-             @required this.maxAirportsRequested, @required this.thisAppVersion});
+  NotamPage(
+      {required this.isThemeDark,
+      required this.myFloat,
+      required this.callback,
+      required this.showHeaders,
+      required this.hideBottomNavBar,
+      required this.showBottomNavBar,
+      required this.recalledScrollPosition,
+      required this.notifyScrollPosition,
+      required this.autoFetch,
+      required this.cancelAutoFetch,
+      required this.callbackToFav,
+      required this.airportsFromFav,
+      required this.fetchBoth,
+      required this.maxAirportsRequested,
+      required this.thisAppVersion});
 
   @override
   _NotamPageState createState() => _NotamPageState();
@@ -54,16 +59,16 @@ class NotamPage extends StatefulWidget {
 
 class _NotamPageState extends State<NotamPage> {
   final _formKey = GlobalKey<FormState>();
-  final _myTextController = new TextEditingController();
+  final _myTextController = TextEditingController();
 
-  String _requestedTime;
-  Timer _ticker;
+  late String _requestedTime;
+  Timer? _ticker;
 
   bool _sortByCategories = true;
 
-  String _userSubmitText;
-  List<String> _myRequestedAirports = new List<String>();
-  List<NotamJson> _myNotamList = new List<NotamJson>();
+  late String _userSubmitText;
+  List<String> _myRequestedAirports = <String>[];
+  List<NotamJson> _myNotamList = <NotamJson>[];
   bool _apiCall = false;
 
   String _mySharedNotam = "";
@@ -80,9 +85,9 @@ class _NotamPageState extends State<NotamPage> {
   // Google Maps API - Not necessary??
   //GoogleMapController _mapController;
 
-  AutoScrollController _mainScrollController;
+  AutoScrollController? _mainScrollController;
   final _scrollDirection = Axis.vertical;
-  List<String> _scrollList = List<String>();
+  List<String> _scrollList = <String>[];
 
   bool _autoFetch = false;
   bool _fetchBoth = false;
@@ -99,7 +104,7 @@ class _NotamPageState extends State<NotamPage> {
     _restoreSharedPreferences();
     SharedPreferencesModel().setSettingsLastUsedSection("1");
 
-    _ticker = new Timer.periodic(Duration(minutes: 1), (Timer t) => _updateTimes());
+    _ticker = Timer.periodic(Duration(minutes: 1), (Timer t) => _updateTimes());
 
     // Delayed callback for FAB
     Future.delayed(Duration.zero, () => fabCallback(init: true));
@@ -112,11 +117,11 @@ class _NotamPageState extends State<NotamPage> {
       axis: _scrollDirection,
     );
 
-    _mainScrollController.addListener(onMainScrolled);
+    _mainScrollController!.addListener(onMainScrolled);
 
     // TODO (maybe?): setting to deactivate this?
     Future.delayed(Duration(milliseconds: 500), () {
-      _mainScrollController.animateTo(
+      _mainScrollController!.animateTo(
         widget.recalledScrollPosition,
         duration: Duration(milliseconds: 1500),
         curve: Curves.decelerate,
@@ -143,7 +148,7 @@ class _NotamPageState extends State<NotamPage> {
   Future dispose() async {
     _ticker?.cancel();
     _myTextController.dispose();
-    _mainScrollController.dispose();
+    _mainScrollController!.dispose();
     super.dispose();
   }
 
@@ -153,7 +158,7 @@ class _NotamPageState extends State<NotamPage> {
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
             controller: _mainScrollController,
@@ -164,7 +169,7 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   List<Widget> _buildSlivers(BuildContext context) {
-    List<Widget> slivers = new List<Widget>();
+    List<Widget> slivers = <Widget>[];
 
     slivers.add(_myAppBar());
     slivers.add(_inputForm());
@@ -177,7 +182,6 @@ class _NotamPageState extends State<NotamPage> {
     return slivers;
   }
 
-
   Future<void> fabCallback({bool init = false, bool clear = false}) async {
     // This shared preference recall is here because otherwise
     // it would execute after the FAB loads
@@ -189,7 +193,7 @@ class _NotamPageState extends State<NotamPage> {
       });
     }
 
-    if (_myNotamList.length > 0 && !clear){
+    if (_myNotamList.length > 0 && !clear) {
       widget.callback(SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: IconThemeData(size: 22.0),
@@ -200,11 +204,9 @@ class _NotamPageState extends State<NotamPage> {
         elevation: 8.0,
         shape: CircleBorder(),
         visible: true,
-        children:
-          _mySpeedDials(),
+        children: _mySpeedDials(),
       ));
-    }
-    else {
+    } else {
       widget.callback(SpeedDial(
         overlayColor: Colors.grey[800],
         overlayOpacity: 0.5,
@@ -219,7 +221,7 @@ class _NotamPageState extends State<NotamPage> {
 
   Widget _myAppBar() {
     return SliverAppBar(
-      iconTheme: new IconThemeData(
+      iconTheme: IconThemeData(
         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
       ),
       title: Text(
@@ -232,13 +234,12 @@ class _NotamPageState extends State<NotamPage> {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage('assets/images/notam_header.jpg'),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/notam_header.jpg'),
               fit: BoxFit.fitWidth,
-              colorFilter: widget.isThemeDark == true
-                  ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken)
-                  : null,
+              colorFilter:
+                  widget.isThemeDark == true ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken) : null,
             ),
           ),
         ),
@@ -255,7 +256,7 @@ class _NotamPageState extends State<NotamPage> {
             return _popupChoices.map((CustomNotamPopup choice) {
               return PopupMenuItem<CustomNotamPopup>(
                 value: choice,
-                child: Text(choice.title),
+                child: Text(choice.title!),
               );
             }).toList();
           },
@@ -267,7 +268,7 @@ class _NotamPageState extends State<NotamPage> {
             if (_mySharedNotam != "") {
               Share.share(_mySharedNotam);
             } else {
-              Scaffold.of(context).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     'Nothing to share!',
@@ -281,9 +282,9 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  void _selectCategoryMenu(CustomNotamPopup choice){
+  void _selectCategoryMenu(CustomNotamPopup choice) {
     setState(() {
-      if (choice == _popupChoices[0]){
+      if (choice == _popupChoices[0]) {
         _sortByCategories = true;
         //_initialPopupValue = 0;
       } else {
@@ -292,14 +293,11 @@ class _NotamPageState extends State<NotamPage> {
       }
     });
 
-
     String mText;
-    _sortByCategories 
-      ? mText = "Sorting by categories!" 
-      : mText = "Sorting by NOTAM number & date!";
+    _sortByCategories ? mText = "Sorting by categories!" : mText = "Sorting by NOTAM number & date!";
 
     widget.hideBottomNavBar(5);
-    Scaffold.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mText),
         duration: Duration(seconds: 4),
@@ -307,7 +305,6 @@ class _NotamPageState extends State<NotamPage> {
     );
 
     SharedPreferencesModel().setNotamCategorySorting(_sortByCategories);
-    
   }
 
   Widget _inputForm() {
@@ -318,8 +315,7 @@ class _NotamPageState extends State<NotamPage> {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8.0)),
             border: Border.all(color: Colors.grey),
-            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)
-        ),
+            color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainBackground)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -356,14 +352,18 @@ class _NotamPageState extends State<NotamPage> {
                             labelText: "Enter ICAO/IATA airports",
                           ),
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return "Please enter at least one valid airport!";
                             } else {
                               // Try to parse some airports
                               // Split the input to suit or needs
-                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                              RegExp exp = RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches = exp.allMatches(_userSubmitText);
-                              matches.forEach((m) => _myRequestedAirports.add(m.group(0)));
+                              matches.forEach((m) {
+                                if (m.group(0) != null) {
+                                  _myRequestedAirports.add(m.group(0)!);
+                                }
+                              });
                             }
                             if (_myRequestedAirports.isEmpty) {
                               return "Could not identify a valid airport!";
@@ -382,22 +382,30 @@ class _NotamPageState extends State<NotamPage> {
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           minWidth: 1.0,
                           buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                          child: RaisedButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(12.0),
-                                side: BorderSide(
-                                  color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
-                                )
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              shape: MaterialStateProperty.all<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  side: BorderSide(
+                                    color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)!,
+                                  ),
+                                ),
+                              ),
                             ),
                             child: Icon(
                               Icons.favorite_border,
                               color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                             ),
-                            onPressed: ()  {
-                              var favAirports = List<String>();
-                              RegExp exp = new RegExp(r"([a-z]|[A-Z]){3,4}");
+                            onPressed: () {
+                              var favAirports = <String>[];
+                              RegExp exp = RegExp(r"([a-z]|[A-Z]){3,4}");
                               Iterable<Match> matches = exp.allMatches(_myTextController.text);
-                              matches.forEach((m) => favAirports.add(m.group(0)));
+                              matches.forEach((m) {
+                                if (m.group(0) != null) {
+                                  favAirports.add(m.group(0)!);
+                                }
+                              });
                               widget.callbackToFav(4, FavFrom.notam, favAirports);
                             },
                           ),
@@ -417,12 +425,10 @@ class _NotamPageState extends State<NotamPage> {
                       ButtonTheme(
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child: RaisedButton(
-                          child: ImageIcon(
-                              AssetImage("assets/icons/drawer_notam.png"),
-                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)
-                          ),
-                          onPressed: ()  {
+                        child: ElevatedButton(
+                          child: ImageIcon(AssetImage("assets/icons/drawer_notam.png"),
+                              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText)),
+                          onPressed: () {
                             _fetchButtonPressed(context, false);
                           },
                         ),
@@ -431,7 +437,7 @@ class _NotamPageState extends State<NotamPage> {
                       ButtonTheme(
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child: RaisedButton(
+                        child: ElevatedButton(
                           child: Row(
                             children: <Widget>[
                               ImageIcon(
@@ -445,7 +451,7 @@ class _NotamPageState extends State<NotamPage> {
                               ),
                             ],
                           ),
-                          onPressed: ()  {
+                          onPressed: () {
                             _fetchButtonPressed(context, true);
                           },
                         ),
@@ -454,7 +460,7 @@ class _NotamPageState extends State<NotamPage> {
                       ButtonTheme(
                         minWidth: 1.0,
                         buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
-                        child:  RaisedButton(
+                        child: ElevatedButton(
                           child: Icon(Icons.delete),
                           onPressed: () {
                             setState(() {
@@ -482,13 +488,13 @@ class _NotamPageState extends State<NotamPage> {
   }
 
   List<Widget> _notamSections() {
-    List<Widget> mySections = List<Widget>();
+    List<Widget> mySections = <Widget>[];
 
     if (_apiCall) {
       mySections.add(
         SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) =>
-            Row(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
@@ -503,31 +509,28 @@ class _NotamPageState extends State<NotamPage> {
       );
     } else {
       if (_myNotamList.isNotEmpty) {
-
-        var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList,
-                                            sortCategories: _sortByCategories);
+        var notamBuilder = NotamItemBuilder(jsonNotamList: _myNotamList, sortCategories: _sortByCategories);
         var notamModel = notamBuilder.result;
 
         _mySharedNotam = "";
         _mySharedNotam += "###";
         _mySharedNotam += "\n### CAVOKATOR NOTAMS ###";
         _mySharedNotam += "\n###";
-        for (var a = 0; a < notamModel.notamModelList.length; a++){
-          var airportName =
-            notamModel.notamModelList[a].airportHeading == null
-            ? _myRequestedAirports[a].toUpperCase()
-            : notamModel.notamModelList[a].airportHeading;
+        for (var a = 0; a < notamModel.notamModelList.length; a++) {
+          var airportName = notamModel.notamModelList[a].airportHeading == null
+              ? _myRequestedAirports[a].toUpperCase()
+              : notamModel.notamModelList[a].airportHeading;
           _mySharedNotam += "\n\n\n### $airportName ###";
-          if (notamModel.notamModelList[a].airportNotFound){
+          if (notamModel.notamModelList[a].airportNotFound) {
             _mySharedNotam += "\n\nERROR: AIRPORT NOT FOUND!";
           }
-          if (notamModel.notamModelList[a].airportWithNoNotam){
+          if (notamModel.notamModelList[a].airportWithNoNotam) {
             _mySharedNotam += "\n\nNo NOTAM found in this airport!";
           }
           for (var b = 0; b < notamModel.notamModelList[a].airportNotams.length; b++) {
             var thisItem = notamModel.notamModelList[a].airportNotams[b];
 
-            if (thisItem is NotamCategory){
+            if (thisItem is NotamCategory) {
               _mySharedNotam += "\n\n## ${thisItem.mainCategory}";
             } else if (thisItem is NotamSingle) {
               _mySharedNotam += "\n\n***\n${thisItem.raw}\n***";
@@ -537,11 +540,8 @@ class _NotamPageState extends State<NotamPage> {
         _mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
 
         DateTime myRequestedTime = DateTime.parse(_requestedTime);
-        PrettyDuration myPrettyDuration = PrettyDuration(
-          referenceTime: myRequestedTime,
-          header: "Requested",
-          prettyType: PrettyType.notam
-        );
+        PrettyDuration myPrettyDuration =
+            PrettyDuration(referenceTime: myRequestedTime, header: "Requested", prettyType: PrettyType.notam);
         PrettyTimeCombination myFinalDuration = myPrettyDuration.getDuration;
 
         mySections.add(
@@ -552,7 +552,8 @@ class _NotamPageState extends State<NotamPage> {
                 Flexible(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 25, horizontal: 25),
-                    child: Text(myFinalDuration.prettyDuration,
+                    child: Text(
+                      myFinalDuration.prettyDuration,
                       style: TextStyle(
                         color: myFinalDuration.prettyColor,
                       ),
@@ -565,32 +566,32 @@ class _NotamPageState extends State<NotamPage> {
         );
 
         for (var i = 0; i < notamModel.notamModelList.length; i++) {
-          var airportName =
-            notamModel.notamModelList[i].airportHeading == null ?
-            _myRequestedAirports[i].toUpperCase() :
-            notamModel.notamModelList[i].airportHeading;
+          var airportName = notamModel.notamModelList[i].airportHeading == null
+              ? _myRequestedAirports[i].toUpperCase()
+              : notamModel.notamModelList[i].airportHeading;
 
           int thisChildCount;
           if (notamModel.notamModelList[i].airportNotams.length == 0) {
             thisChildCount = 1;
-          }
-          else {
+          } else {
             thisChildCount = notamModel.notamModelList[i].airportNotams.length;
           }
 
           // This is where the scroll will end up for every airport
           mySections.add(_scrollToBar(i));
 
-          mySections.add(SliverStickyHeaderBuilder(
+          mySections.add(
+            SliverStickyHeaderBuilder(
               builder: (context, state) {
                 return Padding(
                   padding: EdgeInsets.only(top: 0),
                   child: Container(
                     margin: EdgeInsetsDirectional.only(bottom: 25),
                     height: 60.0,
-                    color: (state.isPinned ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
-                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)
-                        .withOpacity(1.0 - state.scrollPercentage)),
+                    color: (state.isPinned
+                        ? ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderPinned)
+                        : ThemeMe.apply(widget.isThemeDark, DesiredColor.HeaderUnpinned)!
+                            .withOpacity(1.0 - state.scrollPercentage)),
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -601,8 +602,7 @@ class _NotamPageState extends State<NotamPage> {
                         ),
                         Flexible(
                           child: Text(
-                            "(${_myRequestedAirports[i].toUpperCase()}) " +
-                            airportName,
+                            "(${_myRequestedAirports[i].toUpperCase()}) " + airportName!,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -612,111 +612,103 @@ class _NotamPageState extends State<NotamPage> {
                 );
               },
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  if (notamModel.notamModelList[i].airportNotFound) {
-                    return ListTile(
-                      title: Card(
-                        elevation: 2,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                          child: RichText(
-                            text: TextSpan(
-                              text: "Airport not found!",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  else if (notamModel.notamModelList[i].airportWithNoNotam) {
-                    return ListTile(
-                      title: Card(
-                        elevation: 2,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                          child: RichText(
-                            text: TextSpan(
-                              text: "No NOTAM published here!",
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  else {
-                    final item = notamModel.notamModelList[i].airportNotams[index];
-                    if (item is NotamSingle){
-                      bool colorBorderActive = false;
-                      Color colorBorderValue = ThemeMe.apply(
-                          widget.isThemeDark,
-                          DesiredColor.MainText);
-
-                      // WARNING IN ORANGE
-                      if (item.categorySubMain == "Air display" ||
-                          item.categorySubMain == "Aerobatics" ||
-                          item.categorySubMain == "Captive balloon or kite" ||
-                          item.categorySubMain == "Demolition of explosives" ||
-                          item.categorySubMain == "Exercises" ||
-                          item.categorySubMain == "Air refueling" ||
-                          item.categorySubMain == "Glider flying" ||
-                          item.categorySubMain == "Blasting" ||
-                          item.categorySubMain == "Banner/target towing" ||
-                          item.categorySubMain == "Ascent of free balloon" ||
-                          item.categorySubMain == "Missile, gun or rocket firing" ||
-                          item.categorySubMain == "Parachute jumping exercise" ||
-                          item.categorySubMain == "Radioactive/toxic materials" ||
-                          item.categorySubMain == "Burning or blowing gas" ||
-                          item.categorySubMain == "Mass movement of aircraft" ||
-                          item.categorySubMain == "Unmanned aircraft" ||
-                          item.categorySubMain == "Formation flight" ||
-                          item.categorySubMain == "Significant volcanic activity" ||
-                          item.categorySubMain == "Aerial survey" ||
-                          item.categorySubMain == "Model flying") {
-
-                        colorBorderActive = true;
-                        colorBorderValue = Colors.orange;
-                      }
-
-                      // THIS EARNING IN RED
-                      if (item.categorySubMain == "Runway"
-                          && item.categorySubSecondary == "Closed") {
-                        colorBorderActive = true;
-                        colorBorderValue = Colors.red;
-                      }
-
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (notamModel.notamModelList[i].airportNotFound) {
                       return ListTile(
                         title: Card(
-                          shape: colorBorderActive
-                              ? new RoundedRectangleBorder(
-                              side: new BorderSide(color: colorBorderValue, width: 2.0),
-                              borderRadius: BorderRadius.circular(4.0))
-                              : null,
                           elevation: 2,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
-                            child: item.notamQ
-                                ? notamQSingleCard(item, airportName)
-                                : notamOtherSingleCard(item),
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Airport not found!",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
                           ),
                         ),
                       );
-                    }
-                    else if (item is NotamCategory) {
-                      if (_sortByCategories) {
+                    } else if (notamModel.notamModelList[i].airportWithNoNotam) {
+                      return ListTile(
+                        title: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                            child: RichText(
+                              text: TextSpan(
+                                text: "No NOTAM published here!",
+                                style: TextStyle(color: Colors.green),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      final item = notamModel.notamModelList[i].airportNotams[index];
+                      if (item is NotamSingle) {
+                        bool colorBorderActive = false;
+                        Color? colorBorderValue = ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText);
+
+                        // WARNING IN ORANGE
+                        if (item.categorySubMain == "Air display" ||
+                            item.categorySubMain == "Aerobatics" ||
+                            item.categorySubMain == "Captive balloon or kite" ||
+                            item.categorySubMain == "Demolition of explosives" ||
+                            item.categorySubMain == "Exercises" ||
+                            item.categorySubMain == "Air refueling" ||
+                            item.categorySubMain == "Glider flying" ||
+                            item.categorySubMain == "Blasting" ||
+                            item.categorySubMain == "Banner/target towing" ||
+                            item.categorySubMain == "Ascent of free balloon" ||
+                            item.categorySubMain == "Missile, gun or rocket firing" ||
+                            item.categorySubMain == "Parachute jumping exercise" ||
+                            item.categorySubMain == "Radioactive/toxic materials" ||
+                            item.categorySubMain == "Burning or blowing gas" ||
+                            item.categorySubMain == "Mass movement of aircraft" ||
+                            item.categorySubMain == "Unmanned aircraft" ||
+                            item.categorySubMain == "Formation flight" ||
+                            item.categorySubMain == "Significant volcanic activity" ||
+                            item.categorySubMain == "Aerial survey" ||
+                            item.categorySubMain == "Model flying") {
+                          colorBorderActive = true;
+                          colorBorderValue = Colors.orange;
+                        }
+
+                        // THIS EARNING IN RED
+                        if (item.categorySubMain == "Runway" && item.categorySubSecondary == "Closed") {
+                          colorBorderActive = true;
+                          colorBorderValue = Colors.red;
+                        }
+
                         return ListTile(
-                          title: notamCategoryCard(item),
+                          title: Card(
+                            shape: colorBorderActive
+                                ? RoundedRectangleBorder(
+                                    side: BorderSide(color: colorBorderValue!, width: 2.0),
+                                    borderRadius: BorderRadius.circular(4.0))
+                                : null,
+                            elevation: 2,
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(15, 20, 15, 20),
+                              child: item.notamQ ? notamQSingleCard(item, airportName) : notamOtherSingleCard(item),
+                            ),
+                          ),
                         );
-                      } else {
-                        return SizedBox.shrink();
+                      } else if (item is NotamCategory) {
+                        if (_sortByCategories) {
+                          return ListTile(
+                            title: notamCategoryCard(item),
+                          );
+                        } else {
+                          return SizedBox.shrink();
+                        }
                       }
                     }
-                  }
-                  // Should not arrive here if all NotamGeneric items
-                  // are properly coded
-                  return null;
-                },
+                    // Should not arrive here if all NotamGeneric items
+                    // are properly coded
+                    return null;
+                  },
                   childCount: thisChildCount,
                 ),
               ),
@@ -728,7 +720,7 @@ class _NotamPageState extends State<NotamPage> {
           mySections.add(
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                    (context, index) => Container(
+                (context, index) => Container(
                   margin: EdgeInsets.only(bottom: 80),
                 ),
                 childCount: 1,
@@ -738,12 +730,11 @@ class _NotamPageState extends State<NotamPage> {
           );
         }
         SharedPreferencesModel().setNotamScrollList(_scrollList);
-      }
-      else {
+      } else {
         mySections.add(
           SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (context, index) => Container(),
+              (context, index) => Container(),
               childCount: 1,
             ),
           ),
@@ -753,8 +744,8 @@ class _NotamPageState extends State<NotamPage> {
     return mySections;
   }
 
-  Widget notamCategoryCard (NotamCategory thisCategory) {
-    final category = thisCategory.mainCategory;
+  Widget notamCategoryCard(NotamCategory thisCategory) {
+    final category = thisCategory.mainCategory!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
@@ -763,7 +754,7 @@ class _NotamPageState extends State<NotamPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
             side: BorderSide(
-              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory),
+              color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MagentaCategory)!,
               width: 2,
             ),
           ),
@@ -771,7 +762,7 @@ class _NotamPageState extends State<NotamPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget> [
+            children: <Widget>[
               Padding(
                 padding: EdgeInsets.fromLTRB(20, 20, 0, 20),
               ),
@@ -788,12 +779,11 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Widget notamQSingleCard (NotamSingle thisNotam, String thisAirportName) {
-
-    final notamId = thisNotam.id;
+  Widget notamQSingleCard(NotamSingle thisNotam, String? thisAirportName) {
+    final notamId = thisNotam.id!;
     final notamCategorySubMain = thisNotam.categorySubMain;
     final notamCategorySubSecondary = thisNotam.categorySubSecondary;
-    final notamFreeText = thisNotam.freeText;
+    final notamFreeText = thisNotam.freeText!;
     final notamRaw = thisNotam.raw;
 
     Widget myMapWidget() {
@@ -806,8 +796,7 @@ class _NotamPageState extends State<NotamPage> {
                 notamId: thisNotam.id,
                 latitude: thisNotam.latitude,
                 longitude: thisNotam.longitude,
-                radius: thisNotam.radius
-            );
+                radius: thisNotam.radius);
           },
         );
       } else {
@@ -815,14 +804,15 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
 
-    Widget subCategoriesWidget(){
+    Widget subCategoriesWidget() {
       if (thisNotam.categorySubMain != "" && thisNotam.categorySubSecondary != "") {
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(notamCategorySubMain,
+              Text(
+                notamCategorySubMain!,
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.blue,
@@ -834,13 +824,14 @@ class _NotamPageState extends State<NotamPage> {
                   children: <Widget>[
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4),
-                      child: Icon(Icons.play_arrow,
+                      child: Icon(
+                        Icons.play_arrow,
                         color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                         size: 12,
                       ),
                     ),
                     Text(
-                      notamCategorySubSecondary,
+                      notamCategorySubSecondary!,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.blue,
@@ -857,7 +848,8 @@ class _NotamPageState extends State<NotamPage> {
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: <Widget>[
-              Text(notamCategorySubMain,
+              Text(
+                notamCategorySubMain!,
                 style: TextStyle(
                   fontSize: 12,
                   color: ThemeMe.apply(widget.isThemeDark, DesiredColor.BlueTempo),
@@ -871,58 +863,60 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
 
-    Widget datesAndTimesWidget(){
+    Widget datesAndTimesWidget() {
       bool notamValid = false;
       DateTime now = DateTime.now().toUtc();
-      if (!thisNotam.permanent){
-        if (thisNotam.startTime.isBefore(now) && thisNotam.endTime.isAfter(now)){
+      if (!thisNotam.permanent!) {
+        if (thisNotam.startTime!.isBefore(now) && thisNotam.endTime!.isAfter(now)) {
           notamValid = true;
         }
       } else {
-          if (thisNotam.startTime.isBefore(now)){
-            notamValid = true;
-          }
+        if (thisNotam.startTime!.isBefore(now)) {
+          notamValid = true;
+        }
       }
 
       // Time formatting
-      var formatter = new DateFormat('yyyy-MMM-dd HH:mm');
-      String startTime = formatter.format(thisNotam.startTime);
+      var formatter = DateFormat('yyyy-MMM-dd HH:mm');
+      String startTime = formatter.format(thisNotam.startTime!);
 
       String notamEnd;
-      if (thisNotam.permanent){
+      if (thisNotam.permanent!) {
         notamEnd = "PERMANENT";
-      } else if (thisNotam.estimated){
-        notamEnd = formatter.format(thisNotam.endTime) + " (EST)";
+      } else if (thisNotam.estimated!) {
+        notamEnd = formatter.format(thisNotam.endTime!) + " (EST)";
       } else {
-        notamEnd = formatter.format(thisNotam.endTime);
+        notamEnd = formatter.format(thisNotam.endTime!);
       }
 
       return Row(
         children: <Widget>[
-          Icon(Icons.today,
-            color: notamValid
-                ? Colors.red[300]
-                : ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
+          Icon(
+            Icons.today,
+            color: notamValid ? Colors.red[300] : ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
             size: 18,
           ),
           Flexible(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 5),
-              child: Text(startTime,
+              child: Text(
+                startTime,
                 style: TextStyle(
-                fontSize: 11,
+                  fontSize: 11,
                 ),
               ),
             ),
           ),
-          Icon(Icons.play_arrow,
+          Icon(
+            Icons.play_arrow,
             color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
             size: 12,
           ),
           Flexible(
             child: Padding(
               padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-              child: Text(notamEnd,
+              child: Text(
+                notamEnd,
                 style: TextStyle(
                   fontSize: 11,
                 ),
@@ -941,14 +935,16 @@ class _NotamPageState extends State<NotamPage> {
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: <Widget>[
-              Icon(Icons.alarm,
+              Icon(
+                Icons.alarm,
                 color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
                 size: 18,
               ),
               Flexible(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                  child: Text(thisNotam.validTimes,
+                  child: Text(
+                    thisNotam.validTimes!,
                     style: TextStyle(
                       fontSize: 11,
                     ),
@@ -972,14 +968,15 @@ class _NotamPageState extends State<NotamPage> {
           size: 18,
         );
         bottomText = Flexible(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                child: Text(thisNotam.bottomLimit,
-                  style: TextStyle(
-                    fontSize: 11,
-                  ),
-                ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+            child: Text(
+              thisNotam.bottomLimit!,
+              style: TextStyle(
+                fontSize: 11,
               ),
+            ),
+          ),
         );
       } else {
         bottomIcon = SizedBox.shrink();
@@ -992,9 +989,7 @@ class _NotamPageState extends State<NotamPage> {
       if (thisNotam.topLimit != "") {
         double mPad;
         thisNotam.bottomLimit != "" ? mPad = 15 : mPad = 0;
-        middlePadding = Padding (
-          padding: EdgeInsets.symmetric(horizontal: mPad)
-        );
+        middlePadding = Padding(padding: EdgeInsets.symmetric(horizontal: mPad));
         topIcon = Icon(
           Icons.vertical_align_top,
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
@@ -1003,7 +998,8 @@ class _NotamPageState extends State<NotamPage> {
         topText = Flexible(
           child: Padding(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-            child: Text(thisNotam.topLimit,
+            child: Text(
+              thisNotam.topLimit!,
               style: TextStyle(
                 fontSize: 11,
               ),
@@ -1017,21 +1013,18 @@ class _NotamPageState extends State<NotamPage> {
       }
 
       double myPadding = 0;
-      if (thisNotam.bottomLimit != ""|| thisNotam.topLimit != ""){
+      if (thisNotam.bottomLimit != "" || thisNotam.topLimit != "") {
         myPadding = 10;
       }
       return Padding(
         padding: EdgeInsets.symmetric(vertical: myPadding),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            bottomIcon,
-            bottomText,
-            middlePadding,
-            topIcon,
-            topText,
-          ]
-        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+          bottomIcon,
+          bottomText,
+          middlePadding,
+          topIcon,
+          topText,
+        ]),
       );
     }
 
@@ -1094,9 +1087,8 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Widget notamOtherSingleCard (NotamSingle thisNotam) {
-
-    final notamRaw = thisNotam.raw;
+  Widget notamOtherSingleCard(NotamSingle thisNotam) {
+    final notamRaw = thisNotam.raw!;
 
     return Column(
       children: <Widget>[
@@ -1114,17 +1106,15 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-
-
-  Widget _scrollToBar (int j) {
+  Widget _scrollToBar(int j) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) => Container(
-          child: Padding (
+          child: Padding(
             padding: EdgeInsets.all(0),
             child: AutoScrollTag(
               key: ValueKey(j),
-              controller: _mainScrollController,
+              controller: _mainScrollController!,
               index: j,
               highlightColor: Colors.green.withOpacity(1),
               child: Text(""),
@@ -1138,7 +1128,7 @@ class _NotamPageState extends State<NotamPage> {
 
   void _restoreSharedPreferences() async {
     try {
-      List<String> req = List<String>(); // Save correct order for later
+      List<String> req = <String>[]; // Save correct order for later
       await SharedPreferencesModel().getNotamUserInput().then((onValue) {
         req = onValue.split(" ");
         setState(() {
@@ -1147,10 +1137,10 @@ class _NotamPageState extends State<NotamPage> {
       });
 
       await SharedPreferencesModel().getNotamInformation().then((onValue) {
-        if (onValue.isNotEmpty){
+        if (onValue.isNotEmpty) {
           // We need to sort based on user request, as most probably the
           // order or airports in the NOTAM string is not correct
-          var newList = List<NotamJson>();
+          var newList = <NotamJson>[];
           var savedJson = notamJsonFromJson(onValue);
           for (var i = 0; i < req.length; i++) {
             // Just in case there are ',' imported from Favourites
@@ -1177,9 +1167,8 @@ class _NotamPageState extends State<NotamPage> {
       });
 
       await SharedPreferencesModel().getNotamCategorySorting().then((onValue) {
-          _sortByCategories = onValue;
+        _sortByCategories = onValue;
       });
-
     } catch (except) {
       // pass
     }
@@ -1192,7 +1181,7 @@ class _NotamPageState extends State<NotamPage> {
     _myRequestedAirports.clear();
     fabCallback(clear: true);
 
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _apiCall = true;
       });
@@ -1204,7 +1193,7 @@ class _NotamPageState extends State<NotamPage> {
             _myNotamList = weatherJson;
 
             // Sorting list, because it might not be sorted from the API
-            var sortedList = List<NotamJson>();
+            var sortedList = <NotamJson>[];
             for (var i = 0; i < _myRequestedAirports.length; i++) {
               for (var n in _myNotamList) {
                 if (_myRequestedAirports[i].toUpperCase() == n.airportIdIata ||
@@ -1220,7 +1209,7 @@ class _NotamPageState extends State<NotamPage> {
         });
       });
     }
-    FocusScope.of(context).requestFocus(new FocusNode());
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   // Ensure that submitted airports are split correctly
@@ -1231,8 +1220,7 @@ class _NotamPageState extends State<NotamPage> {
     if (textEntered.length > _userSubmitText.length) {
       if (textEntered.length > 3) {
         // Take a look at the last 4 chars entered
-        String lastFourChars =
-        textEntered.substring(textEntered.length - 4, textEntered.length);
+        String lastFourChars = textEntered.substring(textEntered.length - 4, textEntered.length);
         // If there is at least a space, do nothing
         bool spaceNeeded = true;
         for (String char in lastFourChars.split("")) {
@@ -1243,10 +1231,7 @@ class _NotamPageState extends State<NotamPage> {
         if (spaceNeeded) {
           _myTextController.value = TextEditingValue(
             text: textEntered + " ",
-            selection: TextSelection.fromPosition(
-                TextPosition(
-                    offset: (textEntered + " ").length)
-            ),
+            selection: TextSelection.fromPosition(TextPosition(offset: (textEntered + " ").length)),
           );
         }
       }
@@ -1254,8 +1239,7 @@ class _NotamPageState extends State<NotamPage> {
     _userSubmitText = textEntered;
   }
 
-
-  Future<List<NotamJson>> _callNotamApi(bool fetchBoth) async {
+  Future<List<NotamJson>?> _callNotamApi(bool fetchBoth) async {
     String allAirports = "";
 
     _scrollList.clear();
@@ -1271,7 +1255,7 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
 
-    List<NotamJson> notamExportedJson;
+    List<NotamJson>? notamExportedJson;
 
     bool wxFailed = false;
     bool notamFailed = false;
@@ -1283,14 +1267,12 @@ class _NotamPageState extends State<NotamPage> {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
         widget.hideBottomNavBar();
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Oops! No Internet connection!',
+            content: Text('Oops! No Internet connection!',
                 style: TextStyle(
                   color: Colors.black,
-                )
-            ),
+                )),
             backgroundColor: Colors.red[100],
             duration: Duration(seconds: firstSnackTimeNeeded),
           ),
@@ -1298,10 +1280,8 @@ class _NotamPageState extends State<NotamPage> {
 
         Timer(Duration(seconds: 6), () => widget.showBottomNavBar());
         return null;
-
       } else {
-
-        String notamServer = PrivateVariables.apiURL;
+        String notamServer = ConstVariables.apiURL;
         String notamApi = "Notam/GetNotam?";
 
         String notamSource = "source=Unknown";
@@ -1337,7 +1317,7 @@ class _NotamPageState extends State<NotamPage> {
           }
         }
         widget.hideBottomNavBar();
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(fetchText),
             duration: Duration(seconds: firstSnackTimeNeeded),
@@ -1345,11 +1325,10 @@ class _NotamPageState extends State<NotamPage> {
         );
 
         int timeOut = 20 * _myRequestedAirports.length;
-        final response = await http.post(url).timeout(Duration(seconds: timeOut));
+        final response = await http.post(Uri.parse(url)).timeout(Duration(seconds: timeOut));
 
         if (response.statusCode != 200) {
           notamFailed = true;
-
         } else {
           notamExportedJson = notamJsonFromJson(response.body);
 
@@ -1363,7 +1342,7 @@ class _NotamPageState extends State<NotamPage> {
         }
 
         if (fetchBoth) {
-          String wxServer = PrivateVariables.apiURL;
+          String wxServer = ConstVariables.apiURL;
           String wxApi = "Wx/GetWx?";
 
           String wxSource = "source=Unknown";
@@ -1384,14 +1363,14 @@ class _NotamPageState extends State<NotamPage> {
 
           String wxAirports = "&Airports=$allAirports";
 
-          int savedHoursBefore;
+          int? savedHoursBefore;
           bool mostRecent;
 
           await SharedPreferencesModel().getWeatherHoursBefore().then((onValue) {
             savedHoursBefore = onValue;
           });
 
-          int internalHoursBefore;
+          int? internalHoursBefore;
           if (savedHoursBefore == 0) {
             mostRecent = true;
             internalHoursBefore = 10;
@@ -1406,27 +1385,22 @@ class _NotamPageState extends State<NotamPage> {
           String wxUrl = wxServer + wxApi + wxSource + wxAirports + mostRecentString + hoursBefore;
 
           int timeOut = 20 * _myRequestedAirports.length;
-          final response = await http.post(wxUrl).timeout(Duration(seconds: timeOut));
+          final response = await http.post(Uri.parse(wxUrl)).timeout(Duration(seconds: timeOut));
 
           if (response.statusCode != 200) {
             wxFailed = true;
-
           } else {
             SharedPreferencesModel().setWeatherInformation(response.body);
             SharedPreferencesModel().setWeatherUserInput(_userSubmitText);
             SharedPreferencesModel().setWeatherRequestedAirports(_myRequestedAirports);
           }
-
         }
 
         if (wxFailed || notamFailed) {
           throw "error";
         }
-
       }
-
-    } catch (Exception) {
-
+    } catch (e) {
       String expString = "";
       if (fetchBoth) {
         if (wxFailed && notamFailed) {
@@ -1447,14 +1421,12 @@ class _NotamPageState extends State<NotamPage> {
       }
 
       widget.hideBottomNavBar();
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              expString,
+          content: Text(expString,
               style: TextStyle(
                 color: Colors.black,
-              )
-          ),
+              )),
           backgroundColor: Colors.red[100],
           duration: Duration(seconds: 6),
         ),
@@ -1469,9 +1441,9 @@ class _NotamPageState extends State<NotamPage> {
       int diffTime = finishRequest.difference(startRequest).inSeconds;
       int myWait;
       if (diffTime <= firstSnackTimeNeeded) {
-        myWait = firstSnackTimeNeeded - diffTime + 7;   // First SnackBar - time until now + time for the second one
+        myWait = firstSnackTimeNeeded - diffTime + 7; // First SnackBar - time until now + time for the second one
       } else {
-        myWait = 7;  // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
+        myWait = 7; // If more time has elapsed, just wait 6 + 1 seconds for the error SnackBar
       }
       Timer(Duration(seconds: myWait), () => widget.showBottomNavBar());
 
@@ -1492,11 +1464,10 @@ class _NotamPageState extends State<NotamPage> {
     return notamExportedJson;
   }
 
-
-  Future<void> _showMap({notamId, latitude, longitude, radius}) async {
+  Future<void> _showMap({required notamId, required latitude, required longitude, radius}) async {
     LatLng _center = LatLng(latitude, longitude);
 
-    // creating a new MARKER
+    // creating a  MARKER
     var markerIdVal = notamId;
     final MarkerId markerId = MarkerId(markerIdVal);
     final Marker marker = Marker(
@@ -1505,7 +1476,7 @@ class _NotamPageState extends State<NotamPage> {
       infoWindow: InfoWindow(title: notamId, snippet: 'Radius: ${radius.toString()} NM'),
       visible: true,
     );
-    List<Marker> markersList = new List<Marker>();
+    List<Marker> markersList = <Marker>[];
     markersList.add(marker);
 
     return showDialog<void>(
@@ -1515,7 +1486,7 @@ class _NotamPageState extends State<NotamPage> {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
           child: Container(
-            padding: EdgeInsets.fromLTRB(15,25,15,15),
+            padding: EdgeInsets.fromLTRB(15, 25, 15, 15),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1523,7 +1494,7 @@ class _NotamPageState extends State<NotamPage> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding:  EdgeInsets.only(bottom: 20),
+                    padding: EdgeInsets.only(bottom: 20),
                     child: Text(
                       'NOTAM $notamId',
                       style: TextStyle(
@@ -1533,7 +1504,7 @@ class _NotamPageState extends State<NotamPage> {
                     ),
                   ),
                 ),
-                Expanded (
+                Expanded(
                   child: GoogleMap(
                     mapType: MapType.hybrid,
                     onMapCreated: (GoogleMapController controller) {
@@ -1548,8 +1519,8 @@ class _NotamPageState extends State<NotamPage> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only (top: 20),
-                  child: RaisedButton(
+                  padding: EdgeInsets.only(top: 20),
+                  child: ElevatedButton(
                     child: Text(
                       'Roger!',
                       style: TextStyle(
@@ -1569,7 +1540,7 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-  Future<void> _showFullNotam(String notamId, String notamText) async {
+  Future<void> _showFullNotam(String notamId, String? notamText) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -1580,14 +1551,14 @@ class _NotamPageState extends State<NotamPage> {
           content: Padding(
             padding: const EdgeInsets.all(18.0),
             child: Text(
-              notamText,
+              notamText!,
               style: TextStyle(
                 fontSize: 12,
               ),
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Roger!'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -1599,27 +1570,24 @@ class _NotamPageState extends State<NotamPage> {
     );
   }
 
-
-  Future _scrollToNotam({@required int position}) async {
+  Future _scrollToNotam({required int position}) async {
     // We need to scroll first quickly pass the target so that
     // the header is shown on the screen (very quick). Otherwise, scrolling
     // directly to "begin" will not be precise.
-    await _mainScrollController.scrollToIndex(position + 2,
-        duration: Duration(milliseconds: 500),
-        preferPosition: AutoScrollPosition.begin);
+    await _mainScrollController!
+        .scrollToIndex(position + 2, duration: Duration(milliseconds: 500), preferPosition: AutoScrollPosition.begin);
 
     // This is the actual item we want
-    await _mainScrollController.scrollToIndex(position,
-        duration: Duration(seconds: 2),
-        preferPosition: AutoScrollPosition.begin);
+    await _mainScrollController!
+        .scrollToIndex(position, duration: Duration(seconds: 2), preferPosition: AutoScrollPosition.begin);
 
-    _mainScrollController.highlight(position);
+    _mainScrollController!.highlight(position);
   }
 
   List<SpeedDialChild> _mySpeedDials() {
-    List<SpeedDialChild> _myDialsList = List<SpeedDialChild>();
+    List<SpeedDialChild> _myDialsList = <SpeedDialChild>[];
 
-    if (_scrollList.length > 1){
+    if (_scrollList.length > 1) {
       for (var i = _scrollList.length - 1; i >= 0; i--) {
         SpeedDialChild singleDial = SpeedDialChild(
           child: Icon(Icons.local_airport),
@@ -1634,7 +1602,6 @@ class _NotamPageState extends State<NotamPage> {
       }
     }
 
-
     SpeedDialChild firstDial = SpeedDialChild(
       child: Icon(Icons.arrow_upward),
       backgroundColor: Colors.green,
@@ -1642,25 +1609,23 @@ class _NotamPageState extends State<NotamPage> {
       labelStyle: TextStyle(
         color: Colors.black,
       ),
-      onTap: () => _mainScrollController.animateTo(0,
-          duration: Duration(seconds: 2),
-          curve: Curves.ease),
+      onTap: () => _mainScrollController!.animateTo(0, duration: Duration(seconds: 2), curve: Curves.ease),
     );
     _myDialsList.add(firstDial);
 
     return _myDialsList;
   }
 
-  void _updateTimes(){
+  void _updateTimes() {
     //print("UPDATING NOTAM TICKER: ${DateTime.now().toUtc()}");
-    if (_myNotamList.isNotEmpty){
+    if (_myNotamList.isNotEmpty) {
       setState(() {
         // This will trigger a refresh of weather times
       });
     }
   }
 
-  String _shareThisNotam(NotamSingle thisNotam, String thisAirportName) {
+  String _shareThisNotam(NotamSingle thisNotam, String? thisAirportName) {
     String mySharedNotam = "";
 
     mySharedNotam += "###";
@@ -1672,47 +1637,46 @@ class _NotamPageState extends State<NotamPage> {
     mySharedNotam += "\n*NOTAM ID: ${thisNotam.id}\n";
 
     if (thisNotam.categorySubMain != "") {
-    mySharedNotam += "\n*Category: ${thisNotam.categorySubMain}";
+      mySharedNotam += "\n*Category: ${thisNotam.categorySubMain}";
     }
     if (thisNotam.categorySubSecondary != "") {
-    mySharedNotam += "\n*Subcategory: ${thisNotam.categorySubSecondary}";
+      mySharedNotam += "\n*Subcategory: ${thisNotam.categorySubSecondary}";
     }
 
     mySharedNotam += "\n\n${thisNotam.freeText}";
 
     // Time formatting
-    var formatter = new DateFormat('yyyy-MMM-dd HH:mm');
-    String startTimeFormatted = formatter.format(thisNotam.startTime);
+    var formatter = DateFormat('yyyy-MMM-dd HH:mm');
+    String startTimeFormatted = formatter.format(thisNotam.startTime!);
     mySharedNotam += "\n\n*From: $startTimeFormatted";
 
     String notamEndFormatted;
-    if (thisNotam.permanent){
+    if (thisNotam.permanent!) {
       notamEndFormatted = "PERMANENT";
-    } else if (thisNotam.estimated){
-      notamEndFormatted = formatter.format(thisNotam.endTime) + " (EST)";
+    } else if (thisNotam.estimated!) {
+      notamEndFormatted = formatter.format(thisNotam.endTime!) + " (EST)";
     } else {
-      notamEndFormatted = formatter.format(thisNotam.endTime);
+      notamEndFormatted = formatter.format(thisNotam.endTime!);
     }
     mySharedNotam += "\n*To: $notamEndFormatted";
 
     if (thisNotam.validTimes != "") {
-    mySharedNotam += "\n\n*Validity: ${thisNotam.validTimes}";
+      mySharedNotam += "\n\n*Validity: ${thisNotam.validTimes}";
     }
 
     if (thisNotam.bottomLimit != "") {
-    mySharedNotam += "\n\n*Bottom limit: ${thisNotam.bottomLimit}";
+      mySharedNotam += "\n\n*Bottom limit: ${thisNotam.bottomLimit}";
     }
     if (thisNotam.topLimit != "") {
-    mySharedNotam += "\n*Top limit: ${thisNotam.topLimit}";
+      mySharedNotam += "\n*Top limit: ${thisNotam.topLimit}";
     }
 
     mySharedNotam += "\n\n\n\n ### END CAVOKATOR REPORT ###";
     return mySharedNotam;
-
   }
 
   void onMainScrolled() {
-    widget.notifyScrollPosition(_mainScrollController.offset);
+    widget.notifyScrollPosition(_mainScrollController!.offset);
   }
 
   // END OF CLASS

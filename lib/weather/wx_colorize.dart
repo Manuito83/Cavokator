@@ -5,11 +5,10 @@ import 'package:cavokator_flutter/condition/condition_decode.dart';
 import 'dart:async';
 
 class MetarColorize {
+  bool? _isThemeDark;
+  late BuildContext myContext;
 
-  bool _isThemeDark;
-  BuildContext myContext;
-
-  TextSpan _colorizedResult;
+  TextSpan? _colorizedResult;
   get getResult => _colorizedResult;
 
   // Wind Intensity
@@ -36,13 +35,7 @@ class MetarColorize {
   int _regularRvr = 1000;
   int _badRvr = 600;
 
-  List<String> goodWeather = [
-    r"CAVOK",
-    r"NOSIG",
-    r"NSC",
-    r"00000KT",
-    r"9999"
-  ];
+  List<String> goodWeather = [r"CAVOK", r"NOSIG", r"NSC", r"00000KT", r"9999"];
 
   List<String> regularWeather = [
     r"(VC)(?!PO|DS|SS)([A-Z]+)",
@@ -84,54 +77,46 @@ class MetarColorize {
     r"BKN008",
   ];
 
-
   List<String> badWeather = [
-    r"^(\+)([A-Z]+)?",               // ANYTHING WITH A "+"
+    r"^(\+)([A-Z]+)?", // ANYTHING WITH A "+"
     r"BLSN",
-    r"OVC001", "OVC002",             // Cloud cover
+    r"OVC001", "OVC002", // Cloud cover
     r"BKN001", "BKN002",
     r"(?<!TEM)(\+)?(PO)",
     r"(\+)?(SQ)",
     r"(\+)?(FC)",
     r"(\+)?(SS)",
-    r"(\+)?(\-)?(DS)(?![DSNT])",     // Trying to avoid american "distant" (DSNT)
+    r"(\+)?(\-)?(DS)(?![DSNT])", // Trying to avoid american "distant" (DSNT)
     r"VCPO", r"VCSS", r"VCDS",
   ];
 
-
-  MetarColorize ({@required String metar, @required bool isThemeDark,
-    @required BuildContext context}) {
-
+  MetarColorize({required String metar, required bool? isThemeDark, required BuildContext context}) {
     _isThemeDark = isThemeDark;
     myContext = context;
-    List<TextSpan> spanList = List<TextSpan>();
+    List<TextSpan> spanList = <TextSpan>[];
     var splitMetar = metar.split(" ");
     TextSpan thisSpan;
 
-    for (int i = 0; i < splitMetar.length; i++){
-
+    for (int i = 0; i < splitMetar.length; i++) {
       String currentWord = splitMetar[i];
 
       // CONDITION
-      var conditionRegex = new RegExp(
-          r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))"
+      var conditionRegex = RegExp(r"((\b)(R)+(\d\d([LCR]?)+(\/)+([0-9]|\/){6})(\b))"
           r"|((\b)(([0-9]|\/){8})+(\b))"
           r"|((\b)+(R\/SNOCLO)+(\b))"
           r"|((\b)+(R\d\d([LCR]?))+(\/)+(CLRD)+(\/\/))");
-      var conditionRegexSevere = new RegExp(
-          r"((\b)+(R\/SNOCLO)+(\b))");
-      if (conditionRegex.hasMatch(currentWord)){
+      var conditionRegexSevere = RegExp(r"((\b)+(R\/SNOCLO)+(\b))");
+      if (conditionRegex.hasMatch(currentWord)) {
         thisSpan = TextSpan(
-          text: currentWord,
-          style: TextStyle(
-            color: conditionRegexSevere.hasMatch(currentWord)
-                ? Colors.red : Colors.blue,
-            decoration: TextDecoration.underline,
-          ),
-          recognizer: TapGestureRecognizer()..onTap = () {
-            _conditionDialog(currentWord);
-          }
-        );
+            text: currentWord,
+            style: TextStyle(
+              color: conditionRegexSevere.hasMatch(currentWord) ? Colors.red : Colors.blue,
+              decoration: TextDecoration.underline,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                _conditionDialog(currentWord);
+              });
         var spanSpace = TextSpan(
           text: " ",
         );
@@ -142,8 +127,8 @@ class MetarColorize {
 
       // GOOD WEATHER
       String goodString = goodWeather.join("|");
-      var goodRegex = new RegExp(goodString);
-      if (goodRegex.hasMatch(currentWord)){
+      var goodRegex = RegExp(goodString);
+      if (goodRegex.hasMatch(currentWord)) {
         thisSpan = TextSpan(
           text: currentWord + " ",
           style: TextStyle(color: Colors.green),
@@ -152,15 +137,13 @@ class MetarColorize {
         continue;
       }
 
-
-
       // REGULAR WEATHER
       String regularString = regularWeather.join("|");
-      var regularRegex = new RegExp(regularString);
-      if (regularRegex.hasMatch(currentWord)){
+      var regularRegex = RegExp(regularString);
+      if (regularRegex.hasMatch(currentWord)) {
         thisSpan = TextSpan(
-            text: currentWord + " ",
-            style: TextStyle(color: Colors.orange),
+          text: currentWord + " ",
+          style: TextStyle(color: Colors.orange),
         );
         spanList.add(thisSpan);
         continue;
@@ -168,8 +151,8 @@ class MetarColorize {
 
       // BAD WEATHER
       String badString = badWeather.join("|");
-      var badRegex = new RegExp(badString);
-      if (badRegex.hasMatch(currentWord)){
+      var badRegex = RegExp(badString);
+      if (badRegex.hasMatch(currentWord)) {
         thisSpan = TextSpan(
           text: currentWord + " ",
           style: TextStyle(color: Colors.red),
@@ -179,22 +162,19 @@ class MetarColorize {
       }
 
       // WIND KNOTS - e.g.: 25015KT
-      var windRegex = new RegExp(
-          r"\b[0-9]+KT");
-      if (windRegex.hasMatch(currentWord)){
-        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+      var windRegex = RegExp(r"\b[0-9]+KT");
+      if (windRegex.hasMatch(currentWord)) {
+        Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
-          int knots = int.tryParse(currentWord.substring(3,5));
+          int knots = int.tryParse(currentWord.substring(3, 5))!;
           if (knots >= _regularWindIntensity && knots <= _badWindIntensity) {
             thisColor = Colors.orange;
           } else if (knots > _badWindIntensity) {
             thisColor = Colors.red;
           }
+          thisSpan = TextSpan(text: currentWord + " ", style: TextStyle(color: thisColor));
+        } catch (e) {
           thisSpan = TextSpan(
-              text: currentWord + " ",
-              style: TextStyle(color: thisColor));
-        } catch (Exception) {
-          thisSpan = TextSpan (
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -204,24 +184,22 @@ class MetarColorize {
       }
 
       // WIND KNOTS 2 - e.g.: 25015G34KT
-      var wind2Regex = new RegExp(
-          r"[0-9]+G[0-9]+KT");
-      if (wind2Regex.hasMatch(currentWord)){
-        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+      var wind2Regex = RegExp(r"[0-9]+G[0-9]+KT");
+      if (wind2Regex.hasMatch(currentWord)) {
+        Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
-          int knots = int.tryParse(currentWord.substring(3,5));
-          int gust = int.tryParse(currentWord.substring(6,8));
-          if ((knots >= _regularWindIntensity || gust >= _regularGustIntensity)
-              && knots <= _badWindIntensity && gust <= _badGustIntensity) {
+          int knots = int.tryParse(currentWord.substring(3, 5))!;
+          int? gust = int.tryParse(currentWord.substring(6, 8));
+          if ((knots >= _regularWindIntensity || gust! >= _regularGustIntensity) &&
+              knots <= _badWindIntensity &&
+              gust! <= _badGustIntensity) {
             thisColor = Colors.orange;
-          } else if (knots > _badWindIntensity || gust > _badGustIntensity) {
+          } else if (knots > _badWindIntensity || gust! > _badGustIntensity) {
             thisColor = Colors.red;
           }
+          thisSpan = TextSpan(text: currentWord + " ", style: TextStyle(color: thisColor));
+        } catch (e) {
           thisSpan = TextSpan(
-              text: currentWord + " ",
-              style: TextStyle(color: thisColor));
-        } catch (Exception) {
-          thisSpan = TextSpan (
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -231,22 +209,19 @@ class MetarColorize {
       }
 
       // WIND MPS - e.g.: 25015MPS
-      var windRegexMps = new RegExp(
-          r"\b[0-9]+MPS");
-      if (windRegexMps.hasMatch(currentWord)){
-        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+      var windRegexMps = RegExp(r"\b[0-9]+MPS");
+      if (windRegexMps.hasMatch(currentWord)) {
+        Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
-          int mps = int.tryParse(currentWord.substring(3,5));
+          int mps = int.tryParse(currentWord.substring(3, 5))!;
           if (mps >= _regularMpsWindIntensity && mps <= _badMpsWindIntensity) {
             thisColor = Colors.orange;
           } else if (mps > _badMpsWindIntensity) {
             thisColor = Colors.red;
           }
+          thisSpan = TextSpan(text: currentWord + " ", style: TextStyle(color: thisColor));
+        } catch (e) {
           thisSpan = TextSpan(
-              text: currentWord + " ",
-              style: TextStyle(color: thisColor));
-        } catch (Exception) {
-          thisSpan = TextSpan (
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -256,24 +231,22 @@ class MetarColorize {
       }
 
       // WIND MPS 2 - e.g.: 25015G34MPS
-      var wind2RegexMps = new RegExp(
-          r"[0-9]+G[0-9]+MPS");
-      if (wind2RegexMps.hasMatch(currentWord)){
-        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+      var wind2RegexMps = RegExp(r"[0-9]+G[0-9]+MPS");
+      if (wind2RegexMps.hasMatch(currentWord)) {
+        Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
-          int mps = int.tryParse(currentWord.substring(3,5));
-          int gust = int.tryParse(currentWord.substring(6,8));
-          if ((mps >= _regularMpsWindIntensity || gust >= _regularMpsGustIntensity)
-              && mps <= _badMpsWindIntensity && gust <= _badMpsGustIntensity) {
+          int mps = int.tryParse(currentWord.substring(3, 5))!;
+          int? gust = int.tryParse(currentWord.substring(6, 8));
+          if ((mps >= _regularMpsWindIntensity || gust! >= _regularMpsGustIntensity) &&
+              mps <= _badMpsWindIntensity &&
+              gust! <= _badMpsGustIntensity) {
             thisColor = Colors.orange;
-          } else if (mps > _badMpsWindIntensity || gust > _badMpsGustIntensity) {
+          } else if (mps > _badMpsWindIntensity || gust! > _badMpsGustIntensity) {
             thisColor = Colors.red;
           }
+          thisSpan = TextSpan(text: currentWord + " ", style: TextStyle(color: thisColor));
+        } catch (e) {
           thisSpan = TextSpan(
-              text: currentWord + " ",
-              style: TextStyle(color: thisColor));
-        } catch (Exception) {
-          thisSpan = TextSpan (
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -282,22 +255,18 @@ class MetarColorize {
         continue;
       }
 
-
       // VISIBILITY
       // Need to get exclude all / before and after, otherwise some parts
       // won't work (e.g. RVR, times, etc)
-      var visibilityRegex = new RegExp(
-          r"(?<!\/)(\b)[0-9]{4}(?!\/)\b");
+      var visibilityRegex = RegExp(r"(?<!\/)(\b)[0-9]{4}(?!\/)\b");
 
-      Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+      Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
 
-      if (visibilityRegex.hasMatch(currentWord)){
-
+      if (visibilityRegex.hasMatch(currentWord)) {
         // We need to include some exceptions for US codes
         // based on https://weather.cod.edu/notes/metar.html
-        if (i > 0
-            && splitMetar[i - 1] == "WSHFT") {
-          thisSpan = TextSpan (
+        if (i > 0 && splitMetar[i - 1] == "WSHFT") {
+          thisSpan = TextSpan(
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -306,7 +275,7 @@ class MetarColorize {
         }
 
         try {
-          int vis = int.tryParse(currentWord);
+          int vis = int.tryParse(currentWord)!;
           if (vis <= _regularVisibility && vis > _badVisibility) {
             thisColor = Colors.orange;
           } else if (vis <= _badVisibility) {
@@ -316,8 +285,8 @@ class MetarColorize {
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
-        } catch (Exception) {
-          thisSpan = TextSpan (
+        } catch (e) {
+          thisSpan = TextSpan(
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
@@ -326,22 +295,19 @@ class MetarColorize {
         continue;
       }
 
-
       // RVR
-      var rvrRegex = new RegExp(
-          r"\b(R)+(\d\d([LCR]?))+(\/)+([PM]?)+([0-9]{4})+([UDN]?)\b");
+      var rvrRegex = RegExp(r"\b(R)+(\d\d([LCR]?))+(\/)+([PM]?)+([0-9]{4})+([UDN]?)\b");
 
-      if (currentWord == "R/8888"){
+      if (currentWord == "R/8888") {
         print("WORD");
       }
 
       if (rvrRegex.hasMatch(currentWord)) {
+        TextSpan? firstSpan;
 
-        TextSpan firstSpan;
-
-        Color thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
+        Color? thisColor = ThemeMe.apply(_isThemeDark, DesiredColor.MainText);
         try {
-          int rvr;
+          int? rvr;
           int addRunway = 0;
           int addExtreme = 0;
           int decreaseTrend = 0;
@@ -356,20 +322,19 @@ class MetarColorize {
               addExtreme = 1;
             }
           }
-          if (currentWord[currentWord.length - 1] == "U"
-              || currentWord[currentWord.length - 1] == "N"
-              || currentWord[currentWord.length - 1] == "D") {
+          if (currentWord[currentWord.length - 1] == "U" ||
+              currentWord[currentWord.length - 1] == "N" ||
+              currentWord[currentWord.length - 1] == "D") {
             decreaseTrend = 1;
           }
 
-          rvr = int.tryParse(currentWord.substring(
-              4 + addRunway + addExtreme, currentWord.length - decreaseTrend));
+          rvr = int.tryParse(currentWord.substring(4 + addRunway + addExtreme, currentWord.length - decreaseTrend));
 
           String firstSplit = currentWord.substring(0, 4 + addRunway);
 
           String secondSplit = currentWord.substring(4 + addRunway);
 
-          if (rvr <= _regularRvr && rvr >= _badRvr) {
+          if (rvr! <= _regularRvr && rvr >= _badRvr) {
             thisColor = Colors.orange;
           } else if (rvr < _badRvr) {
             thisColor = Colors.red;
@@ -379,30 +344,28 @@ class MetarColorize {
               style: TextStyle(
                 color: ThemeMe.apply(_isThemeDark, DesiredColor.MainText),
               ));
+          thisSpan = TextSpan(text: secondSplit + " ", style: TextStyle(color: thisColor));
+        } catch (e) {
           thisSpan = TextSpan(
-              text: secondSplit + " ",
-              style: TextStyle(color: thisColor));
-        } catch (Exception) {
-          thisSpan = TextSpan (
             text: currentWord + " ",
             style: TextStyle(color: thisColor),
           );
         }
-        spanList.add(firstSpan);
+        spanList.add(firstSpan!);
         spanList.add(thisSpan);
         continue;
       }
 
       // TEMPORARY
-      var temporaryRegex = new RegExp(
-          r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}");
+      var temporaryRegex = RegExp(r"(PROB[0-9]{2} TEMPO)|(TEMPO)|(BECMG)|(FM)[0-9]{6}");
       if (temporaryRegex.hasMatch(currentWord)) {
-          thisSpan = TextSpan(
-              text: currentWord + " ",
-              style: TextStyle(color: ThemeMe.apply(_isThemeDark,
-                  DesiredColor.BlueTempo),));
-          spanList.add(thisSpan);
-          continue;
+        thisSpan = TextSpan(
+            text: currentWord + " ",
+            style: TextStyle(
+              color: ThemeMe.apply(_isThemeDark, DesiredColor.BlueTempo),
+            ));
+        spanList.add(thisSpan);
+        continue;
       }
 
       // STANDARD (NOTHING FOUND)
@@ -416,14 +379,12 @@ class MetarColorize {
       spanList.add(thisSpan);
     }
 
-    _colorizedResult = TextSpan (
+    _colorizedResult = TextSpan(
       children: spanList,
     );
   }
 
-
   Future<void> _conditionDialog(String input) async {
-
     var condition = ConditionDecode(conditionString: input);
     ConditionModel decodedCondition = condition.getDecodedCondition;
     Widget myDecodedContainer = _decodedContainer(decodedCondition);
@@ -436,27 +397,27 @@ class MetarColorize {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           child: SingleChildScrollView(
             child: Container(
-              padding: EdgeInsets.fromLTRB(15,25,15,25),
-              child: Column (
+              padding: EdgeInsets.fromLTRB(15, 25, 15, 25),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                  margin: const EdgeInsets.all(15.0),
-                  padding: const EdgeInsets.all(3.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blueAccent),
-                  ),
-                  child: Text(
-                    input,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(3.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent),
+                    ),
+                    child: Text(
+                      input,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                 myDecodedContainer,
-                  RaisedButton(
+                  myDecodedContainer,
+                  ElevatedButton(
                     child: Text(
                       'Roger!',
                       style: TextStyle(
@@ -483,9 +444,10 @@ class MetarColorize {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("ERROR!"
-                "\n\n"
-                "Invalid runway condition.",
+            Text(
+              "ERROR!"
+              "\n\n"
+              "Invalid runway condition.",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -496,8 +458,8 @@ class MetarColorize {
         ),
       );
     } else if (decodedCondition.isSnoclo) {
-     return Container(
-       padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
+      return Container(
+        padding: EdgeInsets.only(left: 20, top: 30, right: 20, bottom: 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
@@ -533,14 +495,11 @@ class MetarColorize {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    decodedCondition.rwyError ?
-                    "(runway error)"
-                        : "Runway ${decodedCondition.rwyValue}",
+                    decodedCondition.rwyError ? "(runway error)" : "Runway ${decodedCondition.rwyValue}",
                     style: TextStyle(
                       fontSize: decodedCondition.rwyError ? 16 : 20,
                       fontWeight: FontWeight.bold,
-                      color: decodedCondition.rwyError ?
-                      Colors.red : null,
+                      color: decodedCondition.rwyError ? Colors.red : null,
                     ),
                   ),
                   Text(
@@ -723,5 +682,4 @@ class MetarColorize {
       );
     }
   }
-
 }

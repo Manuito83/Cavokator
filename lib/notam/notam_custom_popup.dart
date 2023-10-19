@@ -1,4 +1,4 @@
 class CustomNotamPopup {
-  String title;
+  String? title;
   CustomNotamPopup({this.title});
 }

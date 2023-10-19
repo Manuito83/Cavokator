@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class CustomSliverSection extends SingleChildRenderObjectWidget {
-  CustomSliverSection({Widget child, Key key}) : super(child: child, key: key);
+  CustomSliverSection({Widget? child, Key? key}) : super(child: child, key: key);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -12,7 +12,7 @@ class CustomSliverSection extends SingleChildRenderObjectWidget {
 
 class RenderCustomSliverSection extends RenderSliverToBoxAdapter {
   RenderCustomSliverSection({
-    RenderBox child,
+    RenderBox? child,
   }) : super(child: child);
 
   @override
@@ -21,17 +21,16 @@ class RenderCustomSliverSection extends RenderSliverToBoxAdapter {
       geometry = SliverGeometry.zero;
       return;
     }
-    child.layout(constraints.asBoxConstraints(), parentUsesSize: true);
-    double childExtent;
+    child!.layout(constraints.asBoxConstraints(), parentUsesSize: true);
+    double? childExtent;
     switch (constraints.axis) {
       case Axis.horizontal:
-        childExtent = child.size.width;
+        childExtent = child!.size.width;
         break;
       case Axis.vertical:
-        childExtent = child.size.height;
+        childExtent = child!.size.height;
         break;
     }
-    assert(childExtent != null);
     final double paintedChildSize =
     calculatePaintOffset(constraints, from: 0.0, to: childExtent);
     final double cacheExtent =
@@ -48,6 +47,6 @@ class RenderCustomSliverSection extends RenderSliverToBoxAdapter {
       hasVisualOverflow: childExtent > constraints.remainingPaintExtent ||
           constraints.scrollOffset > 0.0,
     );
-    setChildParentData(child, constraints, geometry);
+    setChildParentData(child!, constraints, geometry!);
   }
 }

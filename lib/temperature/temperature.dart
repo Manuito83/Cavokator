@@ -8,42 +8,40 @@ import 'package:flutter/services.dart';
 import 'package:cavokator_flutter/temperature/temp_options_dialog.dart';
 import 'package:share/share.dart';
 
-
 class TemperaturePage extends StatefulWidget {
-  final bool isThemeDark;
+  final bool? isThemeDark;
   final Widget myFloat;
   final Function callback;
   final bool showHeaders;
 
-  TemperaturePage({@required this.isThemeDark, @required this.myFloat,
-    @required this.callback, @required this.showHeaders});
+  TemperaturePage(
+      {required this.isThemeDark, required this.myFloat, required this.callback, required this.showHeaders});
 
   @override
   _TemperaturePageState createState() => _TemperaturePageState();
 }
 
 class _TemperaturePageState extends State<TemperaturePage> {
-
   bool _currentElevationError = false;
   bool _currentTemperatureError = false;
-  int _elevationInput;
-  int _temperatureInput;
+  int? _elevationInput;
+  int? _temperatureInput;
 
-  List<Widget> _altitudeRepeater = List<Widget>();
+  List<Widget> _altitudeRepeater = <Widget>[];
 
-  List<String> _repeaterValueList = List<String>();
-  List<String> _repeaterCorrectionList = List<String>();
+  List<String> _repeaterValueList = <String>[];
+  List<String> _repeaterCorrectionList = <String>[];
 
-  final _myElevationTextController = new TextEditingController();
-  final _myTemperatureTextController = new TextEditingController();
+  final _myElevationTextController = TextEditingController();
+  final _myTemperatureTextController = TextEditingController();
 
-  final elevationChangeNotifier = new StreamController.broadcast();
-  final temperatureChangeNotifier = new StreamController.broadcast();
+  final elevationChangeNotifier = StreamController.broadcast();
+  final temperatureChangeNotifier = StreamController.broadcast();
 
-  final elevationErrorChangeNotifier = new StreamController.broadcast();
-  final temperatureErrorChangeNotifier = new StreamController.broadcast();
+  final elevationErrorChangeNotifier = StreamController.broadcast();
+  final temperatureErrorChangeNotifier = StreamController.broadcast();
 
-  final roundChangeNotifier = new StreamController.broadcast();
+  final roundChangeNotifier = StreamController.broadcast();
 
   int _round = 0;
 
@@ -70,7 +68,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
       builder: (context) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: CustomScrollView(
             slivers: _buildSlivers(context),
           ),
@@ -94,7 +92,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
   }
 
   List<Widget> _buildSlivers(BuildContext context) {
-    List<Widget> slivers = new List<Widget>();
+    List<Widget> slivers = <Widget>[];
 
     slivers.add(_myAppBar());
     slivers.add(_mainBody());
@@ -117,13 +115,12 @@ class _TemperaturePageState extends State<TemperaturePage> {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage('assets/images/temperature_header.jpg'),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/temperature_header.jpg'),
               fit: BoxFit.fitWidth,
-              colorFilter: widget.isThemeDark == true
-                  ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken)
-                  : null,
+              colorFilter:
+                  widget.isThemeDark == true ? ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken) : null,
             ),
           ),
         ),
@@ -161,7 +158,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
-  Widget _mainBody (){
+  Widget _mainBody() {
     return CustomSliverSection(
       child: Container(
         padding: EdgeInsets.only(left: 30, top: 40),
@@ -178,11 +175,11 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
-  Widget _topOptions () {
+  Widget _topOptions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row (
+        Row(
           children: <Widget>[
             Expanded(
               child: Column(
@@ -192,8 +189,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                      )
-                  ),
+                      )),
                 ],
               ),
             ),
@@ -201,7 +197,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
               padding: EdgeInsets.symmetric(horizontal: 10),
             ),
             Expanded(
-              child: Column (
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
@@ -213,15 +209,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       style: TextStyle(
                         fontSize: 18,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(signed:true),
+                      keyboardType: TextInputType.numberWithOptions(signed: true),
                       maxLines: 1,
                       controller: _myElevationTextController,
-                      autovalidate: true,
+                      autovalidateMode: AutovalidateMode.always,
                       validator: (value) {
-                        if (value.isEmpty) {
+                        if (value!.isEmpty) {
                           return "";
                         } else {
-                          int myAltitude = int.tryParse(value);
+                          int? myAltitude = int.tryParse(value);
                           if (myAltitude == null) {
                             return "Error";
                           }
@@ -242,7 +238,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
         Padding(
           padding: EdgeInsets.only(top: 15),
         ),
-        Row (
+        Row(
           children: <Widget>[
             Expanded(
               child: Column(
@@ -252,8 +248,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                      )
-                  ),
+                      )),
                 ],
               ),
             ),
@@ -261,7 +256,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
               padding: EdgeInsets.symmetric(horizontal: 10),
             ),
             Expanded(
-              child: Column (
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
@@ -274,14 +269,14 @@ class _TemperaturePageState extends State<TemperaturePage> {
                         fontSize: 18,
                       ),
                       keyboardType: TextInputType.numberWithOptions(signed: true),
-                      autovalidate: true,
+                      autovalidateMode: AutovalidateMode.always,
                       maxLines: 1,
                       controller: _myTemperatureTextController,
                       validator: (value) {
-                        if (value.isEmpty) {
+                        if (value!.isEmpty) {
                           return "";
                         } else {
-                          int myTemperature = int.tryParse(value);
+                          int? myTemperature = int.tryParse(value);
                           if (myTemperature == null) {
                             return "Error";
                           }
@@ -307,57 +302,51 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
-  Widget _bottomButtons () {
+  Widget _bottomButtons() {
     return Padding(
       padding: EdgeInsets.only(top: 30, bottom: 30),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-
           _altitudeRepeater.length < 20
-            ? RawMaterialButton (
-                shape: new CircleBorder(),
-                elevation: 2.0,
-                fillColor: Colors.blue,
-                child: Icon(Icons.add),
-                onPressed: () {
-                  _addNewRepeater();
-                },
-            )
-            : SizedBox.shrink(),
-
+              ? RawMaterialButton(
+                  shape: CircleBorder(),
+                  elevation: 2.0,
+                  fillColor: Colors.blue,
+                  child: Icon(Icons.add),
+                  onPressed: () {
+                    _addNewRepeater();
+                  },
+                )
+              : SizedBox.shrink(),
           _altitudeRepeater.length > 0
-            ? RawMaterialButton (
-                shape: new CircleBorder(),
-                elevation: 2.0,
-                fillColor: Colors.red,
-                child: Icon(Icons.remove),
-                onPressed: () {
-                  _removeRepeater();
-                },
-              )
-            : SizedBox.shrink(),
-
+              ? RawMaterialButton(
+                  shape: CircleBorder(),
+                  elevation: 2.0,
+                  fillColor: Colors.red,
+                  child: Icon(Icons.remove),
+                  onPressed: () {
+                    _removeRepeater();
+                  },
+                )
+              : SizedBox.shrink(),
           _altitudeRepeater.length > 1
-            ? RawMaterialButton (
-                shape: new CircleBorder(),
-                elevation: 2.0,
-                fillColor: Colors.orangeAccent[200],
-                child: Icon(Icons.delete),
-                onPressed: () {
-                  _clearAll();
-                },
-            )
-            : SizedBox.shrink(),
-
+              ? RawMaterialButton(
+                  shape: CircleBorder(),
+                  elevation: 2.0,
+                  fillColor: Colors.orangeAccent[200],
+                  child: Icon(Icons.delete),
+                  onPressed: () {
+                    _clearAll();
+                  },
+                )
+              : SizedBox.shrink(),
         ],
       ),
     );
   }
 
-
   _addNewRepeater() {
-
     _repeaterValueList.add("");
     _repeaterCorrectionList.add("");
 
@@ -384,7 +373,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     });
 
     if (_altitudeRepeater.length == 20) {
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Reached limit of corrections (20)!"),
         ),
@@ -392,17 +381,15 @@ class _TemperaturePageState extends State<TemperaturePage> {
     }
   }
 
-
   void _removeRepeater() {
-      setState(() {
-        _altitudeRepeater.removeLast();
-      });
-      _repeaterValueList.removeLast();
-      _repeaterCorrectionList.removeLast();
-      SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
-      SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
+    setState(() {
+      _altitudeRepeater.removeLast();
+    });
+    _repeaterValueList.removeLast();
+    _repeaterCorrectionList.removeLast();
+    SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
+    SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
   }
-
 
   void _clearAll() {
     setState(() {
@@ -414,27 +401,27 @@ class _TemperaturePageState extends State<TemperaturePage> {
     SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
   }
 
-
-  void _repeaterValueUpdated (int repeaterId, int newValue) {
+  void _repeaterValueUpdated(int repeaterId, int newValue) {
     _repeaterValueList[repeaterId] = newValue.toString();
     SharedPreferencesModel().setTemperatureValueList(_repeaterValueList);
   }
 
-
-  void _repeaterCorrectionUpdated (int repeaterId, int newCorrection) {
+  void _repeaterCorrectionUpdated(int repeaterId, int newCorrection) {
     _repeaterCorrectionList[repeaterId] = newCorrection.toString();
     SharedPreferencesModel().setTemperatureCorrectionList(_repeaterCorrectionList);
   }
 
-
   void _onElevationInputTextChange() {
-    int inputElevation = int.tryParse(_myElevationTextController.text);
-    if (_myElevationTextController.text.isEmpty
-        || inputElevation == null
-        || inputElevation < -2000 || inputElevation > 10000) {
+    int? inputElevation = int.tryParse(_myElevationTextController.text);
+    if (_myElevationTextController.text.isEmpty ||
+        inputElevation == null ||
+        inputElevation < -2000 ||
+        inputElevation > 10000) {
       _currentElevationError = true;
       elevationErrorChangeNotifier.sink.add(1);
-      SharedPreferencesModel().setTemperatureElev(inputElevation);
+      if (inputElevation != null) {
+        SharedPreferencesModel().setTemperatureElev(inputElevation);
+      }
     } else {
       _currentElevationError = false;
       elevationErrorChangeNotifier.sink.add(0);
@@ -444,13 +431,16 @@ class _TemperaturePageState extends State<TemperaturePage> {
   }
 
   void _onTemperatureInputTextChange() {
-    int inputTemperature = int.tryParse(_myTemperatureTextController.text);
-    if (_myTemperatureTextController.text.isEmpty
-        || inputTemperature == null
-        || inputTemperature < -50 || inputTemperature > 50) {
+    int? inputTemperature = int.tryParse(_myTemperatureTextController.text);
+    if (_myTemperatureTextController.text.isEmpty ||
+        inputTemperature == null ||
+        inputTemperature < -50 ||
+        inputTemperature > 50) {
       _currentTemperatureError = true;
       temperatureErrorChangeNotifier.sink.add(1);
-      SharedPreferencesModel().setTemperatureTemp(inputTemperature);
+      if (inputTemperature != null) {
+        SharedPreferencesModel().setTemperatureTemp(inputTemperature);
+      }
     } else {
       _currentTemperatureError = false;
       temperatureErrorChangeNotifier.sink.add(0);
@@ -460,7 +450,6 @@ class _TemperaturePageState extends State<TemperaturePage> {
   }
 
   void _restoreSharedPreferences() async {
-
     await SharedPreferencesModel().getTemperatureElev().then((onValue) {
       _elevationInput = onValue;
       _myElevationTextController.text = onValue.toString();
@@ -510,7 +499,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     });
   }
 
-  Future<void> _showSettings() async {
+  _showSettings() async {
     return showDialog(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -519,8 +508,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
             round: _round,
             roundChangedCallback: _roundOptionHasChanged,
           );
-        }
-    );
+        });
   }
 
   void _roundOptionHasChanged(int newValue) {
@@ -528,7 +516,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     roundChangeNotifier.sink.add(newValue);
   }
 
-  String _generateShareString () {
+  String _generateShareString() {
     String shareString = "";
 
     shareString += "###";
@@ -543,7 +531,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     } else {
       for (var i = 0; i < _repeaterValueList.length; i++) {
         shareString += "\nAltitude: ${_repeaterValueList[i]} "
-                       "is corrected to ${_repeaterCorrectionList[i]}";
+            "is corrected to ${_repeaterCorrectionList[i]}";
       }
 
       if (_round != 0) {
@@ -556,8 +544,7 @@ class _TemperaturePageState extends State<TemperaturePage> {
     return shareString;
   }
 
-
-  Future<void> _showStandardDialog() async {
+  _showStandardDialog() async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -568,21 +555,21 @@ class _TemperaturePageState extends State<TemperaturePage> {
             child: ListBody(
               children: <Widget>[
                 Text('This will remove your current list of altitudes and '
-                    'create a new one with 500 feet increments starting'
+                    'create a  one with 500 feet increments starting'
                     'from the aerodrome elevation up to 5000 AGL'
                     ''),
               ],
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Do it!'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _generateStandardList();
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text('Oh no!'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -594,9 +581,8 @@ class _TemperaturePageState extends State<TemperaturePage> {
     );
   }
 
-
-  Future<void> _warningDialog() async {
-    showDialog (
+  _warningDialog() async {
+    showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
@@ -623,7 +609,8 @@ class _TemperaturePageState extends State<TemperaturePage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           Flexible(
-                            child: Text("TEMPERATURE CORRECTIONS",
+                            child: Text(
+                              "TEMPERATURE CORRECTIONS",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -641,36 +628,35 @@ class _TemperaturePageState extends State<TemperaturePage> {
                           Flexible(
                             child: Text(
                               "This tool is not intended to be used during "
-                                  "real flight operations. Please be aware that "
-                                  "errors in low temperature corrections might "
-                                  "lead to CFIT, GPWS warning or worse."
-                                  "\n\n"
-                                  "The calculations offered in CAVOKATOR are based "
-                                  "on ICAO Doc 8168 Vol 1, Part III, 4.3.3 "
-                                  '"Corrections for specific conditions", '
-                                  "which can be used for aerodromes above sea level "
-                                  "and produce results that are within 5% "
-                                  "of the accurate correction for altimeter "
-                                  "setting sources up to 10000 ft and with "
-                                  "minimum heights up to 5000 ft above that source. "
-                                  "\n\n"
-                                  "Although there are limitations on source "
-                                  "altitudes, temperature range and individual "
-                                  "correction altitudes, if you go beyond the limits "
-                                  "in the paragraph above, results might "
-                                  "fall outside of that 5% error margin!",
+                              "real flight operations. Please be aware that "
+                              "errors in low temperature corrections might "
+                              "lead to CFIT, GPWS warning or worse."
+                              "\n\n"
+                              "The calculations offered in CAVOKATOR are based "
+                              "on ICAO Doc 8168 Vol 1, Part III, 4.3.3 "
+                              '"Corrections for specific conditions", '
+                              "which can be used for aerodromes above sea level "
+                              "and produce results that are within 5% "
+                              "of the accurate correction for altimeter "
+                              "setting sources up to 10000 ft and with "
+                              "minimum heights up to 5000 ft above that source. "
+                              "\n\n"
+                              "Although there are limitations on source "
+                              "altitudes, temperature range and individual "
+                              "correction altitudes, if you go beyond the limits "
+                              "in the paragraph above, results might "
+                              "fall outside of that 5% error margin!",
                               style: TextStyle(
                                 fontSize: 14,
                               ),
                             ),
                           ),
-
                         ],
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(top: 30),
-                      child: RaisedButton(
+                      child: ElevatedButton(
                         child: Text(
                           "I'll be careful!",
                           style: TextStyle(
@@ -687,17 +673,14 @@ class _TemperaturePageState extends State<TemperaturePage> {
               ),
             ),
           );
-        }
-    );
+        });
   }
 
-
-  void _generateStandardList () async {
-
+  void _generateStandardList() async {
     _clearAll();
 
-    int initialAltitude = _elevationInput + 500;
-    var defaultList = List<Widget>();
+    int initialAltitude = _elevationInput! + 500;
+    var defaultList = <Widget>[];
 
     for (var i = 0; i < 10; i++) {
       _repeaterValueList.add("");
@@ -729,6 +712,4 @@ class _TemperaturePageState extends State<TemperaturePage> {
       _altitudeRepeater = defaultList;
     });
   }
-
-
 }
