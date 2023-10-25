@@ -1,4 +1,5 @@
 import 'package:cavokator_flutter/favourites/favourites.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -16,7 +17,6 @@ import 'package:intl/intl.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
 import 'package:share/share.dart';
-import 'package:connectivity/connectivity.dart';
 import 'dart:io';
 
 class NotamPage extends StatefulWidget {

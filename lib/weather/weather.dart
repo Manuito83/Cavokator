@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cavokator_flutter/favourites/favourites.dart';
 import 'package:cavokator_flutter/weather/wx_options_dialog.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -15,7 +16,6 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/weather/wx_colorize.dart';
 import 'package:cavokator_flutter/weather/wx_split_tafor.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:share/share.dart';
 import 'package:xml/xml.dart';
 import 'dart:io';
