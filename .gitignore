@@ -72,3 +72,5 @@ build/
 .flutter-plugins-dependencies
 ios/Flutter/Flutter.podspec
 .flutter-plugins-dependencies
+ios/Flutter/flutter_export_environment.sh
+.flutter-plugins-dependencies
