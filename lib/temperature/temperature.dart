@@ -6,7 +6,7 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:flutter/services.dart';
 import 'package:cavokator_flutter/temperature/temp_options_dialog.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 class TemperaturePage extends StatefulWidget {
   final bool? isThemeDark;

@@ -4,7 +4,7 @@ import 'package:cavokator_flutter/json_models/favourites_model.dart';
 import 'package:cavokator_flutter/utils/theme_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 class FavouritesBackupsPage extends StatefulWidget {
   final bool? isThemeDark;

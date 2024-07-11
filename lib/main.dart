@@ -7,9 +7,9 @@ import 'package:cavokator_flutter/utils/theme_me.dart';
 /// Is the current version OK? Update it?
 /// Update changelog?
 /// NOTE: AS OF v3.1.0, CHANGELOG ONLY APPEARS FOR  UPDATES, NO  INSTALLATIONS (REVISIT?)
-String thisAppVersion = "3.1.2";
-String androidVersionCode = "35";
-String iosVersionCode = "35";
+String thisAppVersion = "3.1.3";
+String androidVersionCode = "36";
+String iosVersionCode = "36";
 
 void main() => runApp(Cavokator());
 
@@ -36,6 +36,7 @@ class _CavokatorState extends State<Cavokator> {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
         brightness: _myBrightness,
+        useMaterial3: false,
       ),
       home: Container(
         color: ThemeMe.apply(_isDark, DesiredColor.MainBackground),

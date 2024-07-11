@@ -237,7 +237,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
             buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
             child: ElevatedButton(
               style: ButtonStyle(
-                shape: MaterialStateProperty.all<OutlinedBorder>(
+                shape: WidgetStateProperty.all<OutlinedBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),
                     side: BorderSide(
@@ -277,7 +277,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    shape: MaterialStateProperty.all<OutlinedBorder>(
+                    shape: WidgetStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                         side: BorderSide(
@@ -317,7 +317,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                 buttonColor: ThemeMe.apply(widget.isThemeDark, DesiredColor.Buttons),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    shape: MaterialStateProperty.all<OutlinedBorder>(
+                    shape: WidgetStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                         side: BorderSide(
@@ -353,28 +353,37 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   Widget _favouriteCard(int index) {
     return Slidable(
-      actionPane: SlidableDrawerActionPane(),
-      actionExtentRatio: 0.25,
-      actions: <Widget>[
-        IconSlideAction(
-          caption: 'Edit',
-          color: Colors.blue,
-          icon: Icons.edit,
-          onTap: () => _showAddDialog(
-              existingFav: true,
-              favIndex: index,
-              favTitle: _favouritesList[index].title,
-              favAirports: _favouritesList[index].airports),
-        ),
-      ],
-      secondaryActions: <Widget>[
-        IconSlideAction(
-          caption: 'Delete',
-          color: Colors.red,
-          icon: Icons.delete,
-          onTap: () => _deleteSingleFavDialog(index),
-        ),
-      ],
+      startActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            label: 'Edit',
+            backgroundColor: Colors.blue,
+            icon: Icons.edit,
+            onPressed: (context) {
+              _showAddDialog(
+                existingFav: true,
+                favIndex: index,
+                favTitle: _favouritesList[index].title,
+                favAirports: _favouritesList[index].airports,
+              );
+            },
+          ),
+        ],
+      ),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            label: 'Delete',
+            backgroundColor: Colors.red,
+            icon: Icons.delete,
+            onPressed: (context) {
+              _deleteSingleFavDialog(index);
+            },
+          ),
+        ],
+      ),
       child: Card(
         margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
         elevation: 2,

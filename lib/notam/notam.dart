@@ -1,4 +1,5 @@
 import 'package:cavokator_flutter/favourites/favourites.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -9,15 +10,15 @@ import 'package:cavokator_flutter/utils/shared_prefs.dart';
 import 'package:cavokator_flutter/constants.dart';
 import 'package:cavokator_flutter/notam/notam_item_builder.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:cavokator_flutter/utils/pretty_duration.dart';
 import 'package:cavokator_flutter/notam/notam_custom_popup.dart';
-import 'package:share/share.dart';
-import 'package:connectivity/connectivity.dart';
 import 'dart:io';
+
+import 'package:share_plus/share_plus.dart';
 
 class NotamPage extends StatefulWidget {
   final bool isThemeDark;
@@ -792,11 +793,13 @@ class _NotamPageState extends State<NotamPage> {
           icon: Icon(Icons.map),
           color: ThemeMe.apply(widget.isThemeDark, DesiredColor.MainText),
           onPressed: () {
+            /*
             _showMap(
                 notamId: thisNotam.id,
                 latitude: thisNotam.latitude,
                 longitude: thisNotam.longitude,
                 radius: thisNotam.radius);
+            */
           },
         );
       } else {
@@ -1464,6 +1467,7 @@ class _NotamPageState extends State<NotamPage> {
     return notamExportedJson;
   }
 
+  /*
   Future<void> _showMap({required notamId, required latitude, required longitude, radius}) async {
     LatLng _center = LatLng(latitude, longitude);
 
@@ -1539,6 +1543,7 @@ class _NotamPageState extends State<NotamPage> {
       },
     );
   }
+  */
 
   Future<void> _showFullNotam(String notamId, String? notamText) async {
     return showDialog<void>(
